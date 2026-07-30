@@ -1,0 +1,43 @@
+name: 部署到 GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - 'data/videos.json'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 检出部署仓库
+        uses: actions/checkout@v4
+        with:
+          repository: PeaCocoa/peacocoa.github.io
+          token: ${{ secrets.DEPLOY_TOKEN }}
+          path: deploy
+
+      - name: 同步网站文件
+        run: |
+          # 复制 web 目录所有内容到部署仓库
+          cp -r web/* deploy/
+          # 确保有 data 目录
+          mkdir -p deploy/data
+          cp data/videos.json deploy/data/videos.json || true
+
+      - name: 提交并推送
+        working-directory: deploy
+        run: |
+          git config user.name "暖阳机器人"
+          git config user.email "nuanyang-bot@users.noreply.github.com"
+          git add -A
+          git diff --staged --quiet && echo "无变更，跳过" && exit 0
+          git commit -m "自动更新网站数据 $(date -u '+%Y-%m-%d %H:%M:%S')"
+          git push
