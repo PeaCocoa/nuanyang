@@ -18,7 +18,12 @@ PYTHON_EXE = sys.executable
 
 # 定时任务配置
 TASK_NAME = "NuanyangCrawler"
+# 爬虫任务时间
 TASK_TIMES = ["10:00", "20:00"]
+# 更新任务时间
+UPDATE_TASK_TIMES = ["16:00"]
+# 更新脚本
+UPDATE_SCRIPT = os.path.join(PROJECT_DIR, "auto_update.bat")
 
 # 启动脚本路径
 START_SCRIPT = os.path.join(PROJECT_DIR, "auto_crawl.bat")
@@ -32,8 +37,8 @@ def install():
     )
 
     # 创建任务，每天10:00和20:00执行
-    for time_str in TASK_TIMES:
-        task_name = f"{TASK_NAME}_{time_str.replace(':', '')}"
+    for time_str in TASK_TIMES + UPDATE_TASK_TIMES:
+        task_name = f"{TASK_NAME}_{"Update_" if time_str in UPDATE_TASK_TIMES else ""}{time_str.replace(':', '')}"
         subprocess.run(
             ["schtasks", "/Delete", "/TN", task_name, "/F"],
             capture_output=True
@@ -53,14 +58,38 @@ def install():
         else:
             print(f"[ERROR] 注册失败 {task_name}: {result.stderr}")
 
-    print(f"\n定时爬虫已安装，每天 {', '.join(TASK_TIMES)} 自动运行")
+    # 注册16点更新任务
+    for time_str in UPDATE_TASK_TIMES:
+        task_name = f"{TASK_NAME}_Update_{time_str.replace(':', '')}"
+        subprocess.run(
+            ["schtasks", "/Delete", "/TN", task_name, "/F"],
+            capture_output=True
+        )
+        cmd = [
+            "schtasks", "/Create",
+            "/TN", task_name,
+            "/TR", f'"{UPDATE_SCRIPT}"',
+            "/SC", "DAILY",
+            "/ST", time_str,
+            "/F"
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            print(f"[OK] 更新任务已注册: {task_name} -> 每天 {time_str}")
+        else:
+            print(f"[ERROR] 注册失败 {task_name}: {result.stderr}")
+
+    print(f"\n定时任务已安装:")
+    print(f"  爬虫: 每天 {', '.join(TASK_TIMES)}")
+    print(f"  更新: 每天 {', '.join(UPDATE_TASK_TIMES)}")
     print(f"启动脚本: {START_SCRIPT}")
     print(f"Python: {PYTHON_EXE}")
 
 def uninstall():
     """卸载 Windows 定时任务"""
-    for time_str in TASK_TIMES:
-        task_name = f"{TASK_NAME}_{time_str.replace(':', '')}"
+    for time_str in TASK_TIMES + UPDATE_TASK_TIMES:
+        prefix = "Update_" if time_str in UPDATE_TASK_TIMES else ""
+        task_name = f"{TASK_NAME}_{prefix}{time_str.replace(':', '')}"
         result = subprocess.run(
             ["schtasks", "/Delete", "/TN", task_name, "/F"],
             capture_output=True, text=True
@@ -72,8 +101,8 @@ def uninstall():
 
 def status():
     """查看定时任务状态"""
-    for time_str in TASK_TIMES:
-        task_name = f"{TASK_NAME}_{time_str.replace(':', '')}"
+    for time_str in TASK_TIMES + UPDATE_TASK_TIMES:
+        task_name = f"{TASK_NAME}_{"Update_" if time_str in UPDATE_TASK_TIMES else ""}{time_str.replace(':', '')}"
         result = subprocess.run(
             ["schtasks", "/Query", "/TN", task_name],
             capture_output=True, text=True
