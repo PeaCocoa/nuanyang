@@ -1,4 +1,0 @@
-# 暖阳爬虫 — 已废弃，请在本地运行
-# GitHub Actions 环境无法携带B站Cookie，爬虫需在本地电脑运行
-# 使用方法：python crawler/main.py
-# 数据会自动 git push 到仓库，触发 Pages 部署
