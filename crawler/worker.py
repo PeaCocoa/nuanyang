@@ -265,52 +265,65 @@ def run():
 
 def git_push():
     project_dir = BASE_DIR
+
+    # 检查是否是git仓库
     try:
         subprocess.run(["git", "rev-parse", "--git-dir"],
                        cwd=project_dir, capture_output=True, check=True)
+    except Exception:
+        log("[WARN] 不是git仓库，跳过推送", "warn")
+        return
 
-        import shutil
-        web_data_dir = os.path.join(WEB_DIR, "data")
-        os.makedirs(web_data_dir, exist_ok=True)
-        shutil.copy2(VIDEOS_FILE, os.path.join(web_data_dir, "videos.json"))
+    import shutil
+    web_data_dir = os.path.join(WEB_DIR, "data")
+    os.makedirs(web_data_dir, exist_ok=True)
+    shutil.copy2(VIDEOS_FILE, os.path.join(web_data_dir, "videos.json"))
 
-        subprocess.run(["git", "add", "data/videos.json", "web/data/videos.json", ".github/"],
-                       cwd=project_dir, check=True)
+    subprocess.run(["git", "add", "data/videos.json", "web/data/videos.json", ".github/"],
+                   cwd=project_dir, check=True)
 
-        result = subprocess.run(["git", "diff", "--staged", "--quiet"],
-                                cwd=project_dir)
-        if result.returncode == 0:
-            log("[INFO] 无新数据，跳过提交")
-            return
+    result = subprocess.run(["git", "diff", "--staged", "--quiet"],
+                            cwd=project_dir)
+    if result.returncode == 0:
+        log("[INFO] 无新数据，跳过提交")
+        return
 
-        commit_msg = f"自动更新视频数据 {time.strftime('%Y-%m-%d %H:%M:%S')}"
-        subprocess.run(["git", "commit", "-m", commit_msg],
-                       cwd=project_dir, check=True)
+    commit_msg = f"自动更新视频数据 {time.strftime('%Y-%m-%d %H:%M:%S')}"
+    subprocess.run(["git", "commit", "-m", commit_msg],
+                   cwd=project_dir, check=True)
 
-        # 使用 token 认证推送（从环境变量读取）
-        git_token = os.environ.get("GITHUB_TOKEN", "")
-        if git_token:
-            remote_url = subprocess.run(
-                ["git", "remote", "get-url", "origin"],
-                cwd=project_dir, capture_output=True, text=True
-            ).stdout.strip()
-            # 替换为带token的URL
-            if "github.com" in remote_url:
-                auth_url = f"https://PeaCocoa:{git_token}@github.com/PeaCocoa/nuanyang.git"
-                subprocess.run(["git", "push", auth_url, "main"],
-                               cwd=project_dir, check=True)
-            else:
-                subprocess.run(["git", "push"],
-                               cwd=project_dir, check=True)
-        else:
-            subprocess.run(["git", "push"],
-                           cwd=project_dir, check=True)
+    # 推送地址：优先用token认证，失败则回退到镜像
+    git_token = os.environ.get("GITHUB_TOKEN", "")
+    push_urls = []
+    if git_token:
+        push_urls.append(f"https://PeaCocoa:{git_token}@github.com/PeaCocoa/nuanyang.git")
+    push_urls.append("origin")
 
-        log("[INFO] 已推送到GitHub，Actions将自动部署")
-    except subprocess.CalledProcessError as e:
-        log(f"[WARN] Git操作失败: {e}", "warn")
-    except Exception as e:
-        log(f"[WARN] Git推送失败: {e}", "warn")
+    max_attempts = 5
+    retry_delay = 120  # 2分钟
+
+    for attempt in range(1, max_attempts + 1):
+        for url in push_urls:
+            try:
+                log(f"[INFO] 推送尝试 {attempt}/{max_attempts} -> {url[:50]}...")
+                subprocess.run(["git", "push", url, "main"],
+                               cwd=project_dir, check=True,
+                               capture_output=True, text=True, timeout=60)
+                log("[INFO] 已推送到GitHub，Actions将自动部署")
+                return
+            except subprocess.TimeoutExpired:
+                log(f"[WARN] 推送超时（{url[:40]}...），尝试下一个地址", "warn")
+            except subprocess.CalledProcessError as e:
+                log(f"[WARN] 推送失败（{url[:40]}...）: {e.stderr[:100] if e.stderr else str(e)}", "warn")
+            except Exception as e:
+                log(f"[WARN] 推送异常（{url[:40]}...）: {e}", "warn")
+
+        if attempt < max_attempts:
+            log(f"[INFO] {retry_delay}秒后重试...")
+            time.sleep(retry_delay)
+
+    log("[ERROR] 推送失败，已达最大重试次数 {max_attempts}", "error")
+    log("[INFO] 数据已保存在本地，下次运行时会自动重试", "info")
 
 if __name__ == "__main__":
     run()
