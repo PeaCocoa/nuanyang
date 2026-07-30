@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>暖阳爬虫控制台</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>暖阳爬虫控制台 v2</title>
     <style>
         :root {
             --rausch: #FF385C;
@@ -784,9 +787,12 @@
         // === 轮询状态 ===
         async function poll() {
             try {
+                console.log('[poll] fetching...');
                 const resp = await fetch(API_STATUS + '?t=' + Date.now());
+                console.log('[poll] response status:', resp.status);
                 if (!resp.ok) return;
                 const data = await resp.json();
+                console.log('[poll] data:', data.state, data.done_ups, '/', data.total_ups);
                 render(data);
             } catch (e) {}
         }
@@ -902,10 +908,12 @@
 
         // === 初始化 ===
         async function init() {
-            await loadUpmasters();
-            await loadSettings();
+            // 先启动轮询，确保控制台能实时显示状态
             poll();
             setInterval(poll, 1000);
+            // 再异步加载UP主列表和设置（不阻塞轮询）
+            loadUpmasters().catch(function(){});
+            loadSettings().catch(function(){});
         }
 
         init();

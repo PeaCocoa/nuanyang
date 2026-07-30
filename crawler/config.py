@@ -17,7 +17,7 @@ MAX_VIDEOS_TOTAL = 200     # 视频总数上限
 REQUEST_DELAY = 3          # UP主之间的请求间隔（秒）
 SEARCH_PAGE_DELAY = 5      # 搜索翻页间隔（秒），B站搜索风控较严
 
-def load_upmasters() -> list[dict]:
+def load_upmasters() -> list:
     """
     加载 UP主配置
 

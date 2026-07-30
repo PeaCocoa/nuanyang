@@ -93,11 +93,21 @@ class BiliCrawler:
         os.makedirs(AUTH_DIR, exist_ok=True)
 
         # 始终用持久化上下文启动（Cookie会自动保存）
+        # 使用 args 绕过 sandbox 权限问题
+        # --remote-debugging-port 替代默认的 pipe，避免子进程管道通信问题
+        launch_args = [
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--disable-extensions",
+            "--remote-debugging-port=0",
+        ]
         self.context = self.playwright.chromium.launch_persistent_context(
             user_data_dir=AUTH_DIR,
             headless=self.headless,
             viewport={"width": 1280, "height": 800},
             locale="zh-CN",
+            args=launch_args,
         )
         self.page = self.context.pages[0] if self.context.pages else self.context.new_page()
 
@@ -117,6 +127,7 @@ class BiliCrawler:
                 headless=False,
                 viewport={"width": 1280, "height": 800},
                 locale="zh-CN",
+                args=launch_args,
             )
             self.page = self.context.pages[0] if self.context.pages else self.context.new_page()
             self._login()

@@ -184,9 +184,24 @@ def finish(state: str = "done"):
     _flush()
 
 def get_status() -> dict:
-    with _lock:
-        result = json.loads(json.dumps(_status))
+    """从文件读取状态（兼容子进程模式）"""
+    try:
+        if os.path.isfile(STATUS_FILE):
+            with open(STATUS_FILE, "r", encoding="utf-8") as f:
+                result = json.load(f)
+        else:
+            with _lock:
+                result = json.loads(json.dumps(_status))
+        # 同时更新内存（供 is_running 使用）
+        with _lock:
+            _status["state"] = result.get("state", "idle")
+            _status["login_required"] = result.get("login_required", False)
         # 附加设置信息
+        result["settings"] = get_settings()
+        return result
+    except Exception:
+        with _lock:
+            result = json.loads(json.dumps(_status))
         result["settings"] = get_settings()
         return result
 
