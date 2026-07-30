@@ -7,6 +7,9 @@ import requests
 import time
 import random
 
+# 风控状态
+_risk_control = False
+
 class BiliAPI:
     """B站API直接调用，不需要浏览器"""
 
@@ -25,11 +28,32 @@ class BiliAPI:
         if cookie:
             self.session.headers["Cookie"] = cookie
 
+    def _check_risk_control(self, data):
+        """检测是否被风控"""
+        global _risk_control
+        code = data.get("code", 0)
+        msg = data.get("message", "")
+        # B站风控code: -412（请求过于频繁）、-799（风控）
+        if code in (-412, -799, -509) or "风控" in msg or "频繁" in msg:
+            _risk_control = True
+            return True
+        return False
+
+    def _wait_if_risk(self):
+        """如果被风控，等待一段时间"""
+        global _risk_control
+        if _risk_control:
+            wait = random.randint(30, 60)
+            print(f"  [WARN] 触发风控，等待{wait}秒后继续...")
+            time.sleep(wait)
+            _risk_control = False
+
     def get_up_videos(self, mid, page=1, page_size=30):
         """
         通过UID获取UP主视频列表
         API: /x/space/arc/search
         """
+        self._wait_if_risk()
         url = "https://api.bilibili.com/x/space/arc/search"
         params = {
             "mid": mid,
@@ -40,6 +64,8 @@ class BiliAPI:
         try:
             resp = self.session.get(url, params=params, timeout=15)
             data = resp.json()
+            if self._check_risk_control(data):
+                return []
             if data.get("code") == 0 and data.get("data", {}).get("list", {}).get("vlist"):
                 return data["data"]["list"]["vlist"]
             else:
@@ -54,11 +80,14 @@ class BiliAPI:
         获取视频详细信息
         API: /x/web-interface/view
         """
+        self._wait_if_risk()
         url = "https://api.bilibili.com/x/web-interface/view"
         params = {"bvid": bvid}
         try:
             resp = self.session.get(url, params=params, timeout=15)
             data = resp.json()
+            if self._check_risk_control(data):
+                return None
             if data.get("code") == 0 and data.get("data"):
                 d = data["data"]
                 return {

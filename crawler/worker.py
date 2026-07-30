@@ -76,7 +76,7 @@ def fetch_up_videos(api, uid, up_name):
         all_results.extend(results)
         log(f"  第{page}页: {len(results)}条视频")
         if page < SEARCH_PAGES:
-            time.sleep(SEARCH_PAGE_DELAY)
+            time.sleep(SEARCH_PAGE_DELAY + random.uniform(0, 2))
 
     seen = set()
     unique = []
@@ -97,7 +97,7 @@ def fetch_video_details(api, bvids, max_count):
             log(f"  [{i+1}/{min(len(bvids), max_count*2)}] {bvid} ok {info['title'][:30]}")
         else:
             log(f"  [{i+1}/{min(len(bvids), max_count*2)}] {bvid} 获取失败", "warn")
-        time.sleep(0.5)
+        time.sleep(0.5 + random.uniform(0, 0.5))
     return details
 
 def filter_and_transform(videos, up_name, categories):
@@ -217,7 +217,7 @@ def run():
             status.update_up(i, "done", videos=len(up_videos))
             status.add_videos(len(up_videos))
 
-            time.sleep(REQUEST_DELAY)
+            time.sleep(REQUEST_DELAY + random.uniform(0, 2))
 
             if len(all_videos) >= MAX_VIDEOS_TOTAL:
                 log(f"达到总数上限 {MAX_VIDEOS_TOTAL}，停止抓取")
