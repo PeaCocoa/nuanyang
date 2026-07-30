@@ -64,6 +64,29 @@ async (bvid) => {
 """
 
 # JavaScript：检查登录状态
+JS_SPACE_VIDEOS = """
+async (args) => {
+    const url = 'https://api.bilibili.com/x/space/arc/search?mid=' + args.mid +
+        '&pn=' + args.pn + '&ps=30&order=pubdate';
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (data.code === 0 && data.data && data.data.list && data.data.list.vlist) {
+        return data.data.list.vlist.map(function(v) {
+            return {
+                bvid: v.bvid,
+                title: v.title,
+                author: v.author,
+                duration: v.length,
+                play: v.play,
+                pubdate: v.created,
+                pic: v.pic,
+            };
+        });
+    }
+    return [];
+}
+"""
+
 JS_CHECK_LOGIN = """
 async () => {
     const resp = await fetch('https://api.bilibili.com/x/web-interface/nav');
