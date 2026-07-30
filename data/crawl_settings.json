@@ -1,0 +1,8 @@
+{
+  "selected_ups": [],
+  "max_videos_per_up": 2,
+  "pubdate_days": 0,
+  "duration_min": 60,
+  "duration_max": 3600,
+  "test_mode": true
+}

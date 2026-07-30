@@ -1,0 +1,45 @@
+name: 暖阳部署 - GitHub Pages
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'web/**'
+      - 'data/videos.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 同步数据到web目录
+        run: |
+          mkdir -p web/data
+          cp data/videos.json web/data/videos.json
+
+      - name: 设置Pages
+        uses: actions/configure-pages@v4
+
+      - name: 上传artifacts
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./web
+
+      - name: 部署到GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
