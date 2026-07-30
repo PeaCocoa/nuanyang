@@ -280,6 +280,11 @@ def run():
     git_push()
 
 def git_push():
+    # GitHub Actions环境中由workflow负责推送，这里跳过
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        log("[INFO] 运行在GitHub Actions中，数据将由workflow推送")
+        return
+
     project_dir = BASE_DIR
 
     try:

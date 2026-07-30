@@ -1,4 +1,39 @@
-# 暖阳爬虫 — 已废弃，请在本地运行
-# GitHub Actions 环境无法携带B站Cookie，爬虫需在本地电脑运行
-# 使用方法：python crawler/main.py
-# 数据会自动 git push 到仓库，触发 Pages 部署
+name: 定时爬虫
+
+on:
+  schedule:
+    # UTC时间02:00和12:00 = 北京时间10:00和20:00
+    - cron: '0 2 * * *'
+    - cron: '0 12 * * *'
+  workflow_dispatch:  # 支持手动触发
+
+permissions:
+  contents: write  # 允许推送代码
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 安装依赖
+        run: pip install requests
+
+      - name: 运行爬虫
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python -m crawler.worker
+
+      - name: 推送数据
+        run: |
+          git config user.name "暖阳爬虫机器人"
+          git config user.email "actions@github.com"
+          git add data/videos.json web/data/videos.json
+          git diff --staged --quiet || git commit -m "自动更新视频数据 $(date -u -d '+8 hours' '+%Y-%m-%d %H:%M:%S')"
+          git push
