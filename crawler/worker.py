@@ -116,11 +116,37 @@ def filter_and_transform(videos, up_name, categories):
     now = time.time()
     pubdate_limit = now - pubdate_days * 86400 if pubdate_days > 0 else 0
 
+    # 列表API和详情API字段名不同，统一映射
+    def get_duration(v):
+        # 列表API用"length"（字符串如"10:30"），详情API用"duration"（秒）
+        dur = v.get("duration", 0)
+        if dur:
+            return dur
+        length = v.get("length", "")
+        if isinstance(length, str) and ":" in length:
+            parts = length.split(":")
+            if len(parts) == 2:
+                return int(parts[0]) * 60 + int(parts[1])
+            elif len(parts) == 3:
+                return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+        try:
+            return int(length)
+        except:
+            return 0
+
+    def get_pubdate(v):
+        # 列表API用"created"，详情API用"pubdate"
+        return v.get("pubdate", 0) or v.get("created", 0)
+
+    def get_play(v):
+        # 列表API用"play"，详情API用"view"
+        return v.get("view", 0) or v.get("play", 0)
+
     result = []
     for v in videos:
         title = v.get("title", "")
-        duration = v.get("duration", 0)
-        pubdate = v.get("pubdate", 0)
+        duration = get_duration(v)
+        pubdate = get_pubdate(v)
         clean_title = re.sub(r"<[^>]+>", "", title)
 
         if duration < duration_min or duration > duration_max:
@@ -139,9 +165,9 @@ def filter_and_transform(videos, up_name, categories):
             "duration": duration,
             "duration_text": format_duration(duration),
             "pubdate": pubdate,
-            "play": v.get("view", 0),
+            "play": get_play(v),
             "like": v.get("like", 0),
-            "up_name": v.get("up_name", up_name),
+            "up_name": v.get("up_name", "") or v.get("author", "") or up_name,
             "categories": categories,
             "url": f"https://www.bilibili.com/video/{bvid}",
             "iframe_url": f"//player.bilibili.com/player.html?bvid={bvid}&high_quality=1&danmaku=0",
@@ -203,14 +229,9 @@ def run():
                 status.update_up(i, "failed", error="未找到视频")
                 continue
 
-            log(f"  共找到 {len(search_results)} 条视频，开始获取详情...")
-            status.set_current(i, "fetching")
-
-            max_per_up = settings.get("max_videos_per_up", 50)
-            details = fetch_video_details(api, [v["bvid"] for v in search_results], max_per_up)
-
+            log(f"  共找到 {len(search_results)} 条视频，直接筛选（跳过逐条详情请求）")
             status.set_current(i, "filtering")
-            up_videos = filter_and_transform(details, name, categories)
+            up_videos = filter_and_transform(search_results, name, categories)
             all_videos.extend(up_videos)
 
             log(f"  通过筛选: {len(up_videos)} 条, 累计: {len(all_videos)} 条")
