@@ -1,7 +1,7 @@
 {
   "version": 4,
-  "updated": "2026-07-30 19:06:24",
-  "total": 3,
+  "updated": "2026-07-30 19:17:25",
+  "total": 1,
   "source": "bilibili_search_and_view_via_playwright",
   "videos": [
     {
@@ -11,40 +11,12 @@
       "duration": 2318,
       "duration_text": "38:38",
       "pubdate": 1784948400,
-      "play": 750944,
-      "like": 26196,
+      "play": 751282,
+      "like": 26205,
       "up_name": "小约翰可汗",
       "category": "历史文化",
       "url": "https://www.bilibili.com/video/BV1d6gh6kEQP",
       "iframe_url": "//player.bilibili.com/player.html?bvid=BV1d6gh6kEQP&high_quality=1&danmaku=0"
-    },
-    {
-      "bvid": "BV1w2N96uE1U",
-      "title": "毛泽东·四渡赤水：红军不怕远征难。",
-      "cover": "https://i1.hdslb.com/bfs/archive/f9c709d21a277bbd7358004f032633bb129cd727@672w_378h_1c.webp",
-      "duration": 2708,
-      "duration_text": "45:08",
-      "pubdate": 1784014200,
-      "play": 775579,
-      "like": 48813,
-      "up_name": "正直讲史-李正Str",
-      "category": "历史文化",
-      "url": "https://www.bilibili.com/video/BV1w2N96uE1U",
-      "iframe_url": "//player.bilibili.com/player.html?bvid=BV1w2N96uE1U&high_quality=1&danmaku=0"
-    },
-    {
-      "bvid": "BV1djNM6wE8h",
-      "title": "南宋·虞允文：一介文臣，如何救下南宋半壁江山？【两宋风骨】",
-      "cover": "https://i2.hdslb.com/bfs/archive/bcf1854b8b927f4ce6561550c29cf29ef7608314@672w_378h_1c.webp",
-      "duration": 3169,
-      "duration_text": "52:49",
-      "pubdate": 1783830015,
-      "play": 543653,
-      "like": 55671,
-      "up_name": "正直讲史-李正Str",
-      "category": "历史文化",
-      "url": "https://www.bilibili.com/video/BV1djNM6wE8h",
-      "iframe_url": "//player.bilibili.com/player.html?bvid=BV1djNM6wE8h&high_quality=1&danmaku=0"
     }
   ]
 }
