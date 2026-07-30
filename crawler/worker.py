@@ -71,15 +71,15 @@ def get_crawl_upmasters():
 # 抓取逻辑
 # =====================
 
-def search_up_videos(crawler, up_name, exact_name):
+def fetch_up_videos(crawler, uid, up_name):
+    """通过UID直接拉取UP主视频列表（不依赖搜索，不会漏视频）"""
     all_results = []
     for page in range(1, SEARCH_PAGES + 1):
-        results = crawler.search_videos(up_name, page=page, order="pubdate")
+        results = crawler.get_up_videos(uid, page=page)
         if not results:
             break
-        matched = [v for v in results if v.get("author") == exact_name]
-        all_results.extend(matched)
-        log(f"  搜索第{page}页: {len(results)}条结果, 精确匹配{len(matched)}条")
+        all_results.extend(results)
+        log(f"  第{page}页: {len(results)}条视频")
         if page < SEARCH_PAGES:
             time.sleep(SEARCH_PAGE_DELAY)
 
@@ -178,14 +178,14 @@ def run():
     status.set_login_done()
 
     log("[INFO] 验证API连通性...")
-    test_results = crawler.search_videos("罗翔说刑法", page=1)
+    test_results = crawler.get_up_videos("254463269", page=1)
     if not test_results:
-        log("[ERROR] 搜索API无返回，可能未登录或被风控", "error")
+        log("[ERROR] API无返回，可能未登录或被风控", "error")
         log("[ERROR] 请重新运行并扫码登录B站", "error")
         crawler.close()
         status.finish("error")
         return
-    log(f"[INFO] API正常，测试搜索返回 {len(test_results)} 条结果")
+    log(f"[INFO] API正常，测试获取到 {len(test_results)} 条视频")
 
     all_videos = []
 
@@ -198,7 +198,7 @@ def run():
             log(f"[{i+1}/{len(upmasters)}] 抓取: {name} (UID: {uid}) 分类: {", ".join(categories)}")
             status.set_current(i, "searching")
 
-            search_results = search_up_videos(crawler, name, name)
+            search_results = fetch_up_videos(crawler, uid, name)
 
             if not search_results:
                 log(f"  [WARN] 未找到 {name} 的视频", "warn")

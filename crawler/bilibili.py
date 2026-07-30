@@ -212,6 +212,39 @@ class BiliCrawler:
                 return []
         return []
 
+    def get_up_videos(self, mid: str, page: int = 1) -> list:
+        """
+        通过UID直接获取UP主的视频列表（不依赖搜索）
+
+        Args:
+            mid: UP主的UID
+            page: 页码（每页30条）
+
+        Returns:
+            视频列表 [{bvid, title, author, duration, ...}, ...]
+        """
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                result = self.page.evaluate(JS_SPACE_VIDEOS, {
+                    "mid": str(mid),
+                    "pn": str(page),
+                })
+                return result or []
+            except Exception as e:
+                err_msg = str(e)
+                if "Unexpected token" in err_msg and attempt < max_retries - 1:
+                    wait = (attempt + 1) * 5
+                    print(f"  [WARN] 获取UP视频触发风控，{wait}秒后重试 ({attempt+1}/{max_retries})...")
+                    time.sleep(wait)
+                    if attempt == 1:
+                        self.page.goto("https://www.bilibili.com", wait_until="domcontentloaded")
+                        time.sleep(2)
+                    continue
+                print(f"  [ERROR] 获取UP视频失败: {e}")
+                return []
+        return []
+
     def get_video_info(self, bvid: str) -> dict:
         """
         获取单个视频详细信息（浏览器内fetch）
