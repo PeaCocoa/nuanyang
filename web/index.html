@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#FF385C">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="暖阳">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="description" content="为老年人精选B站好视频，温暖世界每个人">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
     <title>暖阳 - 精选好视频</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -166,5 +174,12 @@
     <div class="toast" id="toast"></div>
 
     <script src="js/app.js"></script>
+    <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/sw.js').catch(function(){});
+        });
+    }
+    </script>
 </body>
 </html>
