@@ -1,7 +1,5 @@
 """
-暖阳爬虫 Worker — 在独立子进程中运行 Playwright
-由 main.py 的 HTTP 服务器通过 subprocess 启动
-避免 Playwright 同步阻塞 HTTP 服务器
+暖阳爬虫 Worker — 轻量版（requests直接调API，不开浏览器）
 """
 
 import json
@@ -11,11 +9,10 @@ import os
 import re
 import subprocess
 
-# 添加项目根目录到 path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from crawler.config import load_upmasters, VIDEOS_FILE, MAX_VIDEOS_TOTAL, SEARCH_PAGES, REQUEST_DELAY, SEARCH_PAGE_DELAY
-from crawler.bilibili import BiliCrawler
+from crawler.bilibili import BiliAPI
 import crawler.status as status
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -41,8 +38,6 @@ def process_cover_url(pic):
     if not pic:
         return ""
     url = pic.replace("http://", "https://")
-    # B站API返回的pic可能不带扩展名，CDN需要.jpg才能访问
-    # 正确格式: xxx.jpg@672w_378h_1c.jpg
     if not re.search(r'\.(jpg|png|webp)$', url):
         url = url + ".jpg"
     if "@672w_378h" not in url:
@@ -71,11 +66,11 @@ def get_crawl_upmasters():
 # 抓取逻辑
 # =====================
 
-def fetch_up_videos(crawler, uid, up_name):
-    """通过UID直接拉取UP主视频列表（不依赖搜索，不会漏视频）"""
+def fetch_up_videos(api, uid, up_name):
+    """通过UID直接拉取UP主视频列表"""
     all_results = []
     for page in range(1, SEARCH_PAGES + 1):
-        results = crawler.get_up_videos(uid, page=page)
+        results = api.get_up_videos(uid, page=page)
         if not results:
             break
         all_results.extend(results)
@@ -86,20 +81,22 @@ def fetch_up_videos(crawler, uid, up_name):
     seen = set()
     unique = []
     for v in all_results:
-        if v["bvid"] not in seen:
-            seen.add(v["bvid"])
+        bvid = v.get("bvid", "")
+        if bvid and bvid not in seen:
+            seen.add(bvid)
             unique.append(v)
     return unique
 
-def fetch_video_details(crawler, bvids):
+def fetch_video_details(api, bvids, max_count):
+    """批量获取视频详情"""
     details = []
-    for i, bvid in enumerate(bvids):
-        info = crawler.get_video_info(bvid)
+    for i, bvid in enumerate(bvids[:max_count * 2]):
+        info = api.get_video_info(bvid)
         if info:
             details.append(info)
-            log(f"  [{i+1}/{len(bvids)}] {bvid} ok {info['title'][:30]}")
+            log(f"  [{i+1}/{min(len(bvids), max_count*2)}] {bvid} ok {info['title'][:30]}")
         else:
-            log(f"  [{i+1}/{len(bvids)}] {bvid} 获取失败", "warn")
+            log(f"  [{i+1}/{min(len(bvids), max_count*2)}] {bvid} 获取失败", "warn")
         time.sleep(0.5)
     return details
 
@@ -127,14 +124,11 @@ def filter_and_transform(videos, up_name, categories):
         clean_title = re.sub(r"<[^>]+>", "", title)
 
         if duration < duration_min or duration > duration_max:
-            log(f"    过滤: {clean_title[:30]} (时长={duration}s, 超出{duration_min}-{duration_max}s)", "warn")
             continue
         if pubdate_limit > 0 and pubdate < pubdate_limit:
-            log(f"    过滤: {clean_title[:30]} (投稿时间超出{pubdate_days}天)", "warn")
             continue
         matched_kw = next((kw for kw in EXCLUDE_KEYWORDS if kw in title), None)
         if matched_kw:
-            log(f"    过滤: {clean_title[:30]} (包含关键词: {matched_kw})", "warn")
             continue
 
         bvid = v.get("bvid", "")
@@ -160,7 +154,7 @@ def filter_and_transform(videos, up_name, categories):
 
 def run():
     log("=" * 50)
-    log("暖阳爬虫启动 (Playwright 版本)")
+    log("暖阳爬虫启动 (轻量API版本)")
     log("=" * 50)
 
     upmasters = get_crawl_upmasters()
@@ -168,24 +162,28 @@ def run():
 
     status.init(len(upmasters), upmasters)
 
-    headless = os.environ.get("NUANYANG_HEADLESS", "") == "1"
-    crawler = BiliCrawler(headless=headless)
+    # 读取cookie（可选，从环境变量或设置文件）
+    cookie = os.environ.get("BILI_COOKIE", "")
+    settings = status.get_settings()
+    if settings.get("bili_cookie"):
+        cookie = settings["bili_cookie"]
 
-    log("[INFO] 启动浏览器...")
-    status.set_login_required()
-
-    crawler.start()
-    status.set_login_done()
+    api = BiliAPI(cookie=cookie)
 
     log("[INFO] 验证API连通性...")
-    test_results = crawler.get_up_videos("254463269", page=1)
-    if not test_results:
-        log("[ERROR] API无返回，可能未登录或被风控", "error")
-        log("[ERROR] 请重新运行并扫码登录B站", "error")
-        crawler.close()
-        status.finish("error")
-        return
-    log(f"[INFO] API正常，测试获取到 {len(test_results)} 条视频")
+    status.set_login_done()
+
+    if not api.check_accessible():
+        log("[ERROR] API无法访问，可能是网络问题或IP被风控", "error")
+        log("[INFO] 等待30秒后重试一次...", "info")
+        time.sleep(30)
+        if not api.check_accessible():
+            log("[ERROR] 重试失败，退出", "error")
+            status.finish("error")
+            api.close()
+            return
+
+    log("[INFO] API正常")
 
     all_videos = []
 
@@ -195,10 +193,10 @@ def run():
             uid = up["uid"]
             categories = up.get("categories", [])
 
-            log(f"[{i+1}/{len(upmasters)}] 抓取: {name} (UID: {uid}) 分类: {", ".join(categories)}")
+            log(f"[{i+1}/{len(upmasters)}] 抓取: {name} (UID: {uid}) 分类: {', '.join(categories)}")
             status.set_current(i, "searching")
 
-            search_results = fetch_up_videos(crawler, uid, name)
+            search_results = fetch_up_videos(api, uid, name)
 
             if not search_results:
                 log(f"  [WARN] 未找到 {name} 的视频", "warn")
@@ -208,10 +206,8 @@ def run():
             log(f"  共找到 {len(search_results)} 条视频，开始获取详情...")
             status.set_current(i, "fetching")
 
-            settings = status.get_settings()
             max_per_up = settings.get("max_videos_per_up", 50)
-            bvids = [v["bvid"] for v in search_results[:max_per_up * 2]]
-            details = fetch_video_details(crawler, bvids)
+            details = fetch_video_details(api, [v["bvid"] for v in search_results], max_per_up)
 
             status.set_current(i, "filtering")
             up_videos = filter_and_transform(details, name, categories)
@@ -230,17 +226,17 @@ def run():
     except Exception as e:
         log(f"[ERROR] 爬虫异常: {e}", "error")
         status.finish("error")
-        crawler.close()
+        api.close()
         return
     finally:
-        crawler.close()
+        api.close()
 
     # 写入文件
     output = {
-        "version": 4,
+        "version": 5,
         "updated": time.strftime("%Y-%m-%d %H:%M:%S"),
         "total": len(all_videos),
-        "source": "bilibili_search_and_view_via_playwright",
+        "source": "bilibili_api_requests",
         "videos": all_videos,
     }
 
@@ -248,10 +244,9 @@ def run():
     with open(VIDEOS_FILE, "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
-    # 同步到 web/data/
+    import shutil
     web_data_dir = os.path.join(WEB_DIR, "data")
     os.makedirs(web_data_dir, exist_ok=True)
-    import shutil
     shutil.copy2(VIDEOS_FILE, os.path.join(web_data_dir, "videos.json"))
 
     log("=" * 50)
@@ -266,7 +261,6 @@ def run():
 def git_push():
     project_dir = BASE_DIR
 
-    # 检查是否是git仓库
     try:
         subprocess.run(["git", "rev-parse", "--git-dir"],
                        cwd=project_dir, capture_output=True, check=True)
@@ -292,7 +286,6 @@ def git_push():
     subprocess.run(["git", "commit", "-m", commit_msg],
                    cwd=project_dir, check=True)
 
-    # 推送地址：优先用token认证，失败则回退到镜像
     git_token = os.environ.get("GITHUB_TOKEN", "")
     push_urls = []
     if git_token:
@@ -300,7 +293,7 @@ def git_push():
     push_urls.append("origin")
 
     max_attempts = 5
-    retry_delay = 120  # 2分钟
+    retry_delay = 120
 
     for attempt in range(1, max_attempts + 1):
         for url in push_urls:
@@ -322,7 +315,7 @@ def git_push():
             log(f"[INFO] {retry_delay}秒后重试...")
             time.sleep(retry_delay)
 
-    log("[ERROR] 推送失败，已达最大重试次数 {max_attempts}", "error")
+    log(f"[ERROR] 推送失败，已达最大重试次数 {max_attempts}", "error")
     log("[INFO] 数据已保存在本地，下次运行时会自动重试", "info")
 
 if __name__ == "__main__":

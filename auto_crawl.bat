@@ -2,15 +2,14 @@
 chcp 65001 >nul
 title 暖阳定时爬虫
 
-cd /d E:\claw\20260730-15-11-53-783\nuanyang
+cd /d C:\nuanyang
 
 echo ============================================
-echo   暖阳定时爬虫 (无人值守)
+echo   暖阳定时爬虫 (轻量API版)
 echo   %date% %time%
 echo ============================================
 echo.
 
-set NUANYANG_HEADLESS=1
 python -m crawler.worker
 
 echo.
