@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "updated": "2026-07-30 19:17:25",
+  "updated": "2026-07-30 19:19:45",
   "total": 1,
   "source": "bilibili_search_and_view_via_playwright",
   "videos": [
@@ -11,8 +11,8 @@
       "duration": 2318,
       "duration_text": "38:38",
       "pubdate": 1784948400,
-      "play": 751282,
-      "like": 26205,
+      "play": 751359,
+      "like": 26208,
       "up_name": "小约翰可汗",
       "category": "历史文化",
       "url": "https://www.bilibili.com/video/BV1d6gh6kEQP",
