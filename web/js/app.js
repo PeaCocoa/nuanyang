@@ -1,6 +1,7 @@
 /**
- * 暖阳 - 前端逻辑 v2
+ * 暖阳 - 前端逻辑 v3
  * 功能：随机展示、无限滚动、深色模式、5档字号、个性化推荐、设置中心
+ * 支持多分类（每个视频可属于多个板块）
  */
 
 // === 配置 ===
@@ -26,7 +27,7 @@ let settings = {
     recommend: false,
     batch: BATCH_DEFAULT,
 };
-let viewHistory = {};  // { bvid: { count, lastView, category, upName, totalDuration } }
+let viewHistory = {};  // { bvid: { count, lastView, categories, upName, totalDuration } }
 
 // === DOM ===
 const videoListEl = document.getElementById("videoList");
@@ -49,6 +50,20 @@ const loadMoreEl = document.getElementById("loadMore");
 const toastEl = document.getElementById("toast");
 
 // =====================
+// 工具函数：获取视频分类（兼容数组/字符串）
+// =====================
+function getVideoCategories(video) {
+    if (Array.isArray(video.categories)) return video.categories;
+    if (video.category) return [video.category];
+    return [];
+}
+
+function formatCategories(video) {
+    const cats = getVideoCategories(video);
+    return cats.length > 0 ? cats.join(" · ") : "";
+}
+
+// =====================
 // 设置管理
 // =====================
 
@@ -61,7 +76,6 @@ function loadSettings() {
         if (dark) {
             settings.darkMode = dark;
         } else {
-            // 首次访问：跟随系统主题
             settings.darkMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "on" : "off";
         }
 
@@ -96,7 +110,6 @@ function applyFontSize() {
 }
 
 function applyDarkMode() {
-    // 完全由 JS 控制，不依赖 CSS 媒体查询
     const isDark = settings.darkMode === "on";
     document.body.classList.toggle("dark", isDark);
     darkModeToggle.checked = isDark;
@@ -118,7 +131,6 @@ darkModeToggle.addEventListener("change", () => {
     saveSettings();
 });
 
-// 系统主题变化时，如果用户未手动设置过，则跟随系统
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
     const saved = localStorage.getItem(STORAGE_KEYS.dark);
     if (!saved) {
@@ -165,7 +177,6 @@ recommendToggle.addEventListener("change", () => {
     } else {
         showToast("个性化推荐已关闭");
     }
-    // 重新加载列表
     refreshList();
 });
 
@@ -176,14 +187,13 @@ clearHistoryBtn.addEventListener("click", () => {
     refreshList();
 });
 
-let playerOpenTime = 0; // 播放器打开时间戳
-const MIN_WATCH_MS = 3000; // 最小观看时长（3秒），不足则不计入推荐
+let playerOpenTime = 0;
+const MIN_WATCH_MS = 3000;
 
 function recordView(video, watchMs) {
-    // 不足3秒退出，不计入观看偏好
     if (watchMs < MIN_WATCH_MS) return;
     if (!viewHistory[video.bvid]) {
-        viewHistory[video.bvid] = { count: 0, category: video.category, upName: video.up_name, lastView: 0, totalDuration: 0 };
+        viewHistory[video.bvid] = { count: 0, categories: getVideoCategories(video), upName: video.up_name, lastView: 0, totalDuration: 0 };
     }
     viewHistory[video.bvid].count++;
     viewHistory[video.bvid].lastView = Date.now();
@@ -192,16 +202,18 @@ function recordView(video, watchMs) {
 }
 
 function getCategoryAffinity() {
-    // 统计每个分类的观看次数
     const catScores = {};
     let totalViews = 0;
     for (const bvid in viewHistory) {
         const h = viewHistory[bvid];
-        catScores[h.category] = (catScores[h.category] || 0) + h.count;
+        const cats = Array.isArray(h.categories) ? h.categories : [h.categories];
+        for (const cat of cats) {
+            if (!cat) continue;
+            catScores[cat] = (catScores[cat] || 0) + h.count;
+        }
         totalViews += h.count;
     }
     if (totalViews === 0) return {};
-    // 转为权重比例
     for (const cat in catScores) {
         catScores[cat] = catScores[cat] / totalViews;
     }
@@ -209,7 +221,6 @@ function getCategoryAffinity() {
 }
 
 function getUpAffinity() {
-    // 统计每个UP主的观看次数
     const upScores = {};
     let totalViews = 0;
     for (const bvid in viewHistory) {
@@ -220,7 +231,6 @@ function getUpAffinity() {
         totalViews += h.count;
     }
     if (totalViews === 0) return {};
-    // 转为权重比例
     for (const up in upScores) {
         upScores[up] = upScores[up] / totalViews;
     }
@@ -232,24 +242,28 @@ function selectVideos(pool, count) {
     const used = new Set();
 
     if (settings.recommend && Object.keys(viewHistory).length > 0) {
-        // 个性化推荐：30%分类亲和度 + 70%UP主亲和度
         const catAffinity = getCategoryAffinity();
         const upAffinity = getUpAffinity();
         const viewedBvids = new Set(Object.keys(viewHistory));
 
-        // 将视频分为：已看过 + 未看过
         const unviewed = pool.filter(v => !viewedBvids.has(v.bvid));
         const viewed = pool.filter(v => viewedBvids.has(v.bvid));
 
-        // 70% 推荐未看过的（优先高亲和度），30% 已看过的（可能想重温）
         const recommendCount = Math.min(Math.ceil(count * 0.7), unviewed.length);
         const revisitCount = Math.min(count - recommendCount, viewed.length);
 
         // 按综合权重从未看过中选：30%分类 + 70%UP主
-        const weighted = unviewed.map(v => ({
-            video: v,
-            weight: 0.3 * (catAffinity[v.category] || 0.05) + 0.7 * (upAffinity[v.up_name] || 0.05) + 0.05, // 基础权重0.05避免完全排除
-        }));
+        // 对多分类视频，取所有分类中最大的亲和度
+        const weighted = unviewed.map(v => {
+            const cats = getVideoCategories(v);
+            const catScore = cats.length > 0
+                ? Math.max(...cats.map(c => catAffinity[c] || 0.05))
+                : 0.05;
+            return {
+                video: v,
+                weight: 0.3 * catScore + 0.7 * (upAffinity[v.up_name] || 0.05) + 0.05,
+            };
+        });
         let totalWeight = weighted.reduce((s, w) => s + w.weight, 0);
 
         for (let i = 0; i < recommendCount && weighted.length > 0; i++) {
@@ -265,13 +279,11 @@ function selectVideos(pool, count) {
             }
         }
 
-        // 从已看过中随机选
         const shuffled = viewed.sort(() => Math.random() - 0.5);
         for (let i = 0; i < revisitCount; i++) {
             result.push(shuffled[i]);
         }
     } else {
-        // 纯随机
         const shuffled = [...pool].sort(() => Math.random() - 0.5);
         for (let i = 0; i < Math.min(count, shuffled.length); i++) {
             result.push(shuffled[i]);
@@ -289,10 +301,13 @@ function renderCategories() {
     const cats = ["全部"];
     const seen = new Set(["全部"]);
     allVideos.forEach(v => {
-        if (!seen.has(v.category)) {
-            seen.add(v.category);
-            cats.push(v.category);
-        }
+        const videoCats = getVideoCategories(v);
+        videoCats.forEach(cat => {
+            if (!seen.has(cat)) {
+                seen.add(cat);
+                cats.push(cat);
+            }
+        });
     });
 
     categoriesEl.innerHTML = "";
@@ -312,13 +327,13 @@ function renderCategories() {
 }
 
 function getPool() {
-    return currentCategory === "全部"
-        ? allVideos
-        : allVideos.filter(v => v.category === currentCategory);
+    if (currentCategory === "全部") return allVideos;
+    // 检查视频的分类数组中是否包含当前选中的分类
+    return allVideos.filter(v => getVideoCategories(v).includes(currentCategory));
 }
 
 function refreshList() {
-    isLoading = false; // 重置加载状态，避免上次 setTimeout 阻塞
+    isLoading = false;
     displayedVideos = [];
     displayedBvids = new Set();
     videoListEl.innerHTML = "";
@@ -330,14 +345,11 @@ function loadMoreVideos() {
     isLoading = true;
     loadMoreEl.style.display = "flex";
 
-    // 模拟网络延迟
     setTimeout(() => {
         const pool = getPool();
-        // 排除已展示的
         const available = pool.filter(v => !displayedBvids.has(v.bvid));
 
         if (available.length === 0) {
-            // 所有视频都已展示完，重新打乱允许重复
             const freshPool = pool.filter(v => true);
             const selected = selectVideos(freshPool, settings.batch);
             selected.forEach(v => {
@@ -360,7 +372,6 @@ function loadMoreVideos() {
         if (displayedVideos.length === 0) {
             videoListEl.innerHTML = '<div class="empty">暂无视频，请稍后再来看看</div>';
         } else {
-            // 加载完成后检查哨兵是否仍在视口内，如果是则继续加载
             requestAnimationFrame(() => {
                 const rect = scrollSentinel.getBoundingClientRect();
                 if (rect.top < window.innerHeight + 300 && !isLoading && displayedVideos.length < 60) {
@@ -384,6 +395,8 @@ function renderVideoCard(video) {
         ? `<span class="video-recommend-badge">推荐</span>`
         : "";
 
+    const catText = formatCategories(video);
+
     card.innerHTML = `
         <div class="video-cover-wrap">
             ${coverHtml}
@@ -394,7 +407,7 @@ function renderVideoCard(video) {
             <div class="video-meta">
                 <span class="video-up">${video.up_name}</span>
                 <span class="video-meta-dot">·</span>
-                <span class="video-category-tag">${video.category}</span>
+                <span class="video-category-tag">${catText}</span>
                 ${badge}
             </div>
         </div>
@@ -409,14 +422,12 @@ function renderVideoCard(video) {
 
 const scrollSentinel = document.getElementById("scrollSentinel");
 
-// 方案1: IntersectionObserver
 const scrollObserver = new IntersectionObserver((entries) => {
     if (entries[0].isIntersecting && !isLoading) {
         loadMoreVideos();
     }
 }, { rootMargin: "300px" });
 
-// 方案2: scroll 事件监听（更可靠，作为 IO 的补充）
 let scrollTimer = null;
 window.addEventListener("scroll", () => {
     if (scrollTimer) return;
@@ -454,7 +465,7 @@ refreshBtn.addEventListener("click", () => {
 // 播放器
 // =====================
 
-let currentPlayingVideo = null; // 当前播放的视频（用于关闭时记录观看时长）
+let currentPlayingVideo = null;
 
 function openPlayer(video) {
     currentPlayingVideo = video;
@@ -470,7 +481,6 @@ function openPlayer(video) {
 }
 
 function closePlayer() {
-    // 关闭时计算观看时长，不足3秒不计入推荐
     if (currentPlayingVideo && playerOpenTime > 0) {
         const watchMs = Date.now() - playerOpenTime;
         recordView(currentPlayingVideo, watchMs);

@@ -703,7 +703,7 @@
                     <input type="checkbox" value="${up.name}" ${selected.has(up.name) ? 'checked' : ''} onchange="toggleUpCheckbox(this)">
                     <div>
                         <div class="up-checkbox-name">${up.name}</div>
-                        <div class="up-checkbox-cat">${up.category}</div>
+                        <div class="up-checkbox-cat">${Array.isArray(up.categories) ? up.categories.join(" · ") : up.categories}</div>
                     </div>
                 </label>
             `).join('');
@@ -874,7 +874,7 @@
                             <span class="up-status-dot ${dotCls}"></span>
                             <div style="flex:1;min-width:0;">
                                 <div class="up-name">${up.name}</div>
-                                <div class="up-category">${up.category}</div>
+                                <div class="up-category">${Array.isArray(up.categories) ? up.categories.join(" · ") : up.categories}</div>
                             </div>
                             <span class="up-videos ${videoCls}">${videoText}</span>
                         </div>

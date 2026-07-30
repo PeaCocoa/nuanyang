@@ -103,7 +103,7 @@ def fetch_video_details(crawler, bvids):
         time.sleep(0.5)
     return details
 
-def filter_and_transform(videos, up_name, category):
+def filter_and_transform(videos, up_name, categories):
     settings = status.get_settings()
     duration_min = settings.get("duration_min", 60)
     duration_max = settings.get("duration_max", 3600)
@@ -148,7 +148,7 @@ def filter_and_transform(videos, up_name, category):
             "play": v.get("view", 0),
             "like": v.get("like", 0),
             "up_name": v.get("up_name", up_name),
-            "category": category,
+            "categories": categories,
             "url": f"https://www.bilibili.com/video/{bvid}",
             "iframe_url": f"//player.bilibili.com/player.html?bvid={bvid}&high_quality=1&danmaku=0",
         })
@@ -192,9 +192,9 @@ def run():
         for i, up in enumerate(upmasters):
             name = up["name"]
             uid = up["uid"]
-            category = up["category"]
+            categories = up.get("categories", [])
 
-            log(f"[{i+1}/{len(upmasters)}] 抓取: {name} (UID: {uid})")
+            log(f"[{i+1}/{len(upmasters)}] 抓取: {name} (UID: {uid}) 分类: {", ".join(categories)}")
             status.set_current(i, "searching")
 
             search_results = search_up_videos(crawler, name, name)
@@ -213,7 +213,7 @@ def run():
             details = fetch_video_details(crawler, bvids)
 
             status.set_current(i, "filtering")
-            up_videos = filter_and_transform(details, name, category)
+            up_videos = filter_and_transform(details, name, categories)
             all_videos.extend(up_videos)
 
             log(f"  通过筛选: {len(up_videos)} 条, 累计: {len(all_videos)} 条")

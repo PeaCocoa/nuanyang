@@ -19,21 +19,34 @@ SEARCH_PAGE_DELAY = 5      # 搜索翻页间隔（秒），B站搜索风控较�
 
 def load_upmasters() -> list:
     """
-    加载 UP主配置
+    加载 UP主配置（支持多分类）
 
     Returns:
-        [{"name": "罗翔说刑法", "uid": 517327498, "category": "知识科普"}, ...]
+        [{"name": "毕导", "uid": 254463269, "categories": ["科普探索", "教育学习"]}, ...]
     """
     with open(UPMASTERS_FILE, "r", encoding="utf-8") as f:
         config = json.load(f)
 
     upmasters = []
-    for category, ups in config.get("categories", {}).items():
-        for up in ups:
-            upmasters.append({
-                "name": up["name"],
-                "uid": up["uid"],
-                "category": category,
-            })
+    for up in config.get("upmasters", []):
+        upmasters.append({
+            "name": up["name"],
+            "uid": up["uid"],
+            "categories": up.get("categories", []),
+        })
 
     return upmasters
+
+def load_all_categories() -> list:
+    """
+    加载所有板块分类（去重）
+
+    Returns:
+        ["科普探索", "教育学习", ...]
+    """
+    upmasters = load_upmasters()
+    seen = set()
+    for up in upmasters:
+        for cat in up.get("categories", []):
+            seen.add(cat)
+    return sorted(seen)
