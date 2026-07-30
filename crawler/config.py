@@ -11,9 +11,9 @@ UPMASTERS_FILE = os.path.join(BASE_DIR, "data", "upmasters.json")
 VIDEOS_FILE = os.path.join(BASE_DIR, "data", "videos.json")
 
 # 抓取参数
-SEARCH_PAGES = 2           # 每位UP主搜索的页数（每页20条）
-MAX_VIDEOS_PER_UP = 5      # 每位UP主最多保留的视频数
-MAX_VIDEOS_TOTAL = 200     # 视频总数上限
+SEARCH_PAGES = 5           # 每位UP主搜索的页数（每页20条）
+MAX_VIDEOS_PER_UP = 50     # 每位UP主最多保留的视频数
+MAX_VIDEOS_TOTAL = 800     # 视频总数上限
 REQUEST_DELAY = 3          # UP主之间的请求间隔（秒）
 SEARCH_PAGE_DELAY = 5      # 搜索翻页间隔（秒），B站搜索风控较严
 

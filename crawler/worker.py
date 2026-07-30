@@ -107,7 +107,7 @@ def filter_and_transform(videos, up_name, categories):
     settings = status.get_settings()
     duration_min = settings.get("duration_min", 60)
     duration_max = settings.get("duration_max", 3600)
-    max_per_up = settings.get("max_videos_per_up", 5)
+    max_per_up = settings.get("max_videos_per_up", 50)
     pubdate_days = settings.get("pubdate_days", 0)
 
     EXCLUDE_KEYWORDS = [
@@ -168,7 +168,8 @@ def run():
 
     status.init(len(upmasters), upmasters)
 
-    crawler = BiliCrawler(headless=False)
+    headless = os.environ.get("NUANYANG_HEADLESS", "") == "1"
+    crawler = BiliCrawler(headless=headless)
 
     log("[INFO] 启动浏览器...")
     status.set_login_required()
@@ -208,7 +209,7 @@ def run():
             status.set_current(i, "fetching")
 
             settings = status.get_settings()
-            max_per_up = settings.get("max_videos_per_up", 5)
+            max_per_up = settings.get("max_videos_per_up", 50)
             bvids = [v["bvid"] for v in search_results[:max_per_up * 2]]
             details = fetch_video_details(crawler, bvids)
 

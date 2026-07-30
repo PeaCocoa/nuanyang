@@ -332,11 +332,93 @@ function getPool() {
     return allVideos.filter(v => getVideoCategories(v).includes(currentCategory));
 }
 
+function getTopRecommendations() {
+    // 个性化推荐置顶：最常看UP主的今日/昨日且没看过的新视频
+    if (!settings.recommend || Object.keys(viewHistory).length === 0) return [];
+
+    const upAffinity = getUpAffinity();
+    // 取观看次数最多的前3个UP主
+    const topUps = Object.entries(upAffinity)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([name]) => name);
+
+    if (topUps.length === 0) return [];
+
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000;
+    const yesterdayStart = todayStart - 86400;
+    const dayBeforeStart = todayStart - 86400 * 2;
+
+    // 已看过的视频
+    const viewedBvids = new Set(Object.keys(viewHistory));
+
+    // 找到这些UP主的今日/昨日新视频，且没看过
+    const candidates = allVideos.filter(v => {
+        if (viewedBvids.has(v.bvid)) return false;
+        if (!topUps.includes(v.up_name)) return false;
+        const pubdate = v.pubdate || 0;
+        return pubdate >= dayBeforeStart && pubdate < todayStart + 86400;
+    });
+
+    // 每个UP主最多取1条，总共最多3条
+    const result = [];
+    const usedUps = new Set();
+    // 按UP主亲和度排序
+    candidates.sort((a, b) => (upAffinity[b.up_name] || 0) - (upAffinity[a.up_name] || 0));
+    for (const v of candidates) {
+        if (result.length >= 3) break;
+        if (usedUps.has(v.up_name)) continue;
+        usedUps.add(v.up_name);
+        result.push({ ...v, topRecommended: true });
+    }
+    return result;
+}
+
+function renderTopRecommendation(video) {
+    const card = document.createElement("div");
+    card.className = "video-card top-recommend-card";
+
+    const coverHtml = video.cover
+        ? `<img class="video-cover" src="${video.cover}" alt="${video.title}" loading="lazy" referrerpolicy="no-referrer"
+             onerror="this.outerHTML='<div class=\'video-cover-placeholder\'>暖阳</div>'">`
+        : `<div class="video-cover-placeholder">暖阳</div>`;
+
+    const catText = formatCategories(video);
+
+    card.innerHTML = `
+        <div class="video-cover-wrap">
+            ${coverHtml}
+            ${video.duration_text ? `<span class="video-duration">${video.duration_text}</span>` : ""}
+        </div>
+        <div class="video-info">
+            <div class="video-title">${video.title}</div>
+            <div class="video-meta">
+                <span class="video-up">${video.up_name}</span>
+                <span class="video-meta-dot">·</span>
+                <span class="video-category-tag">${catText}</span>
+                <span class="video-top-badge">今日推荐</span>
+            </div>
+        </div>
+    `;
+    card.addEventListener("click", () => openPlayer(video));
+    videoListEl.appendChild(card);
+}
+
 function refreshList() {
     isLoading = false;
     displayedVideos = [];
     displayedBvids = new Set();
     videoListEl.innerHTML = "";
+
+    // 置顶推荐：最常看UP主的今日/昨日新视频
+    const topRecs = getTopRecommendations();
+    topRecs.forEach(v => {
+        displayedBvids.add(v.bvid);
+        displayedVideos.push(v);
+        renderTopRecommendation(v);
+    });
+
     loadMoreVideos();
 }
 
