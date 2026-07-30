@@ -2,9 +2,9 @@ name: 定时爬虫
 
 on:
   schedule:
-    # UTC时间02:00和12:00 = 北京时间10:00和20:00
-    - cron: '0 2 * * *'
-    - cron: '0 12 * * *'
+    # UTC时间22:00和07:00 = 北京时间06:00和15:00
+    - cron: '0 22 * * *'
+    - cron: '0 7 * * *'
   workflow_dispatch:  # 支持手动触发
 
 permissions:
