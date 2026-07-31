@@ -148,6 +148,56 @@ def filter_and_transform(videos, up_name, categories):
         })
     return result[:max_per_up]
 
+
+def filter_and_transform_override(videos, up_name, categories, override):
+    """使用流程图中筛选节点的参数进行筛选"""
+    duration_min = override.get("duration_min", 60)
+    duration_max = override.get("duration_max", 3600)
+    max_per_up = 50
+    pubdate_days = override.get("pubdate_days", 0)
+
+    EXCLUDE_KEYWORDS = [
+        "抽奖福利", "恰饽", "广告", "推广", "赞助",
+        "恐怖", "惊悚", "血腥", "暴力",
+        "擦边", "色情", "低俗",
+    ]
+
+    now = time.time()
+    pubdate_limit = now - pubdate_days * 86400 if pubdate_days > 0 else 0
+
+    result = []
+    for v in videos:
+        title = v.get("title", "")
+        duration = parse_duration(v.get("duration", 0))
+        pubdate = v.get("pubdate", 0)
+        clean_title = re.sub(r"<[^>]+>", "", title)
+
+        if duration < duration_min or duration > duration_max:
+            continue
+        if pubdate_limit > 0 and pubdate < pubdate_limit:
+            continue
+        matched_kw = next((kw for kw in EXCLUDE_KEYWORDS if kw in title), None)
+        if matched_kw:
+            continue
+
+        bvid = v.get("bvid", "")
+        result.append({
+            "bvid": bvid,
+            "title": clean_title,
+            "cover": process_cover_url(v.get("pic", "")),
+            "duration": duration,
+            "duration_text": format_duration(duration),
+            "pubdate": pubdate,
+            "play": v.get("play", 0),
+            "like": 0,
+            "up_name": up_name,
+            "categories": categories,
+            "url": f"https://www.bilibili.com/video/{bvid}",
+            "iframe_url": f"//player.bilibili.com/player.html?bvid={bvid}&high_quality=1&danmaku=0",
+        })
+    return result[:max_per_up]
+
+
 # =====================
 # 设置相关
 # =====================

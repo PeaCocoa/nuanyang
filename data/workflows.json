@@ -2,7 +2,7 @@
   "workflows": [
     {
       "id": "wf_1785474219",
-      "name": "新工作流",
+      "name": "只推共建智能",
       "nodes": [
         {
           "id": 1,
@@ -179,6 +179,1002 @@
         "stop_after_done": true
       },
       "created": "2026-07-31 13:03"
+    },
+    {
+      "id": "wf_1785474769",
+      "name": "只推央视",
+      "nodes": [
+        {
+          "id": 9,
+          "type": "start",
+          "data": {},
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "11",
+                  "output": "input_1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 11,
+          "type": "up",
+          "data": {
+            "uid": "433587902",
+            "uname": "央视频",
+            "categories": "新闻时政,文化艺术,音乐综艺,生活日常,体育健身"
+          },
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "12",
+                  "output": "input_1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 12,
+          "type": "filter",
+          "data": {
+            "duration_min": "60",
+            "duration_max": "3600",
+            "pubdate_days": "0"
+          },
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "14",
+                  "output": "input_1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 14,
+          "type": "up",
+          "data": {
+            "uid": "222103174",
+            "uname": "央视网",
+            "categories": "新闻时政,历史人文,文化艺术"
+          },
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "15",
+                  "output": "input_1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 15,
+          "type": "filter",
+          "data": {
+            "duration_min": "60",
+            "duration_max": "3600",
+            "pubdate_days": "0"
+          },
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "16",
+                  "output": "input_1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 16,
+          "type": "up",
+          "data": {
+            "uid": "1343321779",
+            "uname": "央视农业",
+            "categories": "农业农村,民生资讯,自然环境"
+          },
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "17",
+                  "output": "input_1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 17,
+          "type": "filter",
+          "data": {
+            "duration_min": "60",
+            "duration_max": "3600",
+            "pubdate_days": "0"
+          },
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "18",
+                  "output": "input_1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 18,
+          "type": "up",
+          "data": {
+            "uid": "46470268",
+            "uname": "央视军事",
+            "categories": "军事国防,科技前沿"
+          },
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "19",
+                  "output": "input_1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 19,
+          "type": "filter",
+          "data": {
+            "duration_min": "60",
+            "duration_max": "3600",
+            "pubdate_days": "0"
+          },
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "20",
+                  "output": "input_1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 20,
+          "type": "up",
+          "data": {
+            "uid": "320563481",
+            "uname": "央视网体育",
+            "categories": "体育健身,健康养生"
+          },
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "21",
+                  "output": "input_1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 21,
+          "type": "filter",
+          "data": {
+            "duration_min": "60",
+            "duration_max": "3600",
+            "pubdate_days": "0"
+          },
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "22",
+                  "output": "input_1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 22,
+          "type": "up",
+          "data": {
+            "uid": "451320374",
+            "uname": "央视网快看",
+            "categories": "社会百态,民生资讯,新闻时政"
+          },
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "23",
+                  "output": "input_1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 23,
+          "type": "filter",
+          "data": {
+            "duration_min": "60",
+            "duration_max": "3600",
+            "pubdate_days": "0"
+          },
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "25",
+                  "output": "input_1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 25,
+          "type": "push",
+          "data": {},
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "24",
+                  "output": "input_1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 24,
+          "type": "end",
+          "data": {},
+          "outputs": {}
+        }
+      ],
+      "drawflow": {
+        "drawflow": {
+          "Home": {
+            "data": {
+              "9": {
+                "id": 9,
+                "name": "start",
+                "data": {},
+                "class": "start",
+                "html": "<div>开始</div>",
+                "typenode": false,
+                "inputs": {},
+                "outputs": {
+                  "output_1": {
+                    "connections": [
+                      {
+                        "node": "11",
+                        "output": "input_1"
+                      }
+                    ]
+                  }
+                },
+                "pos_x": 10,
+                "pos_y": 40
+              },
+              "11": {
+                "id": 11,
+                "name": "up",
+                "data": {
+                  "uid": "433587902",
+                  "uname": "央视频",
+                  "categories": "新闻时政,文化艺术,音乐综艺,生活日常,体育健身"
+                },
+                "class": "up",
+                "html": "<div>UP主</div>",
+                "typenode": false,
+                "inputs": {
+                  "input_1": {
+                    "connections": [
+                      {
+                        "node": "9",
+                        "input": "output_1"
+                      }
+                    ]
+                  }
+                },
+                "outputs": {
+                  "output_1": {
+                    "connections": [
+                      {
+                        "node": "12",
+                        "output": "input_1"
+                      }
+                    ]
+                  }
+                },
+                "pos_x": 257.6666666666667,
+                "pos_y": 48.666666666666664
+              },
+              "12": {
+                "id": 12,
+                "name": "filter",
+                "data": {
+                  "duration_min": "60",
+                  "duration_max": "3600",
+                  "pubdate_days": "0"
+                },
+                "class": "filter",
+                "html": "<div>筛选</div>",
+                "typenode": false,
+                "inputs": {
+                  "input_1": {
+                    "connections": [
+                      {
+                        "node": "11",
+                        "input": "output_1"
+                      }
+                    ]
+                  }
+                },
+                "outputs": {
+                  "output_1": {
+                    "connections": [
+                      {
+                        "node": "14",
+                        "output": "input_1"
+                      }
+                    ]
+                  }
+                },
+                "pos_x": 507,
+                "pos_y": 55.333333333333336
+              },
+              "14": {
+                "id": 14,
+                "name": "up",
+                "data": {
+                  "uid": "222103174",
+                  "uname": "央视网",
+                  "categories": "新闻时政,历史人文,文化艺术"
+                },
+                "class": "up",
+                "html": "<div>UP主</div>",
+                "typenode": false,
+                "inputs": {
+                  "input_1": {
+                    "connections": [
+                      {
+                        "node": "12",
+                        "input": "output_1"
+                      }
+                    ]
+                  }
+                },
+                "outputs": {
+                  "output_1": {
+                    "connections": [
+                      {
+                        "node": "15",
+                        "output": "input_1"
+                      }
+                    ]
+                  }
+                },
+                "pos_x": 268.3333333333333,
+                "pos_y": 191
+              },
+              "15": {
+                "id": 15,
+                "name": "filter",
+                "data": {
+                  "duration_min": "60",
+                  "duration_max": "3600",
+                  "pubdate_days": "0"
+                },
+                "class": "filter",
+                "html": "<div>筛选</div>",
+                "typenode": false,
+                "inputs": {
+                  "input_1": {
+                    "connections": [
+                      {
+                        "node": "14",
+                        "input": "output_1"
+                      }
+                    ]
+                  }
+                },
+                "outputs": {
+                  "output_1": {
+                    "connections": [
+                      {
+                        "node": "16",
+                        "output": "input_1"
+                      }
+                    ]
+                  }
+                },
+                "pos_x": 503,
+                "pos_y": 185
+              },
+              "16": {
+                "id": 16,
+                "name": "up",
+                "data": {
+                  "uid": "1343321779",
+                  "uname": "央视农业",
+                  "categories": "农业农村,民生资讯,自然环境"
+                },
+                "class": "up",
+                "html": "<div>UP主</div>",
+                "typenode": false,
+                "inputs": {
+                  "input_1": {
+                    "connections": [
+                      {
+                        "node": "15",
+                        "input": "output_1"
+                      }
+                    ]
+                  }
+                },
+                "outputs": {
+                  "output_1": {
+                    "connections": [
+                      {
+                        "node": "17",
+                        "output": "input_1"
+                      }
+                    ]
+                  }
+                },
+                "pos_x": 270,
+                "pos_y": 336.3333333333333
+              },
+              "17": {
+                "id": 17,
+                "name": "filter",
+                "data": {
+                  "duration_min": "60",
+                  "duration_max": "3600",
+                  "pubdate_days": "0"
+                },
+                "class": "filter",
+                "html": "<div>筛选</div>",
+                "typenode": false,
+                "inputs": {
+                  "input_1": {
+                    "connections": [
+                      {
+                        "node": "16",
+                        "input": "output_1"
+                      }
+                    ]
+                  }
+                },
+                "outputs": {
+                  "output_1": {
+                    "connections": [
+                      {
+                        "node": "18",
+                        "output": "input_1"
+                      }
+                    ]
+                  }
+                },
+                "pos_x": 528,
+                "pos_y": 341.6666666666667
+              },
+              "18": {
+                "id": 18,
+                "name": "up",
+                "data": {
+                  "uid": "46470268",
+                  "uname": "央视军事",
+                  "categories": "军事国防,科技前沿"
+                },
+                "class": "up",
+                "html": "<div>UP主</div>",
+                "typenode": false,
+                "inputs": {
+                  "input_1": {
+                    "connections": [
+                      {
+                        "node": "17",
+                        "input": "output_1"
+                      }
+                    ]
+                  }
+                },
+                "outputs": {
+                  "output_1": {
+                    "connections": [
+                      {
+                        "node": "19",
+                        "output": "input_1"
+                      }
+                    ]
+                  }
+                },
+                "pos_x": 274,
+                "pos_y": 443.3333333333333
+              },
+              "19": {
+                "id": 19,
+                "name": "filter",
+                "data": {
+                  "duration_min": "60",
+                  "duration_max": "3600",
+                  "pubdate_days": "0"
+                },
+                "class": "filter",
+                "html": "<div>筛选</div>",
+                "typenode": false,
+                "inputs": {
+                  "input_1": {
+                    "connections": [
+                      {
+                        "node": "18",
+                        "input": "output_1"
+                      }
+                    ]
+                  }
+                },
+                "outputs": {
+                  "output_1": {
+                    "connections": [
+                      {
+                        "node": "20",
+                        "output": "input_1"
+                      }
+                    ]
+                  }
+                },
+                "pos_x": 535.6666666666666,
+                "pos_y": 436
+              },
+              "20": {
+                "id": 20,
+                "name": "up",
+                "data": {
+                  "uid": "320563481",
+                  "uname": "央视网体育",
+                  "categories": "体育健身,健康养生"
+                },
+                "class": "up",
+                "html": "<div>UP主</div>",
+                "typenode": false,
+                "inputs": {
+                  "input_1": {
+                    "connections": [
+                      {
+                        "node": "19",
+                        "input": "output_1"
+                      }
+                    ]
+                  }
+                },
+                "outputs": {
+                  "output_1": {
+                    "connections": [
+                      {
+                        "node": "21",
+                        "output": "input_1"
+                      }
+                    ]
+                  }
+                },
+                "pos_x": 269.57142857142856,
+                "pos_y": 551
+              },
+              "21": {
+                "id": 21,
+                "name": "filter",
+                "data": {
+                  "duration_min": "60",
+                  "duration_max": "3600",
+                  "pubdate_days": "0"
+                },
+                "class": "filter",
+                "html": "<div>筛选</div>",
+                "typenode": false,
+                "inputs": {
+                  "input_1": {
+                    "connections": [
+                      {
+                        "node": "20",
+                        "input": "output_1"
+                      }
+                    ]
+                  }
+                },
+                "outputs": {
+                  "output_1": {
+                    "connections": [
+                      {
+                        "node": "22",
+                        "output": "input_1"
+                      }
+                    ]
+                  }
+                },
+                "pos_x": 534.4285714285714,
+                "pos_y": 568.4285714285714
+              },
+              "22": {
+                "id": 22,
+                "name": "up",
+                "data": {
+                  "uid": "451320374",
+                  "uname": "央视网快看",
+                  "categories": "社会百态,民生资讯,新闻时政"
+                },
+                "class": "up",
+                "html": "<div>UP主</div>",
+                "typenode": false,
+                "inputs": {
+                  "input_1": {
+                    "connections": [
+                      {
+                        "node": "21",
+                        "input": "output_1"
+                      }
+                    ]
+                  }
+                },
+                "outputs": {
+                  "output_1": {
+                    "connections": [
+                      {
+                        "node": "23",
+                        "output": "input_1"
+                      }
+                    ]
+                  }
+                },
+                "pos_x": 273.57142857142856,
+                "pos_y": 688
+              },
+              "23": {
+                "id": 23,
+                "name": "filter",
+                "data": {
+                  "duration_min": "60",
+                  "duration_max": "3600",
+                  "pubdate_days": "0"
+                },
+                "class": "filter",
+                "html": "<div>筛选</div>",
+                "typenode": false,
+                "inputs": {
+                  "input_1": {
+                    "connections": [
+                      {
+                        "node": "22",
+                        "input": "output_1"
+                      }
+                    ]
+                  }
+                },
+                "outputs": {
+                  "output_1": {
+                    "connections": [
+                      {
+                        "node": "25",
+                        "output": "input_1"
+                      }
+                    ]
+                  }
+                },
+                "pos_x": 539,
+                "pos_y": 695
+              },
+              "24": {
+                "id": 24,
+                "name": "end",
+                "data": {},
+                "class": "end",
+                "html": "<div>结束</div>",
+                "typenode": false,
+                "inputs": {
+                  "input_1": {
+                    "connections": [
+                      {
+                        "node": "25",
+                        "input": "output_1"
+                      }
+                    ]
+                  }
+                },
+                "outputs": {},
+                "pos_x": 377.57142857142856,
+                "pos_y": 873
+              },
+              "25": {
+                "id": 25,
+                "name": "push",
+                "data": {},
+                "class": "push",
+                "html": "<div>推送GitHub</div>",
+                "typenode": false,
+                "inputs": {
+                  "input_1": {
+                    "connections": [
+                      {
+                        "node": "23",
+                        "input": "output_1"
+                      }
+                    ]
+                  }
+                },
+                "outputs": {
+                  "output_1": {
+                    "connections": [
+                      {
+                        "node": "24",
+                        "output": "input_1"
+                      }
+                    ]
+                  }
+                },
+                "pos_x": 381,
+                "pos_y": 797.8571428571429
+              }
+            }
+          }
+        }
+      },
+      "config": {
+        "total_limit": 800,
+        "stop_after_done": true
+      },
+      "created": "2026-07-31 13:12"
+    },
+    {
+      "id": "wf_1785475876",
+      "name": "新工作流",
+      "nodes": [
+        {
+          "id": 5,
+          "type": "start",
+          "data": {},
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "8",
+                  "output": "input_1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 8,
+          "type": "up",
+          "data": {
+            "uid": "3546893699254644",
+            "uname": "一个机器人-",
+            "categories": "科技数码,科普探索"
+          },
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "9",
+                  "output": "input_1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 9,
+          "type": "filter",
+          "data": {
+            "duration_min": "60",
+            "duration_max": "3600",
+            "pubdate_days": "0"
+          },
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "10",
+                  "output": "input_1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 10,
+          "type": "push",
+          "data": {},
+          "outputs": {
+            "output_1": {
+              "connections": [
+                {
+                  "node": "6",
+                  "output": "input_1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": 6,
+          "type": "end",
+          "data": {},
+          "outputs": {}
+        }
+      ],
+      "drawflow": {
+        "drawflow": {
+          "Home": {
+            "data": {
+              "5": {
+                "id": 5,
+                "name": "start",
+                "data": {},
+                "class": "start",
+                "html": "<div>开始</div>",
+                "typenode": false,
+                "inputs": {},
+                "outputs": {
+                  "output_1": {
+                    "connections": [
+                      {
+                        "node": "8",
+                        "output": "input_1"
+                      }
+                    ]
+                  }
+                },
+                "pos_x": 32,
+                "pos_y": -19
+              },
+              "6": {
+                "id": 6,
+                "name": "end",
+                "data": {},
+                "class": "end",
+                "html": "<div>结束</div>",
+                "typenode": false,
+                "inputs": {
+                  "input_1": {
+                    "connections": [
+                      {
+                        "node": "10",
+                        "input": "output_1"
+                      }
+                    ]
+                  }
+                },
+                "outputs": {},
+                "pos_x": 453,
+                "pos_y": 310.75
+              },
+              "8": {
+                "id": 8,
+                "name": "up",
+                "data": {
+                  "uid": "3546893699254644",
+                  "uname": "一个机器人-",
+                  "categories": "科技数码,科普探索"
+                },
+                "class": "up",
+                "html": "<div>UP主</div>",
+                "typenode": false,
+                "inputs": {
+                  "input_1": {
+                    "connections": [
+                      {
+                        "node": "5",
+                        "input": "output_1"
+                      }
+                    ]
+                  }
+                },
+                "outputs": {
+                  "output_1": {
+                    "connections": [
+                      {
+                        "node": "9",
+                        "output": "input_1"
+                      }
+                    ]
+                  }
+                },
+                "pos_x": 267.75,
+                "pos_y": -51.25
+              },
+              "9": {
+                "id": 9,
+                "name": "filter",
+                "data": {
+                  "duration_min": "60",
+                  "duration_max": "3600",
+                  "pubdate_days": "0"
+                },
+                "class": "filter",
+                "html": "<div>筛选</div>",
+                "typenode": false,
+                "inputs": {
+                  "input_1": {
+                    "connections": [
+                      {
+                        "node": "8",
+                        "input": "output_1"
+                      }
+                    ]
+                  }
+                },
+                "outputs": {
+                  "output_1": {
+                    "connections": [
+                      {
+                        "node": "10",
+                        "output": "input_1"
+                      }
+                    ]
+                  }
+                },
+                "pos_x": 442.25,
+                "pos_y": 60
+              },
+              "10": {
+                "id": 10,
+                "name": "push",
+                "data": {},
+                "class": "push",
+                "html": "<div>推送GitHub</div>",
+                "typenode": false,
+                "inputs": {
+                  "input_1": {
+                    "connections": [
+                      {
+                        "node": "9",
+                        "input": "output_1"
+                      }
+                    ]
+                  }
+                },
+                "outputs": {
+                  "output_1": {
+                    "connections": [
+                      {
+                        "node": "6",
+                        "output": "input_1"
+                      }
+                    ]
+                  }
+                },
+                "pos_x": 523,
+                "pos_y": 183.75
+              }
+            }
+          }
+        }
+      },
+      "config": {
+        "total_limit": 800,
+        "stop_after_done": true
+      },
+      "created": "2026-07-31 13:31"
     }
   ]
 }
