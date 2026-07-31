@@ -25,12 +25,26 @@ jobs:
       - name: 安装依赖
         run: pip install requests
 
+      - name: 检查是否19日（每月19日休息）
+        id: check_date
+        run: |
+          DAY=$(date -u -d '+8 hours' '+%d')
+          echo "今天是北京时间 $DAY 日"
+          if [ "$DAY" = "19" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "每月19日休息，跳过爬虫"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: 运行爬虫
+        if: steps.check_date.outputs.skip != 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python -m crawler.worker
 
       - name: 推送数据
+        if: steps.check_date.outputs.skip != 'true'
         run: |
           git config user.name "暖阳爬虫机器人"
           git config user.email "actions@github.com"
