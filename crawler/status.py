@@ -23,7 +23,7 @@ _default_status = {
     "total_ups": 0,
     "done_ups": 0,
     "total_videos": 0,
-    "ups": [],                # [{name, uid, category, status, videos, error}]
+    "ups": [],                # [{name, uid, categories, status, videos, error}]
     "logs": [],               # [{time, level, msg}]
     "login_required": False,
     "login_done": False,
@@ -97,8 +97,18 @@ def save_settings(settings: dict) -> dict:
 # =====================
 
 def is_running() -> bool:
-    """检查爬虫是否正在运行"""
+    """检查爬虫是否正在运行（从文件读取，跨进程准确）"""
     with _lock:
+        try:
+            status_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "crawl_status.json")
+            if os.path.exists(status_file):
+                with open(status_file, "r", encoding="utf-8") as f:
+                    saved = json.load(f)
+                file_state = saved.get("state", "idle")
+                _status["state"] = file_state
+                return file_state == "running"
+        except:
+            pass
         return _status.get("state") == "running"
 
 def init(total_ups: int, ups: list):
@@ -115,7 +125,7 @@ def init(total_ups: int, ups: list):
         _status["ups"] = [{
             "name": up["name"],
             "uid": up["uid"],
-            "category": up["category"],
+            "categories": up.get("categories", []),
             "status": "pending",
             "videos": 0,
             "error": "",

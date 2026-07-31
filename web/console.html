@@ -491,6 +491,7 @@
         <div class="header-right">
             <span class="state-badge state-idle" id="stateBadge">空闲</span>
             <button class="btn btn-primary" id="startBtn" onclick="startCrawl()">立即开爬</button>
+            <button class="btn" id="stopBtn" onclick="stopCrawl()" style="display:none; background:#e74c3c; color:#fff;">停止</button>
             <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">&#127769;</button>
         </div>
     </header>
@@ -683,6 +684,21 @@
             }
         }
 
+        // === 停止爬虫 ===
+        async function stopCrawl() {
+            try {
+                const resp = await fetch('/api/stop', { method: 'POST' });
+                const data = await resp.json();
+                if (data.ok) {
+                    showToast('停止指令已发送');
+                } else {
+                    showToast(data.msg || '停止失败');
+                }
+            } catch (e) {
+                showToast('无法连接服务器');
+            }
+        }
+
         // === 加载UP主列表 ===
         async function loadUpmasters() {
             try {
@@ -703,7 +719,7 @@
                     <input type="checkbox" value="${up.name}" ${selected.has(up.name) ? 'checked' : ''} onchange="toggleUpCheckbox(this)">
                     <div>
                         <div class="up-checkbox-name">${up.name}</div>
-                        <div class="up-checkbox-cat">${up.category}</div>
+                        <div class="up-checkbox-cat">${Array.isArray(up.categories) ? up.categories.join(" · ") : up.categories}</div>
                     </div>
                 </label>
             `).join('');
@@ -816,6 +832,7 @@
             const startBtn = document.getElementById('startBtn');
             startBtn.disabled = isRunning;
             startBtn.textContent = isRunning ? '运行中...' : '立即开爬';
+            document.getElementById('stopBtn').style.display = isRunning ? '' : 'none';
 
             // 副标题
             const subtitle = document.getElementById('subtitle');
@@ -874,7 +891,7 @@
                             <span class="up-status-dot ${dotCls}"></span>
                             <div style="flex:1;min-width:0;">
                                 <div class="up-name">${up.name}</div>
-                                <div class="up-category">${up.category}</div>
+                                <div class="up-category">${Array.isArray(up.categories) ? up.categories.join(" · ") : up.categories}</div>
                             </div>
                             <span class="up-videos ${videoCls}">${videoText}</span>
                         </div>

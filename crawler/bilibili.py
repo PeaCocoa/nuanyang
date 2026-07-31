@@ -63,6 +63,30 @@ async (bvid) => {
 }
 """
 
+# JavaScript：通过UID获取UP主视频列表（不需要WBI签名）
+JS_SPACE_VIDEOS = """
+async (args) => {
+    const url = 'https://api.bilibili.com/x/space/arc/search?mid=' + args.mid +
+        '&pn=' + args.pn + '&ps=30&order=pubdate';
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (data.code === 0 && data.data && data.data.list && data.data.list.vlist) {
+        return data.data.list.vlist.map(function(v) {
+            return {
+                bvid: v.bvid,
+                title: v.title,
+                author: v.author,
+                duration: v.length,
+                play: v.play,
+                pubdate: v.created,
+                pic: v.pic,
+            };
+        });
+    }
+    return [];
+}
+"""
+
 # JavaScript：检查登录状态
 JS_CHECK_LOGIN = """
 async () => {
@@ -140,30 +164,35 @@ class BiliCrawler:
         print("登录成功后程序会自动继续...")
         print("=" * 50)
 
-        # 等待登录成功：URL跳转 或 页面出现用户头像
+        # 轮询检测 Cookie 中是否出现 SESSDATA（登录成功标志）
+        max_wait = 60  # 最多等30分钟（每30秒检测一次）
         logged = False
-        try:
-            self.page.wait_for_url("**/www.bilibili.com**", timeout=120000)
-            logged = True
-        except Exception:
-            try:
-                self.page.wait_for_selector(".header-login-entry", state="detached", timeout=120000)
-                logged = True
-            except Exception:
-                print("[WARN] 等待登录超时，继续尝试...")
+        for i in range(max_wait):
+            time.sleep(30)
+            if i > 0 and i % 2 == 0:
+                print(f"[INFO] 等待扫码登录... ({(i+1)*30}s)")
+            # 检查 Cookie 是否已包含 SESSDATA
+            cookies = self.context.cookies("https://www.bilibili.com")
+            for c in cookies:
+                if c["name"] == "SESSDATA" and len(c["value"]) > 10:
+                    logged = True
+                    break
+            if logged:
+                break
 
         if logged:
-            print("[INFO] 登录成功！")
-            # 导航到桌面版B站首页，确保Cookie正确写入
+            print("[INFO] 登录成功！Cookie已保存")
+            # 导航到B站首页，确保Cookie正确写入
             self.page.goto("https://www.bilibili.com", wait_until="domcontentloaded")
-            time.sleep(3)
-            # 验证登录状态
+            time.sleep(2)
+            # 在B站首页上下文验证登录状态（同域，Cookie会正确携带）
             if self.is_logged_in():
                 print("[INFO] 登录状态验证通过")
             else:
-                print("[WARN] 登录状态验证未通过，但继续尝试...")
+                print("[WARN] Cookie检测通过，nav验证未通过，继续尝试...")
         else:
-            time.sleep(3)
+            print("[WARN] 等待登录超时（3分钟），继续尝试...")
+            time.sleep(2)
 
     def is_logged_in(self) -> bool:
         """检查是否已登录"""
@@ -186,7 +215,7 @@ class BiliCrawler:
         Returns:
             视频列表 [{bvid, title, author, duration, ...}, ...]
         """
-        max_retries = 3
+        max_retries = 5
         for attempt in range(max_retries):
             try:
                 result = self.page.evaluate(JS_SEARCH, {
@@ -200,7 +229,7 @@ class BiliCrawler:
                 err_msg = str(e)
                 if "Unexpected token" in err_msg and attempt < max_retries - 1:
                     # B站返回了HTML（风控），等待后重试
-                    wait = (attempt + 1) * 5
+                    wait = [20, 30, 50, 30, 20][attempt]
                     print(f"  [WARN] 搜索触发风控，{wait}秒后重试 ({attempt+1}/{max_retries})...")
                     time.sleep(wait)
                     # 导航回B站首页刷新Cookie状态
@@ -209,6 +238,52 @@ class BiliCrawler:
                         time.sleep(2)
                     continue
                 print(f"  [ERROR] 搜索失败: {e}")
+                return []
+        return []
+
+    def get_up_videos(self, mid: str, page: int = 1) -> list:
+        """
+        通过UID直接获取UP主的视频列表（不依赖搜索，不会漏视频）
+
+        Args:
+            mid: UP主的UID
+            page: 页码（每页30条）
+
+        Returns:
+            视频列表 [{bvid, title, author, duration, ...}, ...]
+        """
+        max_retries = 5
+        for attempt in range(max_retries):
+            try:
+                result = self.page.evaluate(JS_SPACE_VIDEOS, {
+                    "mid": str(mid),
+                    "pn": str(page),
+                })
+                # 检测返回是否为风控空列表
+                if not result:
+                    # 空结果可能是正常的（没有视频），也可能是风控
+                    # 用 nav API 快速检测是否被风控
+                    nav_ok = self.page.evaluate(JS_CHECK_LOGIN)
+                    if nav_ok is False:
+                        # 未登录或被风控，等待后重试
+                        if attempt < max_retries - 1:
+                            wait = [20, 30, 50, 30, 20][attempt]
+                            print(f"  [WARN] 疑似风控，{wait}秒后重试 ({attempt+1}/{max_retries})...")
+                            time.sleep(wait)
+                            self.page.goto("https://www.bilibili.com", wait_until="domcontentloaded")
+                            time.sleep(3)
+                            continue
+                return result or []
+            except Exception as e:
+                err_msg = str(e)
+                if "Unexpected token" in err_msg and attempt < max_retries - 1:
+                    wait = [20, 30, 50, 30, 20][attempt]
+                    print(f"  [WARN] 获取UP视频触发风控，{wait}秒后重试 ({attempt+1}/{max_retries})...")
+                    time.sleep(wait)
+                    self.page.goto("https://www.bilibili.com", wait_until="domcontentloaded")
+                    time.sleep(3)
+                    continue
+                print(f"  [ERROR] 获取UP视频失败: {e}")
                 return []
         return []
 

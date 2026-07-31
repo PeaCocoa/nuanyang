@@ -66,10 +66,19 @@ class ConsoleHandler(http.server.SimpleHTTPRequestHandler):
         if self.path == "/api/start":
             self._handle_start()
             return
+        if self.path == "/api/stop":
+            self._handle_stop()
+            return
         if self.path == "/api/settings":
             self._handle_save_settings()
             return
         self.send_error(404)
+
+    def _handle_stop(self):
+        stop_file = os.path.join(DATA_DIR, "stop_signal")
+        with open(stop_file, "w") as f:
+            f.write("stop")
+        self._serve_json({"ok": True, "msg": "停止指令已发送"})
 
     def _serve_json(self, data):
         body = json.dumps(data, ensure_ascii=False).encode("utf-8")
