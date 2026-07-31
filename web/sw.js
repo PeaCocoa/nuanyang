@@ -1,5 +1,5 @@
 // 暖阳 Service Worker — 离线缓存 + 自动更新
-const CACHE_VERSION = 'nuanyang-v2';
+const CACHE_VERSION = 'nuanyang-v3';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
