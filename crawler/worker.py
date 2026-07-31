@@ -1,5 +1,7 @@
 """
-暖阳爬虫 Worker — 轻量版（requests直接调API，不开浏览器）
+暖阳爬虫 Worker — 在独立子进程中运行 Playwright
+由 main.py 的 HTTP 服务器通过 subprocess 启动
+避免 Playwright 同步阻塞 HTTP 服务器
 """
 
 import json
@@ -9,10 +11,11 @@ import os
 import re
 import subprocess
 
+# 添加项目根目录到 path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from crawler.config import load_upmasters, VIDEOS_FILE, MAX_VIDEOS_TOTAL, SEARCH_PAGES, REQUEST_DELAY, SEARCH_PAGE_DELAY
-from crawler.bilibili import BiliAPI
+from crawler.bilibili import BiliCrawler
 import crawler.status as status
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -38,6 +41,8 @@ def process_cover_url(pic):
     if not pic:
         return ""
     url = pic.replace("http://", "https://")
+    # B站API返回的pic可能不带扩展名，CDN需要.jpg才能访问
+    # 正确格式: xxx.jpg@672w_378h_1c.jpg
     if not re.search(r'\.(jpg|png|webp)$', url):
         url = url + ".jpg"
     if "@672w_378h" not in url:
@@ -66,45 +71,43 @@ def get_crawl_upmasters():
 # 抓取逻辑
 # =====================
 
-def fetch_up_videos(api, uid, up_name):
-    """通过UID直接拉取UP主视频列表"""
+def search_up_videos(crawler, up_name, exact_name):
     all_results = []
     for page in range(1, SEARCH_PAGES + 1):
-        results = api.get_up_videos(uid, page=page)
+        results = crawler.search_videos(up_name, page=page, order="pubdate")
         if not results:
             break
-        all_results.extend(results)
-        log(f"  第{page}页: {len(results)}条视频")
+        matched = [v for v in results if v.get("author") == exact_name]
+        all_results.extend(matched)
+        log(f"  搜索第{page}页: {len(results)}条结果, 精确匹配{len(matched)}条")
         if page < SEARCH_PAGES:
-            time.sleep(SEARCH_PAGE_DELAY + random.uniform(0, 2))
+            time.sleep(SEARCH_PAGE_DELAY)
 
     seen = set()
     unique = []
     for v in all_results:
-        bvid = v.get("bvid", "")
-        if bvid and bvid not in seen:
-            seen.add(bvid)
+        if v["bvid"] not in seen:
+            seen.add(v["bvid"])
             unique.append(v)
     return unique
 
-def fetch_video_details(api, bvids, max_count):
-    """批量获取视频详情"""
+def fetch_video_details(crawler, bvids):
     details = []
-    for i, bvid in enumerate(bvids[:max_count * 2]):
-        info = api.get_video_info(bvid)
+    for i, bvid in enumerate(bvids):
+        info = crawler.get_video_info(bvid)
         if info:
             details.append(info)
-            log(f"  [{i+1}/{min(len(bvids), max_count*2)}] {bvid} ok {info['title'][:30]}")
+            log(f"  [{i+1}/{len(bvids)}] {bvid} ok {info['title'][:30]}")
         else:
-            log(f"  [{i+1}/{min(len(bvids), max_count*2)}] {bvid} 获取失败", "warn")
-        time.sleep(0.5 + random.uniform(0, 0.5))
+            log(f"  [{i+1}/{len(bvids)}] {bvid} 获取失败", "warn")
+        time.sleep(0.5)
     return details
 
-def filter_and_transform(videos, up_name, categories):
+def filter_and_transform(videos, up_name, category):
     settings = status.get_settings()
     duration_min = settings.get("duration_min", 60)
     duration_max = settings.get("duration_max", 3600)
-    max_per_up = settings.get("max_videos_per_up", 50)
+    max_per_up = settings.get("max_videos_per_up", 5)
     pubdate_days = settings.get("pubdate_days", 0)
 
     EXCLUDE_KEYWORDS = [
@@ -116,45 +119,22 @@ def filter_and_transform(videos, up_name, categories):
     now = time.time()
     pubdate_limit = now - pubdate_days * 86400 if pubdate_days > 0 else 0
 
-    # 列表API和详情API字段名不同，统一映射
-    def get_duration(v):
-        # 列表API用"length"（字符串如"10:30"），详情API用"duration"（秒）
-        dur = v.get("duration", 0)
-        if dur:
-            return dur
-        length = v.get("length", "")
-        if isinstance(length, str) and ":" in length:
-            parts = length.split(":")
-            if len(parts) == 2:
-                return int(parts[0]) * 60 + int(parts[1])
-            elif len(parts) == 3:
-                return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
-        try:
-            return int(length)
-        except:
-            return 0
-
-    def get_pubdate(v):
-        # 列表API用"created"，详情API用"pubdate"
-        return v.get("pubdate", 0) or v.get("created", 0)
-
-    def get_play(v):
-        # 列表API用"play"，详情API用"view"
-        return v.get("view", 0) or v.get("play", 0)
-
     result = []
     for v in videos:
         title = v.get("title", "")
-        duration = get_duration(v)
-        pubdate = get_pubdate(v)
+        duration = v.get("duration", 0)
+        pubdate = v.get("pubdate", 0)
         clean_title = re.sub(r"<[^>]+>", "", title)
 
         if duration < duration_min or duration > duration_max:
+            log(f"    过滤: {clean_title[:30]} (时长={duration}s, 超出{duration_min}-{duration_max}s)", "warn")
             continue
         if pubdate_limit > 0 and pubdate < pubdate_limit:
+            log(f"    过滤: {clean_title[:30]} (投稿时间超出{pubdate_days}天)", "warn")
             continue
         matched_kw = next((kw for kw in EXCLUDE_KEYWORDS if kw in title), None)
         if matched_kw:
+            log(f"    过滤: {clean_title[:30]} (包含关键词: {matched_kw})", "warn")
             continue
 
         bvid = v.get("bvid", "")
@@ -165,10 +145,10 @@ def filter_and_transform(videos, up_name, categories):
             "duration": duration,
             "duration_text": format_duration(duration),
             "pubdate": pubdate,
-            "play": get_play(v),
+            "play": v.get("view", 0),
             "like": v.get("like", 0),
-            "up_name": v.get("up_name", "") or v.get("author", "") or up_name,
-            "categories": categories,
+            "up_name": v.get("up_name", up_name),
+            "category": category,
             "url": f"https://www.bilibili.com/video/{bvid}",
             "iframe_url": f"//player.bilibili.com/player.html?bvid={bvid}&high_quality=1&danmaku=0",
         })
@@ -180,7 +160,7 @@ def filter_and_transform(videos, up_name, categories):
 
 def run():
     log("=" * 50)
-    log("暖阳爬虫启动 (轻量API版本)")
+    log("暖阳爬虫启动 (Playwright 版本)")
     log("=" * 50)
 
     upmasters = get_crawl_upmasters()
@@ -188,28 +168,23 @@ def run():
 
     status.init(len(upmasters), upmasters)
 
-    # 读取cookie（可选，从环境变量或设置文件）
-    cookie = os.environ.get("BILI_COOKIE", "")
-    settings = status.get_settings()
-    if settings.get("bili_cookie"):
-        cookie = settings["bili_cookie"]
+    crawler = BiliCrawler(headless=False)
 
-    api = BiliAPI(cookie=cookie)
+    log("[INFO] 启动浏览器...")
+    status.set_login_required()
 
-    log("[INFO] 验证API连通性...")
+    crawler.start()
     status.set_login_done()
 
-    if not api.check_accessible():
-        log("[ERROR] API无法访问，可能是网络问题或IP被风控", "error")
-        log("[INFO] 等待30秒后重试一次...", "info")
-        time.sleep(30)
-        if not api.check_accessible():
-            log("[ERROR] 重试失败，退出", "error")
-            status.finish("error")
-            api.close()
-            return
-
-    log("[INFO] API正常")
+    log("[INFO] 验证API连通性...")
+    test_results = crawler.search_videos("罗翔说刑法", page=1)
+    if not test_results:
+        log("[ERROR] 搜索API无返回，可能未登录或被风控", "error")
+        log("[ERROR] 请重新运行并扫码登录B站", "error")
+        crawler.close()
+        status.finish("error")
+        return
+    log(f"[INFO] API正常，测试搜索返回 {len(test_results)} 条结果")
 
     all_videos = []
 
@@ -217,28 +192,35 @@ def run():
         for i, up in enumerate(upmasters):
             name = up["name"]
             uid = up["uid"]
-            categories = up.get("categories", [])
+            category = up["category"]
 
-            log(f"[{i+1}/{len(upmasters)}] 抓取: {name} (UID: {uid}) 分类: {', '.join(categories)}")
+            log(f"[{i+1}/{len(upmasters)}] 抓取: {name} (UID: {uid})")
             status.set_current(i, "searching")
 
-            search_results = fetch_up_videos(api, uid, name)
+            search_results = search_up_videos(crawler, name, name)
 
             if not search_results:
                 log(f"  [WARN] 未找到 {name} 的视频", "warn")
                 status.update_up(i, "failed", error="未找到视频")
                 continue
 
-            log(f"  共找到 {len(search_results)} 条视频，直接筛选（跳过逐条详情请求）")
+            log(f"  共找到 {len(search_results)} 条视频，开始获取详情...")
+            status.set_current(i, "fetching")
+
+            settings = status.get_settings()
+            max_per_up = settings.get("max_videos_per_up", 5)
+            bvids = [v["bvid"] for v in search_results[:max_per_up * 2]]
+            details = fetch_video_details(crawler, bvids)
+
             status.set_current(i, "filtering")
-            up_videos = filter_and_transform(search_results, name, categories)
+            up_videos = filter_and_transform(details, name, category)
             all_videos.extend(up_videos)
 
             log(f"  通过筛选: {len(up_videos)} 条, 累计: {len(all_videos)} 条")
             status.update_up(i, "done", videos=len(up_videos))
             status.add_videos(len(up_videos))
 
-            time.sleep(REQUEST_DELAY + random.uniform(0, 2))
+            time.sleep(REQUEST_DELAY)
 
             if len(all_videos) >= MAX_VIDEOS_TOTAL:
                 log(f"达到总数上限 {MAX_VIDEOS_TOTAL}，停止抓取")
@@ -247,17 +229,17 @@ def run():
     except Exception as e:
         log(f"[ERROR] 爬虫异常: {e}", "error")
         status.finish("error")
-        api.close()
+        crawler.close()
         return
     finally:
-        api.close()
+        crawler.close()
 
     # 写入文件
     output = {
-        "version": 5,
+        "version": 4,
         "updated": time.strftime("%Y-%m-%d %H:%M:%S"),
         "total": len(all_videos),
-        "source": "bilibili_api_requests",
+        "source": "bilibili_search_and_view_via_playwright",
         "videos": all_videos,
     }
 
@@ -265,9 +247,10 @@ def run():
     with open(VIDEOS_FILE, "w", encoding="utf-8") as f:
         json.dump(output, f, ensure_ascii=False, indent=2)
 
-    import shutil
+    # 同步到 web/data/
     web_data_dir = os.path.join(WEB_DIR, "data")
     os.makedirs(web_data_dir, exist_ok=True)
+    import shutil
     shutil.copy2(VIDEOS_FILE, os.path.join(web_data_dir, "videos.json"))
 
     log("=" * 50)
@@ -280,69 +263,53 @@ def run():
     git_push()
 
 def git_push():
-    # GitHub Actions环境中由workflow负责推送，这里跳过
-    if os.environ.get("GITHUB_ACTIONS") == "true":
-        log("[INFO] 运行在GitHub Actions中，数据将由workflow推送")
-        return
-
     project_dir = BASE_DIR
-
     try:
         subprocess.run(["git", "rev-parse", "--git-dir"],
                        cwd=project_dir, capture_output=True, check=True)
-    except Exception:
-        log("[WARN] 不是git仓库，跳过推送", "warn")
-        return
 
-    import shutil
-    web_data_dir = os.path.join(WEB_DIR, "data")
-    os.makedirs(web_data_dir, exist_ok=True)
-    shutil.copy2(VIDEOS_FILE, os.path.join(web_data_dir, "videos.json"))
+        import shutil
+        web_data_dir = os.path.join(WEB_DIR, "data")
+        os.makedirs(web_data_dir, exist_ok=True)
+        shutil.copy2(VIDEOS_FILE, os.path.join(web_data_dir, "videos.json"))
 
-    subprocess.run(["git", "add", "data/videos.json", "web/data/videos.json", ".github/"],
-                   cwd=project_dir, check=True)
+        subprocess.run(["git", "add", "data/videos.json", "web/data/videos.json", ".github/"],
+                       cwd=project_dir, check=True)
 
-    result = subprocess.run(["git", "diff", "--staged", "--quiet"],
-                            cwd=project_dir)
-    if result.returncode == 0:
-        log("[INFO] 无新数据，跳过提交")
-        return
+        result = subprocess.run(["git", "diff", "--staged", "--quiet"],
+                                cwd=project_dir)
+        if result.returncode == 0:
+            log("[INFO] 无新数据，跳过提交")
+            return
 
-    commit_msg = f"自动更新视频数据 {time.strftime('%Y-%m-%d %H:%M:%S')}"
-    subprocess.run(["git", "commit", "-m", commit_msg],
-                   cwd=project_dir, check=True)
+        commit_msg = f"自动更新视频数据 {time.strftime('%Y-%m-%d %H:%M:%S')}"
+        subprocess.run(["git", "commit", "-m", commit_msg],
+                       cwd=project_dir, check=True)
 
-    git_token = os.environ.get("GITHUB_TOKEN", "")
-    push_urls = []
-    if git_token:
-        push_urls.append(f"https://PeaCocoa:{git_token}@github.com/PeaCocoa/nuanyang.git")
-    push_urls.append("origin")
+        # 使用 token 认证推送（从环境变量读取）
+        git_token = os.environ.get("GITHUB_TOKEN", "")
+        if git_token:
+            remote_url = subprocess.run(
+                ["git", "remote", "get-url", "origin"],
+                cwd=project_dir, capture_output=True, text=True
+            ).stdout.strip()
+            # 替换为带token的URL
+            if "github.com" in remote_url:
+                auth_url = f"https://PeaCocoa:{git_token}@github.com/PeaCocoa/nuanyang.git"
+                subprocess.run(["git", "push", auth_url, "main"],
+                               cwd=project_dir, check=True)
+            else:
+                subprocess.run(["git", "push"],
+                               cwd=project_dir, check=True)
+        else:
+            subprocess.run(["git", "push"],
+                           cwd=project_dir, check=True)
 
-    max_attempts = 5
-    retry_delay = 120
-
-    for attempt in range(1, max_attempts + 1):
-        for url in push_urls:
-            try:
-                log(f"[INFO] 推送尝试 {attempt}/{max_attempts} -> {url[:50]}...")
-                subprocess.run(["git", "push", url, "main"],
-                               cwd=project_dir, check=True,
-                               capture_output=True, text=True, timeout=60)
-                log("[INFO] 已推送到GitHub，Actions将自动部署")
-                return
-            except subprocess.TimeoutExpired:
-                log(f"[WARN] 推送超时（{url[:40]}...），尝试下一个地址", "warn")
-            except subprocess.CalledProcessError as e:
-                log(f"[WARN] 推送失败（{url[:40]}...）: {e.stderr[:100] if e.stderr else str(e)}", "warn")
-            except Exception as e:
-                log(f"[WARN] 推送异常（{url[:40]}...）: {e}", "warn")
-
-        if attempt < max_attempts:
-            log(f"[INFO] {retry_delay}秒后重试...")
-            time.sleep(retry_delay)
-
-    log(f"[ERROR] 推送失败，已达最大重试次数 {max_attempts}", "error")
-    log("[INFO] 数据已保存在本地，下次运行时会自动重试", "info")
+        log("[INFO] 已推送到GitHub，Actions将自动部署")
+    except subprocess.CalledProcessError as e:
+        log(f"[WARN] Git操作失败: {e}", "warn")
+    except Exception as e:
+        log(f"[WARN] Git推送失败: {e}", "warn")
 
 if __name__ == "__main__":
     run()

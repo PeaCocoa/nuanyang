@@ -23,7 +23,7 @@ _default_status = {
     "total_ups": 0,
     "done_ups": 0,
     "total_videos": 0,
-    "ups": [],                # [{name, uid, categories, status, videos, error}]
+    "ups": [],                # [{name, uid, category, status, videos, error}]
     "logs": [],               # [{time, level, msg}]
     "login_required": False,
     "login_done": False,
@@ -115,7 +115,7 @@ def init(total_ups: int, ups: list):
         _status["ups"] = [{
             "name": up["name"],
             "uid": up["uid"],
-            "categories": up.get("categories", []),
+            "category": up["category"],
             "status": "pending",
             "videos": 0,
             "error": "",
