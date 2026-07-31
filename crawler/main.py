@@ -328,6 +328,10 @@ class ConsoleHandler(http.server.SimpleHTTPRequestHandler):
                 self._serve_json({"ok": False, "msg": "爬虫正在运行中"})
                 return
 
+            # 清理残留的工作流文件，确保普通模式不走工作流
+            if os.path.exists(CURRENT_WF_FILE):
+                os.remove(CURRENT_WF_FILE)
+
             # 用子进程启动爬虫 worker（不捕获stdout，直接输出到控制台）
             _crawl_process = subprocess.Popen(
                 [sys.executable, "-m", "crawler.worker"],
