@@ -499,6 +499,7 @@
     <!-- Tab 导航 -->
     <div class="tabs">
         <div class="tab active" data-tab="monitor" onclick="switchTab('monitor')">监控</div>
+        <div class="tab" data-tab="workflow" onclick="switchTab('workflow')">工作流</div>
         <div class="tab" data-tab="settings" onclick="switchTab('settings')">设置</div>
     </div>
 
@@ -630,6 +631,119 @@
         </div>
     </div>
 
+    <!-- 工作流面板 -->
+    <div class="main" id="tab-workflow" style="display:none;flex-direction:row;">
+        <!-- 左侧：工作流列表 -->
+        <div class="left-panel" style="flex:0 0 300px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <div class="section-title" style="margin:0;">工作流列表</div>
+                <button class="btn btn-primary" style="padding:4px 12px;font-size:13px;" onclick="newWorkflow()">+ 新建</button>
+            </div>
+            <div id="workflowList" style="display:flex;flex-direction:column;gap:6px;">
+                <div style="color:var(--mute);font-size:13px;padding:8px 0;">加载中...</div>
+            </div>
+        </div>
+
+        <!-- 右侧：工作流编辑器 -->
+        <div class="right-panel" style="flex:1;overflow-y:auto;">
+            <div id="workflowEditor" style="display:none;max-width:900px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                    <input type="text" id="wfName" placeholder="工作流名称" style="font-size:18px;font-weight:700;border:none;background:transparent;color:var(--ink);flex:1;outline:none;border-bottom:1px solid var(--hairline);padding:4px 0;">
+                    <div style="display:flex;gap:8px;margin-left:12px;">
+                        <button class="btn btn-green" onclick="saveWorkflow()">保存</button>
+                        <button class="btn btn-primary" id="wfRunBtn" onclick="runWorkflow()">运行</button>
+                        <button class="btn btn-outline" onclick="deleteWorkflow()" style="color:#e74c3c;border-color:#e74c3c;">删除</button>
+                    </div>
+                </div>
+
+                <!-- 基本参数 -->
+                <div class="settings-group">
+                    <div class="settings-group-title">爬取参数</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                        <div>
+                            <div class="settings-label">总量上限</div>
+                            <input type="number" class="settings-input" id="wfTotalLimit" min="10" max="2000" value="800" style="width:100%;">
+                        </div>
+                        <div>
+                            <div class="settings-label">每UP上限</div>
+                            <input type="number" class="settings-input" id="wfMaxPerUp" min="1" max="50" value="50" style="width:100%;">
+                        </div>
+                        <div>
+                            <div class="settings-label">最短时长(秒)</div>
+                            <input type="number" class="settings-input" id="wfDurationMin" min="0" max="3600" value="60" style="width:100%;">
+                        </div>
+                        <div>
+                            <div class="settings-label">最长时长(秒)</div>
+                            <input type="number" class="settings-input" id="wfDurationMax" min="60" max="7200" value="3600" style="width:100%;">
+                        </div>
+                        <div>
+                            <div class="settings-label">UP间隔(秒)</div>
+                            <input type="number" class="settings-input" id="wfDelayUps" min="1" max="60" value="5" style="width:100%;">
+                        </div>
+                        <div>
+                            <div class="settings-label">翻页间隔(秒)</div>
+                            <input type="number" class="settings-input" id="wfDelayPages" min="1" max="30" value="8" style="width:100%;">
+                        </div>
+                        <div>
+                            <div class="settings-label">投稿时间限制(天)</div>
+                            <input type="number" class="settings-input" id="wfPubdateDays" min="0" max="3650" value="0" style="width:100%;">
+                        </div>
+                        <div>
+                            <div class="settings-label">批量大小</div>
+                            <input type="number" class="settings-input" id="wfBatchSize" min="0" max="50" value="0" style="width:100%;">
+                            <div class="settings-desc">0=不分批</div>
+                        </div>
+                        <div>
+                            <div class="settings-label">批次间隔(秒)</div>
+                            <input type="number" class="settings-input" id="wfBatchDelay" min="10" max="600" value="60" style="width:100%;">
+                        </div>
+                    </div>
+                    <div style="margin-top:12px;display:flex;align-items:center;gap:8px;">
+                        <div class="toggle on" id="wfStopAfterDone" onclick="this.classList.toggle('on')"></div>
+                        <span class="settings-label">爬完即停</span>
+                    </div>
+                </div>
+
+                <!-- UP主管理 -->
+                <div class="settings-group">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                        <div class="settings-group-title" style="margin:0;">UP主管理</div>
+                        <button class="btn btn-outline" style="padding:4px 12px;font-size:13px;" onclick="showAddUpDialog()">+ 添加UP主</button>
+                    </div>
+                    <div style="display:flex;gap:8px;margin-bottom:8px;">
+                        <a class="link-btn" onclick="wfSelectAll(true)">全部启用</a>
+                        <a class="link-btn" onclick="wfSelectAll(false)">全部禁用</a>
+                        <a class="link-btn" onclick="wfMoveUp()">上移</a>
+                        <a class="link-btn" onclick="wfMoveDown()">下移</a>
+                    </div>
+                    <div id="wfUpTable" style="display:flex;flex-direction:column;gap:4px;"></div>
+                </div>
+            </div>
+
+            <!-- 空状态 -->
+            <div id="workflowEmpty" style="text-align:center;padding:60px 20px;">
+                <div style="font-size:48px;margin-bottom:16px;">📋</div>
+                <div style="font-size:16px;color:var(--ink);font-weight:600;margin-bottom:8px;">选择或新建一个工作流</div>
+                <div style="font-size:13px;color:var(--mute);">工作流可以保存爬取参数和UP主配置，一键运行</div>
+                <button class="btn btn-primary" style="margin-top:16px;" onclick="newWorkflow()">+ 新建工作流</button>
+            </div>
+
+            <!-- 添加UP主弹窗 -->
+            <div id="addUpDialog" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--canvas);border:1px solid var(--hairline);border-radius:14px;padding:24px;z-index:200;min-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.15);">
+                <div style="font-size:16px;font-weight:700;margin-bottom:16px;">添加UP主</div>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <input type="text" id="newUpName" placeholder="UP主名称" style="padding:8px 12px;border:1px solid var(--hairline);border-radius:8px;background:var(--canvas);color:var(--ink);font-size:14px;">
+                    <input type="number" id="newUpUid" placeholder="UID (数字)" style="padding:8px 12px;border:1px solid var(--hairline);border-radius:8px;background:var(--canvas);color:var(--ink);font-size:14px;">
+                    <input type="text" id="newUpCats" placeholder="分类 (逗号分隔，如: 科普探索,教育学习)" style="padding:8px 12px;border:1px solid var(--hairline);border-radius:8px;background:var(--canvas);color:var(--ink);font-size:14px;">
+                    <div style="display:flex;gap:8px;justify-content:flex-end;">
+                        <button class="btn btn-outline" onclick="hideAddUpDialog()">取消</button>
+                        <button class="btn btn-green" onclick="confirmAddUp()">添加</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="toast" id="toast"></div>
 
     <script>
@@ -650,7 +764,9 @@
             document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
             document.getElementById('tab-monitor').style.display = tab === 'monitor' ? 'flex' : 'none';
             document.getElementById('tab-settings').style.display = tab === 'settings' ? 'flex' : 'none';
+            document.getElementById('tab-workflow').style.display = tab === 'workflow' ? 'flex' : 'none';
             if (tab === 'settings') loadSettings();
+            if (tab === 'workflow') loadWorkflows();
         }
 
         // === 主题 ===
@@ -921,6 +1037,324 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        // === 工作流管理 ===
+        let workflows = [];
+        let currentWF = null;
+        let wfUpmasters = [];
+
+        async function loadWorkflows() {
+            try {
+                const resp = await fetch('/api/workflows');
+                const data = await resp.json();
+                workflows = data.workflows || [];
+                renderWorkflowList();
+            } catch (e) {
+                showToast('加载工作流失败');
+            }
+        }
+
+        function renderWorkflowList() {
+            const list = document.getElementById('workflowList');
+            if (workflows.length === 0) {
+                list.innerHTML = '<div style="color:var(--mute);font-size:13px;padding:8px 0;">暂无工作流，点击"新建"创建</div>';
+                return;
+            }
+            list.innerHTML = workflows.map(wf => `
+                <div class="up-item" style="cursor:pointer;${currentWF && currentWF.id === wf.id ? 'background:var(--cloud);' : ''}" onclick="selectWorkflow('${wf.id}')">
+                    <span class="up-status-dot dot-done"></span>
+                    <div style="flex:1;min-width:0;">
+                        <div class="up-name">${escapeHtml(wf.name || '未命名')}</div>
+                        <div class="up-category">${(wf.ups||[]).length} 个UP主 · ${wf.config?.total_limit || 800} 上限</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectWorkflow(id) {
+            currentWF = workflows.find(w => w.id === id);
+            if (!currentWF) return;
+            document.getElementById('workflowEditor').style.display = '';
+            document.getElementById('workflowEmpty').style.display = 'none';
+            document.getElementById('wfName').value = currentWF.name || '';
+            const c = currentWF.config || {};
+            document.getElementById('wfTotalLimit').value = c.total_limit ?? 800;
+            document.getElementById('wfMaxPerUp').value = c.max_per_up ?? 50;
+            document.getElementById('wfDurationMin').value = c.duration_min ?? 60;
+            document.getElementById('wfDurationMax').value = c.duration_max ?? 3600;
+            document.getElementById('wfDelayUps').value = c.delay_between_ups ?? 5;
+            document.getElementById('wfDelayPages').value = c.delay_between_pages ?? 8;
+            document.getElementById('wfPubdateDays').value = c.pubdate_days ?? 0;
+            document.getElementById('wfBatchSize').value = c.batch_size ?? 0;
+            document.getElementById('wfBatchDelay').value = c.batch_delay ?? 60;
+            document.getElementById('wfStopAfterDone').classList.toggle('on', c.stop_after_done !== false);
+            // 加载UP主
+            loadWfUpmasters();
+            renderWorkflowList();
+        }
+
+        async function loadWfUpmasters() {
+            try {
+                const resp = await fetch('/api/upmasters');
+                const data = await resp.json();
+                wfUpmasters = data.ups || [];
+                // 如果工作流已有UP配置，用工作流的；否则用全部UP
+                if (currentWF && currentWF.ups && currentWF.ups.length > 0) {
+                    renderWfUpTable();
+                } else {
+                    // 初始化工作流UP列表
+                    currentWF.ups = wfUpmasters.map(up => ({
+                        name: up.name,
+                        uid: up.uid,
+                        categories: Array.isArray(up.categories) ? up.categories : [up.categories],
+                        enabled: true,
+                        repeat: 1
+                    }));
+                    renderWfUpTable();
+                }
+            } catch (e) {
+                showToast('加载UP主失败');
+            }
+        }
+
+        function renderWfUpTable() {
+            const container = document.getElementById('wfUpTable');
+            if (!currentWF || !currentWF.ups) return;
+            container.innerHTML = currentWF.ups.map((up, i) => `
+                <div class="up-item" style="${!up.enabled ? 'opacity:0.4;' : ''}" data-wf-up-index="${i}">
+                    <input type="checkbox" ${up.enabled ? 'checked' : ''} onchange="toggleWfUp(${i}, this.checked)" style="margin-right:4px;">
+                    <div style="flex:1;min-width:0;">
+                        <input type="text" value="${escapeHtml(up.name)}" onchange="updateWfUp(${i}, 'name', this.value)"
+                            style="border:none;background:transparent;color:var(--ink);font-size:14px;font-weight:500;width:100%;outline:none;">
+                        <div style="display:flex;gap:8px;align-items:center;margin-top:2px;">
+                            <input type="number" value="${up.uid}" onchange="updateWfUp(${i}, 'uid', parseInt(this.value))"
+                                style="border:1px solid var(--hairline);border-radius:4px;padding:2px 6px;font-size:11px;width:100px;background:var(--canvas);color:var(--ink);">
+                            <input type="text" value="${(up.categories||[]).join(',')}" onchange="updateWfUp(${i}, 'categories', this.value.split(',').map(s=>s.trim()).filter(s=>s))"
+                                placeholder="分类" style="border:1px solid var(--hairline);border-radius:4px;padding:2px 6px;font-size:11px;flex:1;min-width:0;background:var(--canvas);color:var(--ink);">
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
+                        <label style="font-size:11px;color:var(--mute);">重复</label>
+                        <input type="number" min="1" max="5" value="${up.repeat || 1}" onchange="updateWfUp(${i}, 'repeat', parseInt(this.value)||1)"
+                            style="width:40px;padding:2px 4px;border:1px solid var(--hairline);border-radius:4px;font-size:12px;text-align:center;background:var(--canvas);color:var(--ink);">
+                        <button onclick="removeWfUp(${i})" style="border:none;background:transparent;color:#e74c3c;cursor:pointer;font-size:16px;padding:4px;">×</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleWfUp(index, enabled) {
+            if (currentWF && currentWF.ups) {
+                currentWF.ups[index].enabled = enabled;
+                renderWfUpTable();
+            }
+        }
+
+        function updateWfUp(index, field, value) {
+            if (currentWF && currentWF.ups) {
+                currentWF.ups[index][field] = value;
+            }
+        }
+
+        function removeWfUp(index) {
+            if (currentWF && currentWF.ups) {
+                currentWF.ups.splice(index, 1);
+                renderWfUpTable();
+            }
+        }
+
+        function wfSelectAll(enable) {
+            if (currentWF && currentWF.ups) {
+                currentWF.ups.forEach(up => up.enabled = enable);
+                renderWfUpTable();
+            }
+        }
+
+        function wfMoveUp() {
+            // 简单实现：弹窗选择
+            const idx = prompt('输入要上移的UP主序号 (0开始):');
+            if (idx === null) return;
+            const i = parseInt(idx);
+            if (i > 0 && currentWF && currentWF.ups && i < currentWF.ups.length) {
+                [currentWF.ups[i-1], currentWF.ups[i]] = [currentWF.ups[i], currentWF.ups[i-1]];
+                renderWfUpTable();
+            }
+        }
+
+        function wfMoveDown() {
+            const idx = prompt('输入要下移的UP主序号 (0开始):');
+            if (idx === null) return;
+            const i = parseInt(idx);
+            if (i >= 0 && currentWF && currentWF.ups && i < currentWF.ups.length - 1) {
+                [currentWF.ups[i+1], currentWF.ups[i]] = [currentWF.ups[i], currentWF.ups[i+1]];
+                renderWfUpTable();
+            }
+        }
+
+        function showAddUpDialog() {
+            document.getElementById('addUpDialog').style.display = '';
+            document.getElementById('newUpName').value = '';
+            document.getElementById('newUpUid').value = '';
+            document.getElementById('newUpCats').value = '';
+        }
+
+        function hideAddUpDialog() {
+            document.getElementById('addUpDialog').style.display = 'none';
+        }
+
+        async function confirmAddUp() {
+            const name = document.getElementById('newUpName').value.trim();
+            const uid = parseInt(document.getElementById('newUpUid').value);
+            const cats = document.getElementById('newUpCats').value.split(',').map(s => s.trim()).filter(s => s);
+            if (!name || !uid) { showToast('请填写名称和UID'); return; }
+
+            // 调用后端添加到 upmasters.json
+            try {
+                const resp = await fetch('/api/upmasters/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, uid, categories: cats })
+                });
+                const data = await resp.json();
+                if (data.ok) {
+                    // 同时添加到当前工作流
+                    if (currentWF && currentWF.ups) {
+                        currentWF.ups.push({ name, uid, categories: cats, enabled: true, repeat: 1 });
+                        renderWfUpTable();
+                    }
+                    hideAddUpDialog();
+                    showToast('UP主已添加');
+                } else {
+                    showToast(data.msg || '添加失败');
+                }
+            } catch (e) {
+                showToast('无法连接服务器');
+            }
+        }
+
+        function newWorkflow() {
+            currentWF = {
+                id: '',
+                name: '新工作流',
+                created: '',
+                config: {
+                    total_limit: 800,
+                    max_per_up: 50,
+                    duration_min: 60,
+                    duration_max: 3600,
+                    pubdate_days: 0,
+                    delay_between_ups: 5,
+                    delay_between_pages: 8,
+                    batch_size: 0,
+                    batch_delay: 60,
+                    stop_after_done: true
+                },
+                ups: []
+            };
+            document.getElementById('workflowEditor').style.display = '';
+            document.getElementById('workflowEmpty').style.display = 'none';
+            document.getElementById('wfName').value = currentWF.name;
+            const c = currentWF.config;
+            document.getElementById('wfTotalLimit').value = c.total_limit;
+            document.getElementById('wfMaxPerUp').value = c.max_per_up;
+            document.getElementById('wfDurationMin').value = c.duration_min;
+            document.getElementById('wfDurationMax').value = c.duration_max;
+            document.getElementById('wfDelayUps').value = c.delay_between_ups;
+            document.getElementById('wfDelayPages').value = c.delay_between_pages;
+            document.getElementById('wfPubdateDays').value = c.pubdate_days;
+            document.getElementById('wfBatchSize').value = c.batch_size;
+            document.getElementById('wfBatchDelay').value = c.batch_delay;
+            document.getElementById('wfStopAfterDone').classList.toggle('on', c.stop_after_done);
+            loadWfUpmasters();
+            renderWorkflowList();
+        }
+
+        async function saveWorkflow() {
+            if (!currentWF) return;
+            currentWF.name = document.getElementById('wfName').value || '未命名';
+            currentWF.config = {
+                total_limit: parseInt(document.getElementById('wfTotalLimit').value) || 800,
+                max_per_up: parseInt(document.getElementById('wfMaxPerUp').value) || 50,
+                duration_min: parseInt(document.getElementById('wfDurationMin').value) || 60,
+                duration_max: parseInt(document.getElementById('wfDurationMax').value) || 3600,
+                pubdate_days: parseInt(document.getElementById('wfPubdateDays').value) || 0,
+                delay_between_ups: parseInt(document.getElementById('wfDelayUps').value) || 5,
+                delay_between_pages: parseInt(document.getElementById('wfDelayPages').value) || 8,
+                batch_size: parseInt(document.getElementById('wfBatchSize').value) || 0,
+                batch_delay: parseInt(document.getElementById('wfBatchDelay').value) || 60,
+                stop_after_done: document.getElementById('wfStopAfterDone').classList.contains('on')
+            };
+
+            try {
+                const resp = await fetch('/api/workflows/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(currentWF)
+                });
+                const data = await resp.json();
+                if (data.ok) {
+                    currentWF = data.workflow;
+                    showToast('工作流已保存');
+                    loadWorkflows();
+                } else {
+                    showToast(data.msg || '保存失败');
+                }
+            } catch (e) {
+                showToast('无法连接服务器');
+            }
+        }
+
+        async function runWorkflow() {
+            if (!currentWF || !currentWF.id) {
+                showToast('请先保存工作流');
+                return;
+            }
+            // 先保存再运行
+            await saveWorkflow();
+            try {
+                const resp = await fetch('/api/workflows/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: currentWF.id })
+                });
+                const data = await resp.json();
+                if (data.ok) {
+                    showToast('工作流已启动');
+                    switchTab('monitor');
+                } else {
+                    showToast(data.msg || '启动失败');
+                }
+            } catch (e) {
+                showToast('无法连接服务器');
+            }
+        }
+
+        async function deleteWorkflow() {
+            if (!currentWF || !currentWF.id) {
+                showToast('请先选择工作流');
+                return;
+            }
+            if (!confirm(`确认删除工作流 "${currentWF.name}"？`)) return;
+            try {
+                const resp = await fetch('/api/workflows/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: currentWF.id })
+                });
+                const data = await resp.json();
+                if (data.ok) {
+                    showToast('已删除');
+                    currentWF = null;
+                    document.getElementById('workflowEditor').style.display = 'none';
+                    document.getElementById('workflowEmpty').style.display = '';
+                    loadWorkflows();
+                } else {
+                    showToast(data.msg || '删除失败');
+                }
+            } catch (e) {
+                showToast('无法连接服务器');
+            }
         }
 
         // === 初始化 ===

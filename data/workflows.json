@@ -1,0 +1,21 @@
+{
+  "workflows": [
+    {
+      "name": "全量爬取",
+      "config": {
+        "total_limit": 800,
+        "max_per_up": 50,
+        "duration_min": 60,
+        "duration_max": 3600,
+        "delay_between_ups": 5,
+        "delay_between_pages": 8,
+        "batch_size": 0,
+        "batch_delay": 60,
+        "stop_after_done": true
+      },
+      "ups": [],
+      "id": "wf_1785472722",
+      "created": "2026-07-31 12:38"
+    }
+  ]
+}

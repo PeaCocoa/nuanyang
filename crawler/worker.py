@@ -78,6 +78,8 @@ def random_delay(base, jitter):
 # 抓取逻辑
 # =====================
 
+_wf_delay_pages = 8  # 默认翻页间隔，可被工作流覆盖
+
 def fetch_up_videos(crawler, uid, up_name):
     """通过UID直接拉取UP主视频列表（不依赖搜索，不会漏视频）"""
     all_results = []
@@ -88,7 +90,7 @@ def fetch_up_videos(crawler, uid, up_name):
         all_results.extend(results)
         log(f"  第{page}页: {len(results)}条视频")
         if page < SEARCH_PAGES:
-            random_delay(SEARCH_PAGE_DELAY, 3)
+            random_delay(_wf_delay_pages, 3)
     seen = set()
     unique = []
     for v in all_results:
@@ -161,6 +163,40 @@ def get_crawl_upmasters():
     selected_set = set(selected)
     return [up for up in all_ups if up["name"] in selected_set]
 
+
+def load_workflow():
+    """加载当前工作流配置（如果存在）"""
+    wf_file = os.path.join(BASE_DIR, "data", "current_workflow.json")
+    if not os.path.isfile(wf_file):
+        return None
+    try:
+        with open(wf_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def get_workflow_upmasters(wf):
+    """根据工作流配置构建UP主列表"""
+    wf_ups = wf.get("ups", [])
+    if not wf_ups:
+        # 没有自定义UP列表，用全部
+        return load_upmasters()
+
+    # 按工作流中的顺序和配置构建
+    result = []
+    for wu in wf_ups:
+        if not wu.get("enabled", True):
+            continue
+        repeat = wu.get("repeat", 1)
+        for _ in range(repeat):
+            result.append({
+                "name": wu["name"],
+                "uid": wu["uid"],
+                "categories": wu.get("categories", []),
+            })
+    return result
+
 # =====================
 # git 推送
 # =====================
@@ -209,7 +245,30 @@ def run():
     log("暖阳爬虫启动 (Playwright 版本)")
     log("=" * 50)
 
-    upmasters = get_crawl_upmasters()
+    # 检查是否有工作流配置
+    wf = load_workflow()
+    if wf:
+        log(f"[工作流] 使用工作流: {wf.get('name', '未命名')}")
+        config = wf.get("config", {})
+        upmasters = get_workflow_upmasters(wf)
+        total_limit = config.get("total_limit", MAX_VIDEOS_TOTAL)
+        delay_ups = config.get("delay_between_ups", REQUEST_DELAY)
+        delay_pages = config.get("delay_between_pages", SEARCH_PAGE_DELAY)
+        stop_after_done = config.get("stop_after_done", True)
+        batch_size = config.get("batch_size", 0)
+        batch_delay = config.get("batch_delay", 60)
+        log(f"[工作流] UP主数: {len(upmasters)}, 总量上限: {total_limit}")
+    else:
+        upmasters = get_crawl_upmasters()
+        total_limit = MAX_VIDEOS_TOTAL
+        delay_ups = REQUEST_DELAY
+        delay_pages = SEARCH_PAGE_DELAY
+        stop_after_done = True
+        batch_size = 0
+        batch_delay = 60
+
+    global _wf_delay_pages
+    _wf_delay_pages = delay_pages
     log(f"共 {len(upmasters)} 位 UP主待抓取")
 
     status.init(len(upmasters), upmasters)
@@ -268,9 +327,14 @@ def run():
                 log("[INFO] 收到停止指令，停止抓取")
                 break
 
-            random_delay(REQUEST_DELAY, 3)
+            random_delay(delay_ups, 3)
 
-            if len(all_videos) >= MAX_VIDEOS_TOTAL:
+            # 批次间隔
+            if batch_size > 0 and (i + 1) % batch_size == 0 and i < len(upmasters) - 1:
+                log(f"[批次] 第 {(i+1)//batch_size} 批完成，等待 {batch_delay}s 后继续...")
+                time.sleep(batch_delay)
+
+            if len(all_videos) >= total_limit:
                 log(f"达到总数上限 {MAX_VIDEOS_TOTAL}，停止抓取")
                 break
 
@@ -308,6 +372,15 @@ def run():
 
     # 推送到GitHub
     git_push()
+
+    # 爬完后清理工作流文件
+    if stop_after_done:
+        wf_file = os.path.join(BASE_DIR, "data", "current_workflow.json")
+        if os.path.exists(wf_file):
+            try:
+                os.remove(wf_file)
+            except:
+                pass
 
     status.finish("done")
 
