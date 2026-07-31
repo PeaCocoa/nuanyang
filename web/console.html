@@ -477,7 +477,145 @@
             .log-container { max-height: 400px; }
             .up-grid { grid-template-columns: 1fr; }
         }
+
+        /* === Drawflow 流程图样式 === */
+        .wf-toolbar {
+            flex: 0 0 200px;
+            border-right: 1px solid var(--hairline);
+            padding: 16px 12px;
+            overflow-y: auto;
+        }
+        .wf-toolbar-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--mute);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        .wf-node-template {
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: grab;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            transition: transform 0.1s, box-shadow 0.15s;
+            user-select: none;
+        }
+        .wf-node-template:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.1); }
+        .wf-node-template:active { cursor: grabbing; }
+        .wf-tpl-start { background: #00A699; color: #fff; }
+        .wf-tpl-up { background: #FF385C; color: #fff; }
+        .wf-tpl-delay { background: #FC642D; color: #fff; }
+        .wf-tpl-filter { background: #6C5CE7; color: #fff; }
+        .wf-tpl-push { background: #0984e3; color: #fff; }
+        .wf-tpl-end { background: #2d3436; color: #fff; }
+
+        .wf-canvas-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .wf-toolbar-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--hairline);
+            background: var(--canvas);
+        }
+        .wf-name-input {
+            font-size: 16px;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            color: var(--ink);
+            outline: none;
+            border-bottom: 1px solid transparent;
+            min-width: 150px;
+        }
+        .wf-name-input:focus { border-bottom-color: var(--rausch); }
+        #drawflow {
+            flex: 1;
+            background: var(--cloud);
+            position: relative;
+        }
+        body.dark #drawflow {
+            background: #1e1e1e;
+        }
+        /* Drawflow 节点样式覆盖 */
+        #drawflow .drawflow-node {
+            background: var(--canvas);
+            border: 2px solid var(--hairline);
+            border-radius: 10px;
+            padding: 0;
+            min-width: 160px;
+        }
+        #drawflow .drawflow-node.selected {
+            border-color: var(--rausch);
+            box-shadow: 0 0 0 3px rgba(255,56,92,0.15);
+        }
+        #drawflow .drawflow-node .drawflow_content_node {
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+        }
+        #drawflow .drawflow-node.wf-nd-start { border-color: #00A699; background: #00A699; color: #fff; }
+        #drawflow .drawflow-node.wf-nd-up { border-color: #FF385C; }
+        #drawflow .drawflow-node.wf-nd-delay { border-color: #FC642D; }
+        #drawflow .drawflow-node.wf-nd-filter { border-color: #6C5CE7; }
+        #drawflow .drawflow-node.wf-nd-push { border-color: #0984e3; }
+        #drawflow .drawflow-node.wf-nd-end { border-color: #2d3436; background: #2d3436; color: #fff; }
+        #drawflow .drawflow-node .input::before, #drawflow .drawflow-node .output::before {
+            background: var(--ash);
+        }
+        #drawflow .connection .main-path {
+            stroke: var(--ash);
+            stroke-width: 2px;
+        }
+        body.dark #drawflow .drawflow-node { background: #2A2A2A; color: #F7F7F7; }
+        body.dark #drawflow .drawflow-node.wf-nd-start { background: #00A699; color: #fff; }
+        body.dark #drawflow .drawflow-node.wf-nd-end { background: #2d3436; color: #fff; }
+
+        /* 节点配置面板 */
+        .wf-config-panel {
+            flex: 0 0 280px;
+            border-left: 1px solid var(--hairline);
+            padding: 16px;
+            overflow-y: auto;
+            display: none;
+        }
+        .wf-config-panel.show { display: block; }
+        .wf-config-title {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--ink);
+        }
+        .wf-config-field { margin-bottom: 12px; }
+        .wf-config-label { font-size: 12px; color: var(--mute); margin-bottom: 4px; }
+        .wf-config-input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid var(--hairline);
+            border-radius: 6px;
+            background: var(--canvas);
+            color: var(--ink);
+            font-size: 13px;
+        }
+        .wf-flow-list {
+            flex: 0 0 240px;
+            border-right: 1px solid var(--hairline);
+            padding: 16px 12px;
+            overflow-y: auto;
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/drawflow@0.0.60/dist/drawflow.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/drawflow@0.0.60/dist/drawflow.min.css">
 </head>
 <body>
 
@@ -634,113 +772,52 @@
     <!-- 工作流面板 -->
     <div class="main" id="tab-workflow" style="display:none;flex-direction:row;">
         <!-- 左侧：工作流列表 -->
-        <div class="left-panel" style="flex:0 0 300px;">
+        <div class="wf-flow-list">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                <div class="section-title" style="margin:0;">工作流列表</div>
-                <button class="btn btn-primary" style="padding:4px 12px;font-size:13px;" onclick="newWorkflow()">+ 新建</button>
+                <div class="section-title" style="margin:0;">工作流</div>
+                <button class="btn btn-primary" style="padding:4px 12px;font-size:13px;" onclick="newFlowWorkflow()">+ 新建</button>
             </div>
-            <div id="workflowList" style="display:flex;flex-direction:column;gap:6px;">
+            <div id="flowWorkflowList" style="display:flex;flex-direction:column;gap:6px;">
                 <div style="color:var(--mute);font-size:13px;padding:8px 0;">加载中...</div>
             </div>
         </div>
 
-        <!-- 右侧：工作流编辑器 -->
-        <div class="right-panel" style="flex:1;overflow-y:auto;">
-            <div id="workflowEditor" style="display:none;max-width:900px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-                    <input type="text" id="wfName" placeholder="工作流名称" style="font-size:18px;font-weight:700;border:none;background:transparent;color:var(--ink);flex:1;outline:none;border-bottom:1px solid var(--hairline);padding:4px 0;">
-                    <div style="display:flex;gap:8px;margin-left:12px;">
-                        <button class="btn btn-green" onclick="saveWorkflow()">保存</button>
-                        <button class="btn btn-primary" id="wfRunBtn" onclick="runWorkflow()">运行</button>
-                        <button class="btn btn-outline" onclick="deleteWorkflow()" style="color:#e74c3c;border-color:#e74c3c;">删除</button>
-                    </div>
-                </div>
-
-                <!-- 基本参数 -->
-                <div class="settings-group">
-                    <div class="settings-group-title">爬取参数</div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
-                        <div>
-                            <div class="settings-label">总量上限</div>
-                            <input type="number" class="settings-input" id="wfTotalLimit" min="10" max="2000" value="800" style="width:100%;">
-                        </div>
-                        <div>
-                            <div class="settings-label">每UP上限</div>
-                            <input type="number" class="settings-input" id="wfMaxPerUp" min="1" max="50" value="50" style="width:100%;">
-                        </div>
-                        <div>
-                            <div class="settings-label">最短时长(秒)</div>
-                            <input type="number" class="settings-input" id="wfDurationMin" min="0" max="3600" value="60" style="width:100%;">
-                        </div>
-                        <div>
-                            <div class="settings-label">最长时长(秒)</div>
-                            <input type="number" class="settings-input" id="wfDurationMax" min="60" max="7200" value="3600" style="width:100%;">
-                        </div>
-                        <div>
-                            <div class="settings-label">UP间隔(秒)</div>
-                            <input type="number" class="settings-input" id="wfDelayUps" min="1" max="60" value="5" style="width:100%;">
-                        </div>
-                        <div>
-                            <div class="settings-label">翻页间隔(秒)</div>
-                            <input type="number" class="settings-input" id="wfDelayPages" min="1" max="30" value="8" style="width:100%;">
-                        </div>
-                        <div>
-                            <div class="settings-label">投稿时间限制(天)</div>
-                            <input type="number" class="settings-input" id="wfPubdateDays" min="0" max="3650" value="0" style="width:100%;">
-                        </div>
-                        <div>
-                            <div class="settings-label">批量大小</div>
-                            <input type="number" class="settings-input" id="wfBatchSize" min="0" max="50" value="0" style="width:100%;">
-                            <div class="settings-desc">0=不分批</div>
-                        </div>
-                        <div>
-                            <div class="settings-label">批次间隔(秒)</div>
-                            <input type="number" class="settings-input" id="wfBatchDelay" min="10" max="600" value="60" style="width:100%;">
-                        </div>
-                    </div>
-                    <div style="margin-top:12px;display:flex;align-items:center;gap:8px;">
-                        <div class="toggle on" id="wfStopAfterDone" onclick="this.classList.toggle('on')"></div>
-                        <span class="settings-label">爬完即停</span>
-                    </div>
-                </div>
-
-                <!-- UP主管理 -->
-                <div class="settings-group">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                        <div class="settings-group-title" style="margin:0;">UP主管理</div>
-                        <button class="btn btn-outline" style="padding:4px 12px;font-size:13px;" onclick="showAddUpDialog()">+ 添加UP主</button>
-                    </div>
-                    <div style="display:flex;gap:8px;margin-bottom:8px;">
-                        <a class="link-btn" onclick="wfSelectAll(true)">全部启用</a>
-                        <a class="link-btn" onclick="wfSelectAll(false)">全部禁用</a>
-                        <a class="link-btn" onclick="wfMoveUp()">上移</a>
-                        <a class="link-btn" onclick="wfMoveDown()">下移</a>
-                    </div>
-                    <div id="wfUpTable" style="display:flex;flex-direction:column;gap:4px;"></div>
-                </div>
+        <!-- 中间：节点工具栏 + 画布 -->
+        <div class="wf-canvas-wrap">
+            <div class="wf-toolbar-bar">
+                <input type="text" id="flowName" class="wf-name-input" placeholder="工作流名称" value="未命名">
+                <div style="flex:1;"></div>
+                <button class="btn btn-green" onclick="saveFlowWorkflow()">保存</button>
+                <button class="btn btn-primary" id="flowRunBtn" onclick="runFlowWorkflow()">运行</button>
+                <button class="btn btn-outline" onclick="deleteFlowWorkflow()" style="color:#e74c3c;border-color:#e74c3c;">删除</button>
             </div>
-
-            <!-- 空状态 -->
-            <div id="workflowEmpty" style="text-align:center;padding:60px 20px;">
-                <div style="font-size:48px;margin-bottom:16px;">📋</div>
-                <div style="font-size:16px;color:var(--ink);font-weight:600;margin-bottom:8px;">选择或新建一个工作流</div>
-                <div style="font-size:13px;color:var(--mute);">工作流可以保存爬取参数和UP主配置，一键运行</div>
-                <button class="btn btn-primary" style="margin-top:16px;" onclick="newWorkflow()">+ 新建工作流</button>
-            </div>
-
-            <!-- 添加UP主弹窗 -->
-            <div id="addUpDialog" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--canvas);border:1px solid var(--hairline);border-radius:14px;padding:24px;z-index:200;min-width:400px;box-shadow:0 8px 32px rgba(0,0,0,0.15);">
-                <div style="font-size:16px;font-weight:700;margin-bottom:16px;">添加UP主</div>
-                <div style="display:flex;flex-direction:column;gap:12px;">
-                    <input type="text" id="newUpName" placeholder="UP主名称" style="padding:8px 12px;border:1px solid var(--hairline);border-radius:8px;background:var(--canvas);color:var(--ink);font-size:14px;">
-                    <input type="number" id="newUpUid" placeholder="UID (数字)" style="padding:8px 12px;border:1px solid var(--hairline);border-radius:8px;background:var(--canvas);color:var(--ink);font-size:14px;">
-                    <input type="text" id="newUpCats" placeholder="分类 (逗号分隔，如: 科普探索,教育学习)" style="padding:8px 12px;border:1px solid var(--hairline);border-radius:8px;background:var(--canvas);color:var(--ink);font-size:14px;">
-                    <div style="display:flex;gap:8px;justify-content:flex-end;">
-                        <button class="btn btn-outline" onclick="hideAddUpDialog()">取消</button>
-                        <button class="btn btn-green" onclick="confirmAddUp()">添加</button>
+            <div style="display:flex;flex:1;overflow:hidden;">
+                <!-- 节点工具栏 -->
+                <div class="wf-toolbar">
+                    <div class="wf-toolbar-title">拖拽节点</div>
+                    <div class="wf-node-template wf-tpl-start" draggable="true" ondragstart="dragNode(event,'start')">▶ 开始</div>
+                    <div class="wf-node-template wf-tpl-up" draggable="true" ondragstart="dragNode(event,'up')">UP主</div>
+                    <div class="wf-node-template wf-tpl-delay" draggable="true" ondragstart="dragNode(event,'delay')">⏱ 延迟</div>
+                    <div class="wf-node-template wf-tpl-filter" draggable="true" ondragstart="dragNode(event,'filter')">▼ 筛选</div>
+                    <div class="wf-node-template wf-tpl-push" draggable="true" ondragstart="dragNode(event,'push')">↗ 推送</div>
+                    <div class="wf-node-template wf-tpl-end" draggable="true" ondragstart="dragNode(event,'end')">■ 结束</div>
+                    <div style="margin-top:16px;font-size:11px;color:var(--mute);line-height:1.6;">
+                        拖拽节点到画布<br>
+                        拖拽连接点连线<br>
+                        点击节点配置参数<br>
+                        双击节点删除
                     </div>
                 </div>
+                <!-- Drawflow 画布 -->
+                <div id="drawflow"></div>
             </div>
+        </div>
+
+        <!-- 右侧：节点配置面板 -->
+        <div class="wf-config-panel" id="wfConfigPanel">
+            <div class="wf-config-title" id="wfConfigTitle">节点配置</div>
+            <div id="wfConfigFields"></div>
+            <button class="btn btn-outline" style="width:100%;margin-top:12px;color:#e74c3c;border-color:#e74c3c;" onclick="deleteSelectedNode()">删除此节点</button>
         </div>
     </div>
 
@@ -766,7 +843,7 @@
             document.getElementById('tab-settings').style.display = tab === 'settings' ? 'flex' : 'none';
             document.getElementById('tab-workflow').style.display = tab === 'workflow' ? 'flex' : 'none';
             if (tab === 'settings') loadSettings();
-            if (tab === 'workflow') loadWorkflows();
+            if (tab === 'workflow') { if (!flowEditor) { initDrawflow(); setupCanvasDrop(); } loadFlowWorkflows(); }
         }
 
         // === 主题 ===
@@ -1039,322 +1116,342 @@
             return div.innerHTML;
         }
 
-        // === 工作流管理 ===
-        let workflows = [];
-        let currentWF = null;
-        let wfUpmasters = [];
+        // === 流程图工作流 ===
+        let flowEditor = null;
+        let flowWorkflows = [];
+        let currentFlowWF = null;
+        let selectedNodeId = null;
 
-        async function loadWorkflows() {
+        // 初始化 Drawflow
+        function initDrawflow() {
+            if (flowEditor) return;
+            const container = document.getElementById('drawflow');
+            flowEditor = new Drawflow(container);
+            flowEditor.reroute = true;
+            flowEditor.reroute_fix_curvature = true;
+            flowEditor.force_first_input = false;
+
+            flowEditor.on('nodeSelected', function(id) {
+                selectedNodeId = id;
+                showNodeConfig(id);
+            });
+            flowEditor.on('nodeUnselected', function() {
+                selectedNodeId = null;
+                document.getElementById('wfConfigPanel').classList.remove('show');
+            });
+            flowEditor.on('nodeRemoved', function() {
+                selectedNodeId = null;
+                document.getElementById('wfConfigPanel').classList.remove('show');
+            });
+            flowEditor.on('connectionCreated', function(info) {
+                // 限制：每个输出只能连一条线
+                const outputs = flowEditor.drawflow.drawflow.Home.data[info.output_id].outputs[info.output_key];
+                if (outputs && outputs.connections.length > 1) {
+                    // 移除之前的连接
+                    flowEditor.removeSingleConnection(info.output_id, info.output_key, outputs.connections[0].node, outputs.connections[0].output);
+                }
+            });
+
+            flowEditor.start();
+        }
+
+        // 拖拽节点
+        function dragNode(e, type) {
+            e.dataTransfer.setData('node-type', type);
+        }
+
+        // 画布拖放
+        function setupCanvasDrop() {
+            const canvas = document.getElementById('drawflow');
+            canvas.addEventListener('drop', function(e) {
+                e.preventDefault();
+                const type = e.dataTransfer.getData('node-type');
+                if (!type) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                addFlowNode(type, x / canvas.offsetWidth * 100, y / canvas.offsetHeight * 100);
+            });
+            canvas.addEventListener('dragover', function(e) { e.preventDefault(); });
+            canvas.addEventListener('dblclick', function(e) {
+                // 双击空白取消选中
+                if (e.target.id === 'drawflow' || e.target.classList.contains('drawflow')) {
+                    selectedNodeId = null;
+                    document.getElementById('wfConfigPanel').classList.remove('show');
+                    flowEditor.node_selected = null;
+                    flowEditor.dispatch('nodeUnselected', true);
+                }
+            });
+        }
+
+        // 添加节点
+        function addFlowNode(type, x, y) {
+            const nodeConfigs = {
+                start: { name: '开始', class: 'wf-nd-start', inputs: 0, outputs: 1, data: {} },
+                up: { name: 'UP主', class: 'wf-nd-up', inputs: 1, outputs: 1,
+                      data: { uid: '', uname: '', categories: '', repeat: '1' } },
+                delay: { name: '延迟', class: 'wf-nd-delay', inputs: 1, outputs: 1,
+                         data: { seconds: '30' } },
+                filter: { name: '筛选', class: 'wf-nd-filter', inputs: 1, outputs: 1,
+                          data: { duration_min: '60', duration_max: '3600', pubdate_days: '0' } },
+                push: { name: '推送GitHub', class: 'wf-nd-push', inputs: 1, outputs: 1, data: {} },
+                end: { name: '结束', class: 'wf-nd-end', inputs: 1, outputs: 0, data: {} },
+            };
+            const cfg = nodeConfigs[type];
+            if (!cfg) return;
+
+            const html = `<div>${cfg.name}</div>`;
+            flowEditor.addNode(type, cfg.inputs, cfg.outputs, x, y, type, cfg.data, html);
+            // 设置节点样式class
+            const nodeId = flowEditor.nodeId;
+            const nodeEl = document.querySelector(`#node-${nodeId}`);
+            if (nodeEl) nodeEl.classList.add(cfg.class);
+
+            // 更新节点显示内容
+            updateNodeDisplay(nodeId, type, cfg.data);
+        }
+
+        // 更新节点显示
+        function updateNodeDisplay(id, type, data) {
+            const displays = {
+                start: () => '▶ 开始',
+                end: () => '■ 结束',
+                push: () => '↗ 推送GitHub',
+                up: () => `UP主<br><span style="font-size:11px;font-weight:400;opacity:0.8;">${data.uname || '未设置'} (${data.uid || '?'})</span>`,
+                delay: () => `⏱ 延迟<br><span style="font-size:11px;font-weight:400;opacity:0.8;">${data.seconds || '30'}秒</span>`,
+                filter: () => `▼ 筛选<br><span style="font-size:11px;font-weight:400;opacity:0.8;">${data.duration_min || 60}-${data.duration_max || 3600}秒</span>`,
+            };
+            const fn = displays[type];
+            if (fn) {
+                const nodeEl = document.querySelector(`#node-${id} .drawflow_content_node`);
+                if (nodeEl) nodeEl.innerHTML = fn();
+            }
+        }
+
+        // 显示节点配置
+        function showNodeConfig(id) {
+            const node = flowEditor.getNodeFromId(id);
+            if (!node) return;
+            const type = node.name;
+            const data = node.data;
+            const panel = document.getElementById('wfConfigPanel');
+            const title = document.getElementById('wfConfigTitle');
+            const fields = document.getElementById('wfConfigFields');
+
+            const titles = { start:'开始节点', up:'UP主节点', delay:'延迟节点', filter:'筛选节点', push:'推送节点', end:'结束节点' };
+            title.textContent = titles[type] || type;
+
+            let html = '';
+            if (type === 'up') {
+                let upOptions = '<option value="">— 从列表选择 —</option>';
+                if (typeof allUpmasters !== 'undefined' && allUpmasters.length > 0) {
+                    upOptions += allUpmasters.map(up => {
+                        const uid = String(up.uid || '');
+                        const name = up.name || '';
+                        const cats = Array.isArray(up.categories) ? up.categories.join(',') : (up.categories || '');
+                        const sel = (String(data.uid||'') === uid) ? 'selected' : '';
+                        return `<option value="${uid}" data-name="${name}" data-cats="${cats}" ${sel}>${name} (${uid})</option>`;
+                    }).join('');
+                }
+                html += `<div class="wf-config-field"><div class="wf-config-label">从已有UP主选择</div><select class="wf-config-input" onchange="pickUpFromList(${id},this)">${upOptions}</select></div>`;
+                html += `<div class="wf-config-field"><div class="wf-config-label">或手动输入名称</div><input class="wf-config-input" value="${data.uname||''}" oninput="updateNodeData(${id},'uname',this.value)"></div>`;
+                html += `<div class="wf-config-field"><div class="wf-config-label">UID</div><input class="wf-config-input" type="number" value="${data.uid||''}" oninput="updateNodeData(${id},'uid',this.value)"></div>`;
+                html += `<div class="wf-config-field"><div class="wf-config-label">分类 (逗号分隔)</div><input class="wf-config-input" value="${data.categories||''}" oninput="updateNodeData(${id},'categories',this.value)" placeholder="科普探索,教育学习"></div>`;
+                html += `<div class="wf-config-field"><div class="wf-config-label">重复次数</div><input class="wf-config-input" type="number" min="1" max="5" value="${data.repeat||'1'}" oninput="updateNodeData(${id},'repeat',this.value)"></div>`;
+            } else if (type === 'delay') {
+                html += `<div class="wf-config-field"><div class="wf-config-label">等待秒数</div><input class="wf-config-input" type="number" value="${data.seconds||'30'}" oninput="updateNodeData(${id},'seconds',this.value)"></div>`;
+            } else if (type === 'filter') {
+                html += `<div class="wf-config-field"><div class="wf-config-label">最短时长(秒)</div><input class="wf-config-input" type="number" value="${data.duration_min||'60'}" oninput="updateNodeData(${id},'duration_min',this.value)"></div>`;
+                html += `<div class="wf-config-field"><div class="wf-config-label">最长时长(秒)</div><input class="wf-config-input" type="number" value="${data.duration_max||'3600'}" oninput="updateNodeData(${id},'duration_max',this.value)"></div>`;
+                html += `<div class="wf-config-field"><div class="wf-config-label">投稿时间限制(天,0=不限)</div><input class="wf-config-input" type="number" value="${data.pubdate_days||'0'}" oninput="updateNodeData(${id},'pubdate_days',this.value)"></div>`;
+            } else {
+                html = `<div style="font-size:13px;color:var(--mute);padding:12px 0;">此节点无可配置参数</div>`;
+            }
+            fields.innerHTML = html;
+            panel.classList.add('show');
+        }
+
+        function updateNodeData(id, key, value) {
+            flowEditor.updateNodeDataFromId(id, {[key]: value});
+            const node = flowEditor.getNodeFromId(id);
+            if (node) updateNodeDisplay(id, node.name, node.data);
+        }
+
+        function pickUpFromList(id, select) {
+            const opt = select.selectedOptions[0];
+            if (!opt || !opt.value) return;
+            const uid = opt.value;
+            const name = opt.dataset.name || '';
+            const cats = opt.dataset.cats || '';
+            flowEditor.updateNodeDataFromId(id, {uid: uid, uname: name, categories: cats});
+            const node = flowEditor.getNodeFromId(id);
+            if (node) updateNodeDisplay(id, node.name, node.data);
+            // 刷新配置面板
+            showNodeConfig(id);
+        }
+
+        function deleteSelectedNode() {
+            if (selectedNodeId) {
+                flowEditor.removeNodeId(`node-${selectedNodeId}`);
+            }
+        }
+
+        // 工作流列表
+        async function loadFlowWorkflows() {
             try {
                 const resp = await fetch('/api/workflows');
                 const data = await resp.json();
-                workflows = data.workflows || [];
-                renderWorkflowList();
-            } catch (e) {
-                showToast('加载工作流失败');
-            }
+                flowWorkflows = data.workflows || [];
+                renderFlowList();
+            } catch(e) {}
         }
 
-        function renderWorkflowList() {
-            const list = document.getElementById('workflowList');
-            if (workflows.length === 0) {
-                list.innerHTML = '<div style="color:var(--mute);font-size:13px;padding:8px 0;">暂无工作流，点击"新建"创建</div>';
+        function renderFlowList() {
+            const list = document.getElementById('flowWorkflowList');
+            if (flowWorkflows.length === 0) {
+                list.innerHTML = '<div style="color:var(--mute);font-size:13px;padding:8px 0;">暂无工作流</div>';
                 return;
             }
-            list.innerHTML = workflows.map(wf => `
-                <div class="up-item" style="cursor:pointer;${currentWF && currentWF.id === wf.id ? 'background:var(--cloud);' : ''}" onclick="selectWorkflow('${wf.id}')">
+            list.innerHTML = flowWorkflows.map(wf => `
+                <div class="up-item" style="cursor:pointer;${currentFlowWF && currentFlowWF.id === wf.id ? 'background:var(--cloud);' : ''}" onclick="selectFlowWorkflow('${wf.id}')">
                     <span class="up-status-dot dot-done"></span>
                     <div style="flex:1;min-width:0;">
-                        <div class="up-name">${escapeHtml(wf.name || '未命名')}</div>
-                        <div class="up-category">${(wf.ups||[]).length} 个UP主 · ${wf.config?.total_limit || 800} 上限</div>
+                        <div class="up-name">${escapeHtml(wf.name||'未命名')}</div>
+                        <div class="up-category">${(wf.nodes||[]).filter(n=>n.type==='up').length} 个UP主节点</div>
                     </div>
                 </div>
             `).join('');
         }
 
-        function selectWorkflow(id) {
-            currentWF = workflows.find(w => w.id === id);
-            if (!currentWF) return;
-            document.getElementById('workflowEditor').style.display = '';
-            document.getElementById('workflowEmpty').style.display = 'none';
-            document.getElementById('wfName').value = currentWF.name || '';
-            const c = currentWF.config || {};
-            document.getElementById('wfTotalLimit').value = c.total_limit ?? 800;
-            document.getElementById('wfMaxPerUp').value = c.max_per_up ?? 50;
-            document.getElementById('wfDurationMin').value = c.duration_min ?? 60;
-            document.getElementById('wfDurationMax').value = c.duration_max ?? 3600;
-            document.getElementById('wfDelayUps').value = c.delay_between_ups ?? 5;
-            document.getElementById('wfDelayPages').value = c.delay_between_pages ?? 8;
-            document.getElementById('wfPubdateDays').value = c.pubdate_days ?? 0;
-            document.getElementById('wfBatchSize').value = c.batch_size ?? 0;
-            document.getElementById('wfBatchDelay').value = c.batch_delay ?? 60;
-            document.getElementById('wfStopAfterDone').classList.toggle('on', c.stop_after_done !== false);
-            // 加载UP主
-            loadWfUpmasters();
-            renderWorkflowList();
-        }
-
-        async function loadWfUpmasters() {
-            try {
-                const resp = await fetch('/api/upmasters');
-                const data = await resp.json();
-                wfUpmasters = data.ups || [];
-                // 如果工作流已有UP配置，用工作流的；否则用全部UP
-                if (currentWF && currentWF.ups && currentWF.ups.length > 0) {
-                    renderWfUpTable();
-                } else {
-                    // 初始化工作流UP列表
-                    currentWF.ups = wfUpmasters.map(up => ({
-                        name: up.name,
-                        uid: up.uid,
-                        categories: Array.isArray(up.categories) ? up.categories : [up.categories],
-                        enabled: true,
-                        repeat: 1
-                    }));
-                    renderWfUpTable();
+        function selectFlowWorkflow(id) {
+            currentFlowWF = flowWorkflows.find(w => w.id === id);
+            if (!currentFlowWF) return;
+            document.getElementById('flowName').value = currentFlowWF.name || '';
+            // 清空画布并加载节点
+            flowEditor.clear();
+            if (currentFlowWF.drawflow) {
+                flowEditor.import(currentFlowWF.drawflow);
+                // 恢复节点样式
+                const nodes = flowEditor.drawflow.drawflow.Home.data;
+                const classMap = {start:'wf-nd-start',up:'wf-nd-up',delay:'wf-nd-delay',filter:'wf-nd-filter',push:'wf-nd-push',end:'wf-nd-end'};
+                for (const id in nodes) {
+                    const node = nodes[id];
+                    const el = document.querySelector(`#node-${id}`);
+                    if (el) el.classList.add(classMap[node.name] || '');
+                    updateNodeDisplay(parseInt(id), node.name, node.data);
                 }
-            } catch (e) {
-                showToast('加载UP主失败');
             }
+            renderFlowList();
         }
 
-        function renderWfUpTable() {
-            const container = document.getElementById('wfUpTable');
-            if (!currentWF || !currentWF.ups) return;
-            container.innerHTML = currentWF.ups.map((up, i) => `
-                <div class="up-item" style="${!up.enabled ? 'opacity:0.4;' : ''}" data-wf-up-index="${i}">
-                    <input type="checkbox" ${up.enabled ? 'checked' : ''} onchange="toggleWfUp(${i}, this.checked)" style="margin-right:4px;">
-                    <div style="flex:1;min-width:0;">
-                        <input type="text" value="${escapeHtml(up.name)}" onchange="updateWfUp(${i}, 'name', this.value)"
-                            style="border:none;background:transparent;color:var(--ink);font-size:14px;font-weight:500;width:100%;outline:none;">
-                        <div style="display:flex;gap:8px;align-items:center;margin-top:2px;">
-                            <input type="number" value="${up.uid}" onchange="updateWfUp(${i}, 'uid', parseInt(this.value))"
-                                style="border:1px solid var(--hairline);border-radius:4px;padding:2px 6px;font-size:11px;width:100px;background:var(--canvas);color:var(--ink);">
-                            <input type="text" value="${(up.categories||[]).join(',')}" onchange="updateWfUp(${i}, 'categories', this.value.split(',').map(s=>s.trim()).filter(s=>s))"
-                                placeholder="分类" style="border:1px solid var(--hairline);border-radius:4px;padding:2px 6px;font-size:11px;flex:1;min-width:0;background:var(--canvas);color:var(--ink);">
-                        </div>
-                    </div>
-                    <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">
-                        <label style="font-size:11px;color:var(--mute);">重复</label>
-                        <input type="number" min="1" max="5" value="${up.repeat || 1}" onchange="updateWfUp(${i}, 'repeat', parseInt(this.value)||1)"
-                            style="width:40px;padding:2px 4px;border:1px solid var(--hairline);border-radius:4px;font-size:12px;text-align:center;background:var(--canvas);color:var(--ink);">
-                        <button onclick="removeWfUp(${i})" style="border:none;background:transparent;color:#e74c3c;cursor:pointer;font-size:16px;padding:4px;">×</button>
-                    </div>
-                </div>
-            `).join('');
+        function newFlowWorkflow() {
+            currentFlowWF = { id: '', name: '新工作流', nodes: [] };
+            document.getElementById('flowName').value = '新工作流';
+            if (!flowEditor) initDrawflow();
+            flowEditor.clear();
+            // 添加默认的 开始 → 结束
+            addFlowNode('start', 10, 40);
+            addFlowNode('end', 70, 40);
+            renderFlowList();
         }
 
-        function toggleWfUp(index, enabled) {
-            if (currentWF && currentWF.ups) {
-                currentWF.ups[index].enabled = enabled;
-                renderWfUpTable();
-            }
-        }
-
-        function updateWfUp(index, field, value) {
-            if (currentWF && currentWF.ups) {
-                currentWF.ups[index][field] = value;
-            }
-        }
-
-        function removeWfUp(index) {
-            if (currentWF && currentWF.ups) {
-                currentWF.ups.splice(index, 1);
-                renderWfUpTable();
-            }
-        }
-
-        function wfSelectAll(enable) {
-            if (currentWF && currentWF.ups) {
-                currentWF.ups.forEach(up => up.enabled = enable);
-                renderWfUpTable();
-            }
-        }
-
-        function wfMoveUp() {
-            // 简单实现：弹窗选择
-            const idx = prompt('输入要上移的UP主序号 (0开始):');
-            if (idx === null) return;
-            const i = parseInt(idx);
-            if (i > 0 && currentWF && currentWF.ups && i < currentWF.ups.length) {
-                [currentWF.ups[i-1], currentWF.ups[i]] = [currentWF.ups[i], currentWF.ups[i-1]];
-                renderWfUpTable();
-            }
-        }
-
-        function wfMoveDown() {
-            const idx = prompt('输入要下移的UP主序号 (0开始):');
-            if (idx === null) return;
-            const i = parseInt(idx);
-            if (i >= 0 && currentWF && currentWF.ups && i < currentWF.ups.length - 1) {
-                [currentWF.ups[i+1], currentWF.ups[i]] = [currentWF.ups[i], currentWF.ups[i+1]];
-                renderWfUpTable();
-            }
-        }
-
-        function showAddUpDialog() {
-            document.getElementById('addUpDialog').style.display = '';
-            document.getElementById('newUpName').value = '';
-            document.getElementById('newUpUid').value = '';
-            document.getElementById('newUpCats').value = '';
-        }
-
-        function hideAddUpDialog() {
-            document.getElementById('addUpDialog').style.display = 'none';
-        }
-
-        async function confirmAddUp() {
-            const name = document.getElementById('newUpName').value.trim();
-            const uid = parseInt(document.getElementById('newUpUid').value);
-            const cats = document.getElementById('newUpCats').value.split(',').map(s => s.trim()).filter(s => s);
-            if (!name || !uid) { showToast('请填写名称和UID'); return; }
-
-            // 调用后端添加到 upmasters.json
-            try {
-                const resp = await fetch('/api/upmasters/add', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, uid, categories: cats })
+        // 导出流程图为可执行格式
+        function exportFlowData() {
+            const drawflowData = flowEditor.export();
+            const nodes = drawflowData.drawflow.Home.data;
+            // 按连接关系排序节点
+            const ordered = [];
+            const visited = new Set();
+            function trace(id) {
+                if (visited.has(id)) return;
+                visited.add(id);
+                const node = nodes[id];
+                if (!node) return;
+                ordered.push({
+                    id: parseInt(id),
+                    type: node.name,
+                    data: node.data || {},
+                    outputs: node.outputs || {}
                 });
-                const data = await resp.json();
-                if (data.ok) {
-                    // 同时添加到当前工作流
-                    if (currentWF && currentWF.ups) {
-                        currentWF.ups.push({ name, uid, categories: cats, enabled: true, repeat: 1 });
-                        renderWfUpTable();
+                // 跟踪输出连接
+                for (const key in node.outputs) {
+                    for (const conn of (node.outputs[key].connections || [])) {
+                        trace(conn.node);
                     }
-                    hideAddUpDialog();
-                    showToast('UP主已添加');
-                } else {
-                    showToast(data.msg || '添加失败');
                 }
-            } catch (e) {
-                showToast('无法连接服务器');
             }
+            // 找到start节点开始
+            for (const id in nodes) {
+                if (nodes[id].name === 'start') {
+                    trace(id);
+                    break;
+                }
+            }
+            // 加入未访问的节点
+            for (const id in nodes) {
+                if (!visited.has(id)) trace(id);
+            }
+            return { nodes: ordered, drawflow: drawflowData };
         }
 
-        function newWorkflow() {
-            currentWF = {
-                id: '',
-                name: '新工作流',
-                created: '',
-                config: {
-                    total_limit: 800,
-                    max_per_up: 50,
-                    duration_min: 60,
-                    duration_max: 3600,
-                    pubdate_days: 0,
-                    delay_between_ups: 5,
-                    delay_between_pages: 8,
-                    batch_size: 0,
-                    batch_delay: 60,
-                    stop_after_done: true
-                },
-                ups: []
-            };
-            document.getElementById('workflowEditor').style.display = '';
-            document.getElementById('workflowEmpty').style.display = 'none';
-            document.getElementById('wfName').value = currentWF.name;
-            const c = currentWF.config;
-            document.getElementById('wfTotalLimit').value = c.total_limit;
-            document.getElementById('wfMaxPerUp').value = c.max_per_up;
-            document.getElementById('wfDurationMin').value = c.duration_min;
-            document.getElementById('wfDurationMax').value = c.duration_max;
-            document.getElementById('wfDelayUps').value = c.delay_between_ups;
-            document.getElementById('wfDelayPages').value = c.delay_between_pages;
-            document.getElementById('wfPubdateDays').value = c.pubdate_days;
-            document.getElementById('wfBatchSize').value = c.batch_size;
-            document.getElementById('wfBatchDelay').value = c.batch_delay;
-            document.getElementById('wfStopAfterDone').classList.toggle('on', c.stop_after_done);
-            loadWfUpmasters();
-            renderWorkflowList();
-        }
-
-        async function saveWorkflow() {
-            if (!currentWF) return;
-            currentWF.name = document.getElementById('wfName').value || '未命名';
-            currentWF.config = {
-                total_limit: parseInt(document.getElementById('wfTotalLimit').value) || 800,
-                max_per_up: parseInt(document.getElementById('wfMaxPerUp').value) || 50,
-                duration_min: parseInt(document.getElementById('wfDurationMin').value) || 60,
-                duration_max: parseInt(document.getElementById('wfDurationMax').value) || 3600,
-                pubdate_days: parseInt(document.getElementById('wfPubdateDays').value) || 0,
-                delay_between_ups: parseInt(document.getElementById('wfDelayUps').value) || 5,
-                delay_between_pages: parseInt(document.getElementById('wfDelayPages').value) || 8,
-                batch_size: parseInt(document.getElementById('wfBatchSize').value) || 0,
-                batch_delay: parseInt(document.getElementById('wfBatchDelay').value) || 60,
-                stop_after_done: document.getElementById('wfStopAfterDone').classList.contains('on')
-            };
+        async function saveFlowWorkflow() {
+            if (!currentFlowWF) { showToast('请先新建或选择工作流'); return; }
+            currentFlowWF.name = document.getElementById('flowName').value || '未命名';
+            const flowData = exportFlowData();
+            currentFlowWF.nodes = flowData.nodes;
+            currentFlowWF.drawflow = flowData.drawflow;
+            currentFlowWF.config = { total_limit: 800, stop_after_done: true };
 
             try {
                 const resp = await fetch('/api/workflows/save', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(currentWF)
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify(currentFlowWF)
                 });
                 const data = await resp.json();
                 if (data.ok) {
-                    currentWF = data.workflow;
+                    currentFlowWF = data.workflow;
                     showToast('工作流已保存');
-                    loadWorkflows();
-                } else {
-                    showToast(data.msg || '保存失败');
-                }
-            } catch (e) {
-                showToast('无法连接服务器');
-            }
+                    loadFlowWorkflows();
+                } else { showToast(data.msg||'保存失败'); }
+            } catch(e) { showToast('无法连接服务器'); }
         }
 
-        async function runWorkflow() {
-            if (!currentWF || !currentWF.id) {
-                showToast('请先保存工作流');
-                return;
+        async function runFlowWorkflow() {
+            if (!currentFlowWF || !currentFlowWF.id) {
+                await saveFlowWorkflow();
+                if (!currentFlowWF || !currentFlowWF.id) return;
             }
-            // 先保存再运行
-            await saveWorkflow();
             try {
                 const resp = await fetch('/api/workflows/run', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: currentWF.id })
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({id: currentFlowWF.id})
                 });
                 const data = await resp.json();
                 if (data.ok) {
                     showToast('工作流已启动');
                     switchTab('monitor');
-                } else {
-                    showToast(data.msg || '启动失败');
-                }
-            } catch (e) {
-                showToast('无法连接服务器');
-            }
+                } else { showToast(data.msg||'启动失败'); }
+            } catch(e) { showToast('无法连接服务器'); }
         }
 
-        async function deleteWorkflow() {
-            if (!currentWF || !currentWF.id) {
-                showToast('请先选择工作流');
-                return;
-            }
-            if (!confirm(`确认删除工作流 "${currentWF.name}"？`)) return;
+        async function deleteFlowWorkflow() {
+            if (!currentFlowWF || !currentFlowWF.id) { showToast('请先选择工作流'); return; }
+            if (!confirm(`确认删除 "${currentFlowWF.name}"？`)) return;
             try {
                 const resp = await fetch('/api/workflows/delete', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: currentWF.id })
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({id: currentFlowWF.id})
                 });
                 const data = await resp.json();
                 if (data.ok) {
                     showToast('已删除');
-                    currentWF = null;
-                    document.getElementById('workflowEditor').style.display = 'none';
-                    document.getElementById('workflowEmpty').style.display = '';
-                    loadWorkflows();
-                } else {
-                    showToast(data.msg || '删除失败');
+                    currentFlowWF = null;
+                    if (flowEditor) flowEditor.clear();
+                    loadFlowWorkflows();
                 }
-            } catch (e) {
-                showToast('无法连接服务器');
-            }
+            } catch(e) {}
         }
 
         // === 初始化 ===
@@ -1364,6 +1461,7 @@
             setInterval(poll, 1000);
             // 再异步加载UP主列表和设置（不阻塞轮询）
             loadUpmasters().catch(function(){});
+            loadFlowWorkflows().catch(function(){});
             loadSettings().catch(function(){});
         }
 

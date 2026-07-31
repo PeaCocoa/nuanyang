@@ -176,8 +176,73 @@ def load_workflow():
         return None
 
 
+def parse_flow_nodes(wf):
+    """从流程图工作流中提取UP主列表和配置"""
+    nodes = wf.get("nodes", [])
+    if not nodes:
+        # 旧格式兼容
+        return get_workflow_upmasters(wf), wf.get("config", {})
+
+    upmasters = []
+    delay_seconds = REQUEST_DELAY
+    filter_config = {}
+    has_push = False
+
+    for node in nodes:
+        ntype = node.get("type", "")
+        data = node.get("data", {})
+
+        if ntype == "up":
+            uid_str = str(data.get("uid", "")).strip()
+            if not uid_str:
+                continue
+            try:
+                uid = int(uid_str)
+            except ValueError:
+                continue
+            name = data.get("uname", f"UP主{uid}")
+            cats_str = data.get("categories", "")
+            categories = [c.strip() for c in cats_str.split(",") if c.strip()] if cats_str else []
+            repeat = max(1, int(data.get("repeat", "1") or "1"))
+            for _ in range(repeat):
+                upmasters.append({"name": name, "uid": uid, "categories": categories})
+
+        elif ntype == "delay":
+            try:
+                delay_seconds = int(data.get("seconds", "30"))
+            except ValueError:
+                delay_seconds = 30
+
+        elif ntype == "filter":
+            try:
+                filter_config["duration_min"] = int(data.get("duration_min", "60"))
+            except ValueError:
+                filter_config["duration_min"] = 60
+            try:
+                filter_config["duration_max"] = int(data.get("duration_max", "3600"))
+            except ValueError:
+                filter_config["duration_max"] = 3600
+            try:
+                filter_config["pubdate_days"] = int(data.get("pubdate_days", "0"))
+            except ValueError:
+                filter_config["pubdate_days"] = 0
+
+        elif ntype == "push":
+            has_push = True
+
+    config = {
+        "total_limit": wf.get("config", {}).get("total_limit", MAX_VIDEOS_TOTAL),
+        "delay_between_ups": delay_seconds,
+        "delay_between_pages": SEARCH_PAGE_DELAY,
+        "stop_after_done": True,
+        "filter": filter_config,
+        "has_push": has_push,
+    }
+    return upmasters, config
+
+
 def get_workflow_upmasters(wf):
-    """根据工作流配置构建UP主列表"""
+    """根据工作流配置构建UP主列表（旧格式兼容）"""
     wf_ups = wf.get("ups", [])
     if not wf_ups:
         # 没有自定义UP列表，用全部
@@ -247,10 +312,19 @@ def run():
 
     # 检查是否有工作流配置
     wf = load_workflow()
+    filter_override = None
+    do_push = True
     if wf:
         log(f"[工作流] 使用工作流: {wf.get('name', '未命名')}")
-        config = wf.get("config", {})
-        upmasters = get_workflow_upmasters(wf)
+        # 判断是流程图格式还是旧格式
+        if wf.get("nodes"):
+            upmasters, wf_config = parse_flow_nodes(wf)
+            config = wf_config
+            filter_override = config.get("filter", {})
+            do_push = config.get("has_push", True)
+        else:
+            config = wf.get("config", {})
+            upmasters = get_workflow_upmasters(wf)
         total_limit = config.get("total_limit", MAX_VIDEOS_TOTAL)
         delay_ups = config.get("delay_between_ups", REQUEST_DELAY)
         delay_pages = config.get("delay_between_pages", SEARCH_PAGE_DELAY)
@@ -258,6 +332,8 @@ def run():
         batch_size = config.get("batch_size", 0)
         batch_delay = config.get("batch_delay", 60)
         log(f"[工作流] UP主数: {len(upmasters)}, 总量上限: {total_limit}")
+        if filter_override:
+            log(f"[工作流] 筛选覆盖: 时长 {filter_override.get('duration_min',60)}-{filter_override.get('duration_max',3600)}s")
     else:
         upmasters = get_crawl_upmasters()
         total_limit = MAX_VIDEOS_TOTAL
@@ -316,7 +392,10 @@ def run():
             log(f"  共找到 {len(search_results)} 条视频，直接筛选...")
             status.set_current(i, "filtering")
 
-            up_videos = filter_and_transform(search_results, name, categories)
+            if filter_override:
+                up_videos = filter_and_transform_override(search_results, name, categories, filter_override)
+            else:
+                up_videos = filter_and_transform(search_results, name, categories)
             all_videos.extend(up_videos)
 
             log(f"  通过筛选: {len(up_videos)} 条, 累计: {len(all_videos)} 条")
@@ -371,7 +450,10 @@ def run():
     log("=" * 50)
 
     # 推送到GitHub
-    git_push()
+    if do_push:
+        git_push()
+    else:
+        log("[工作流] 跳过推送（流程中无推送节点）")
 
     # 爬完后清理工作流文件
     if stop_after_done:
