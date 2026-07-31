@@ -166,20 +166,13 @@ def get_crawl_upmasters():
 # =====================
 
 def git_push():
-    """推送数据到GitHub（最多重试5次，间隔2分钟）"""
+    """推送数据到GitHub（最多重试3次，间隔20秒）"""
     import subprocess
 
-    token = os.environ.get("DEPLOY_TOKEN", "")
-    repo_url = "https://github.com/PeaCocoa/nuanyang.git"
-    if token:
-        push_url = f"https://{token}@github.com/PeaCocoa/nuanyang.git"
-    else:
-        push_url = repo_url
-
-    for attempt in range(5):
+    for attempt in range(3):
         try:
             log(f"[GIT] 推送数据 (第{attempt+1}次尝试)...")
-            result = subprocess.run(
+            subprocess.run(
                 ["git", "add", "-A"],
                 cwd=BASE_DIR, capture_output=True, text=True, timeout=30
             )
@@ -187,33 +180,22 @@ def git_push():
                 ["git", "commit", "-m", f"自动更新视频数据 {time.strftime('%Y-%m-%d %H:%M')}"],
                 cwd=BASE_DIR, capture_output=True, text=True, timeout=30
             )
+            # 直接用 origin remote（URL中已内嵌Token）
             result = subprocess.run(
-                ["git", "push", push_url, "main"],
+                ["git", "push", "origin", "main"],
                 cwd=BASE_DIR, capture_output=True, text=True, timeout=60
             )
             if result.returncode == 0:
                 log("[GIT] 推送成功")
                 return True
             else:
-                log(f"[GIT] 推送失败: {result.stderr[:100]}", "warn")
+                log(f"[GIT] 推送失败: {result.stderr[:150]}", "warn")
         except Exception as e:
             log(f"[GIT] 推送异常: {e}", "warn")
 
-        if attempt < 4:
-            log(f"[GIT] {120}秒后重试...")
-            time.sleep(120)
-
-    # 尝试用 origin 回退
-    try:
-        result = subprocess.run(
-            ["git", "push", "origin", "main"],
-            cwd=BASE_DIR, capture_output=True, text=True, timeout=60
-        )
-        if result.returncode == 0:
-            log("[GIT] origin推送成功")
-            return True
-    except:
-        pass
+        if attempt < 2:
+            log("[GIT] 20秒后重试...")
+            time.sleep(20)
 
     log("[GIT] 推送失败，已达最大重试次数", "error")
     return False
