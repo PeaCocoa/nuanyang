@@ -48,6 +48,9 @@ const batchOptions = document.getElementById("batchOptions");
 const clearHistoryBtn = document.getElementById("clearHistoryBtn");
 const loadMoreEl = document.getElementById("loadMore");
 const toastEl = document.getElementById("toast");
+const searchInput = document.getElementById("searchInput");
+const searchClear = document.getElementById("searchClear");
+let searchKeyword = "";
 
 // =====================
 // 工具函数：获取视频分类（兼容数组/字符串）
@@ -327,9 +330,20 @@ function renderCategories() {
 }
 
 function getPool() {
-    if (currentCategory === "全部") return allVideos;
-    // 检查视频的分类数组中是否包含当前选中的分类
-    return allVideos.filter(v => getVideoCategories(v).includes(currentCategory));
+    let pool = allVideos;
+    if (currentCategory !== "全部") {
+        pool = pool.filter(v => getVideoCategories(v).includes(currentCategory));
+    }
+    if (searchKeyword) {
+        const kw = searchKeyword.toLowerCase();
+        pool = pool.filter(v => {
+            const title = (v.title || "").toLowerCase();
+            const upName = (v.up_name || "").toLowerCase();
+            const cats = getVideoCategories(v).join(" ").toLowerCase();
+            return title.includes(kw) || upName.includes(kw) || cats.includes(kw);
+        });
+    }
+    return pool;
 }
 
 function getTopRecommendations() {
@@ -645,3 +659,23 @@ applyDarkMode();
 applyBatch();
 recommendToggle.checked = settings.recommend;
 loadData();
+
+
+// === 搜索功能 ===
+let searchDebounce = null;
+searchInput.addEventListener("input", (e) => {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => {
+        searchKeyword = e.target.value.trim();
+        searchClear.style.display = searchKeyword ? "block" : "none";
+        refreshList();
+    }, 300);
+});
+
+searchClear.addEventListener("click", () => {
+    searchInput.value = "";
+    searchKeyword = "";
+    searchClear.style.display = "none";
+    refreshList();
+    searchInput.focus();
+});

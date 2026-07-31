@@ -141,10 +141,22 @@ class BiliCrawler:
 
         if self.is_logged_in():
             print("[INFO] 登录状态有效")
+            if not self.headless:
+                # 已登录，切换到无头模式（关掉浏览器窗口）
+                self.context.close()
+                self.context = self.playwright.chromium.launch_persistent_context(
+                    user_data_dir=AUTH_DIR,
+                    headless=True,
+                    viewport={"width": 1280, "height": 800},
+                    locale="zh-CN",
+                    args=launch_args,
+                )
+                self.page = self.context.pages[0] if self.context.pages else self.context.new_page()
+                self.page.goto("https://www.bilibili.com", wait_until="domcontentloaded")
+                time.sleep(1)
         else:
             # 未登录，需要弹出浏览器让用户扫码
             print("[INFO] 未登录，需要扫码登录B站...")
-            # 重新以非无头模式启动
             self.context.close()
             self.context = self.playwright.chromium.launch_persistent_context(
                 user_data_dir=AUTH_DIR,
@@ -155,6 +167,18 @@ class BiliCrawler:
             )
             self.page = self.context.pages[0] if self.context.pages else self.context.new_page()
             self._login()
+            # 登录成功后，切换到无头模式（关掉浏览器窗口）
+            self.context.close()
+            self.context = self.playwright.chromium.launch_persistent_context(
+                user_data_dir=AUTH_DIR,
+                headless=True,
+                viewport={"width": 1280, "height": 800},
+                locale="zh-CN",
+                args=launch_args,
+            )
+            self.page = self.context.pages[0] if self.context.pages else self.context.new_page()
+            self.page.goto("https://www.bilibili.com", wait_until="domcontentloaded")
+            time.sleep(1)
 
     def _login(self):
         """打开B站登录页面，等待用户扫码登录"""
@@ -243,49 +267,41 @@ class BiliCrawler:
 
     def get_up_videos(self, mid: str, page: int = 1) -> list:
         """
-        通过UID直接获取UP主的视频列表（不依赖搜索，不会漏视频）
-
-        Args:
-            mid: UP主的UID
-            page: 页码（每页30条）
-
-        Returns:
-            视频列表 [{bvid, title, author, duration, ...}, ...]
+        通过访问UP主空间页面，拦截页面自身的wbi API响应获取视频列表
+        页面浏览走正常wbi签名，不会触发API风控
         """
-        max_retries = 5
-        for attempt in range(max_retries):
-            try:
-                result = self.page.evaluate(JS_SPACE_VIDEOS, {
-                    "mid": str(mid),
-                    "pn": str(page),
-                })
-                # 检测返回是否为风控空列表
-                if not result:
-                    # 空结果可能是正常的（没有视频），也可能是风控
-                    # 用 nav API 快速检测是否被风控
-                    nav_ok = self.page.evaluate(JS_CHECK_LOGIN)
-                    if nav_ok is False:
-                        # 未登录或被风控，等待后重试
-                        if attempt < max_retries - 1:
-                            wait = [20, 30, 50, 30, 20][attempt]
-                            print(f"  [WARN] 疑似风控，{wait}秒后重试 ({attempt+1}/{max_retries})...")
-                            time.sleep(wait)
-                            self.page.goto("https://www.bilibili.com", wait_until="domcontentloaded")
-                            time.sleep(3)
-                            continue
-                return result or []
-            except Exception as e:
-                err_msg = str(e)
-                if "Unexpected token" in err_msg and attempt < max_retries - 1:
-                    wait = [20, 30, 50, 30, 20][attempt]
-                    print(f"  [WARN] 获取UP视频触发风控，{wait}秒后重试 ({attempt+1}/{max_retries})...")
-                    time.sleep(wait)
-                    self.page.goto("https://www.bilibili.com", wait_until="domcontentloaded")
-                    time.sleep(3)
-                    continue
-                print(f"  [ERROR] 获取UP视频失败: {e}")
-                return []
-        return []
+        captured = []
+
+        def _on_response(resp):
+            if 'arc/search' in resp.url and 'wbi' in resp.url:
+                try:
+                    data = resp.json()
+                    if data.get('code') == 0 and data.get('data', {}).get('list', {}).get('vlist'):
+                        captured.extend(data['data']['list']['vlist'])
+                except:
+                    pass
+
+        self.page.on('response', _on_response)
+
+        try:
+            url = f"https://space.bilibili.com/{mid}/video?pn={page}&ps=30&order=pubdate"
+            self.page.goto(url, wait_until='networkidle')
+            time.sleep(3)
+        finally:
+            self.page.remove_listener('response', _on_response)
+
+        result = []
+        for v in captured:
+            result.append({
+                'bvid': v.get('bvid', ''),
+                'title': v.get('title', ''),
+                'author': v.get('author', ''),
+                'duration': v.get('length', 0),
+                'play': v.get('play', 0),
+                'pubdate': v.get('created', 0),
+                'pic': v.get('pic', ''),
+            })
+        return result
 
     def get_video_info(self, bvid: str) -> dict:
         """

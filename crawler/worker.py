@@ -38,7 +38,24 @@ def log(msg, level="info"):
     print(msg, flush=True)
     status.log(msg, level)
 
+def parse_duration(val):
+    """将B站的时长字段转为秒数（可能是 'MM:SS'、'HH:MM:SS' 或数字）"""
+    if isinstance(val, (int, float)):
+        return int(val)
+    if not val:
+        return 0
+    parts = str(val).split(":")
+    if len(parts) == 2:
+        return int(parts[0]) * 60 + int(parts[1])
+    elif len(parts) == 3:
+        return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+    try:
+        return int(val)
+    except:
+        return 0
+
 def format_duration(seconds):
+    seconds = parse_duration(seconds)
     if seconds < 3600:
         return f"{seconds // 60}:{seconds % 60:02d}"
     return f"{seconds // 3600}:{(seconds % 3600) // 60:02d}:{seconds % 60:02d}"
@@ -100,7 +117,7 @@ def filter_and_transform(videos, up_name, categories):
     result = []
     for v in videos:
         title = v.get("title", "")
-        duration = v.get("duration", 0)
+        duration = parse_duration(v.get("duration", 0))
         pubdate = v.get("pubdate", 0)
         clean_title = re.sub(r"<[^>]+>", "", title)
 
@@ -311,3 +328,6 @@ def run():
     git_push()
 
     status.finish("done")
+
+if __name__ == "__main__":
+    run()

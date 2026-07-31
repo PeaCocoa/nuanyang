@@ -218,6 +218,75 @@ body {
     transform: scale(0.94);
 }
 
+
+/* === 搜索框 === */
+.search-box {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    padding: 4px 12px;
+    background: var(--cloud);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--hairline);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-box:focus-within {
+    border-color: var(--rausch);
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.12);
+}
+
+.search-icon {
+    flex-shrink: 0;
+    color: var(--ink-3, #999);
+}
+
+.search-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 14px;
+    color: var(--ink);
+    width: 140px;
+    font-family: inherit;
+}
+
+.search-input::placeholder {
+    color: var(--ink-3, #999);
+}
+
+.search-clear {
+    flex-shrink: 0;
+    border: none;
+    background: transparent;
+    color: var(--ink-3, #999);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.search-clear:hover {
+    background: var(--hairline);
+    color: var(--ink);
+}
+
+[data-theme="dark"] .search-box {
+    background: rgba(255,255,255,0.06);
+}
+
+[data-theme="dark"] .search-input {
+    color: var(--ink);
+}
+
 /* === 视频列表 === */
 .video-list {
     padding: var(--space-4) var(--space-5) var(--space-8);
