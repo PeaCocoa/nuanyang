@@ -313,7 +313,8 @@ function renderCategories() {
         });
     });
 
-    categoriesEl.innerHTML = "";
+    // 只移除分类按钮，保留搜索框
+    categoriesEl.querySelectorAll(".category-btn").forEach(b => b.remove());
     cats.forEach(cat => {
         const btn = document.createElement("button");
         btn.className = "category-btn" + (cat === currentCategory ? " active" : "");
@@ -325,7 +326,7 @@ function renderCategories() {
             btn.classList.add("active");
             refreshList();
         });
-        categoriesEl.appendChild(btn);
+        categoriesEl.insertBefore(btn, categoriesEl.querySelector(".search-box"));
     });
 }
 
