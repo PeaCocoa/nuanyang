@@ -23,16 +23,26 @@ WEB_DIR = os.path.join(BASE_DIR, "web")
 # 工具函数
 # =====================
 
-# 停止检查
+# worker 启动时间，用于判断 stop_signal 是否为本次启动后产生的
+_WORKER_START_TIME = time.time()
+
+# 停止检查（基于时间戳，残留的旧信号自动失效）
 def is_stop_requested():
     stop_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "stop_signal")
-    if os.path.exists(stop_file):
-        try:
+    if not os.path.exists(stop_file):
+        return False
+    try:
+        with open(stop_file, "r") as f:
+            signal_time = float(f.read().strip())
+        # 只有信号时间戳新于 worker 启动时间，才认为是有效停止指令
+        if signal_time > _WORKER_START_TIME:
             os.remove(stop_file)
-        except:
-            pass
-        return True
-    return False
+            return True
+        # 旧残留信号，静默删除
+        os.remove(stop_file)
+        return False
+    except Exception:
+        return False
 
 def log(msg, level="info"):
     print(msg, flush=True)

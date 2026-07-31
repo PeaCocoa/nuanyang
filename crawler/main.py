@@ -123,7 +123,7 @@ class ConsoleHandler(http.server.SimpleHTTPRequestHandler):
     def _handle_stop(self):
         stop_file = os.path.join(DATA_DIR, "stop_signal")
         with open(stop_file, "w") as f:
-            f.write("stop")
+            f.write(str(time.time()))
         self._serve_json({"ok": True, "msg": "停止指令已发送"})
 
     def _serve_json(self, data):
@@ -234,11 +234,6 @@ class ConsoleHandler(http.server.SimpleHTTPRequestHandler):
                     self._serve_json({"ok": False, "msg": "爬虫正在运行中"})
                     return
 
-            # 清理残留的停止信号文件，避免刚启动就被停止
-            stop_file = os.path.join(DATA_DIR, "stop_signal")
-            if os.path.exists(stop_file):
-                os.remove(stop_file)
-
             # 保存当前工作流配置供 worker 读取
             with open(CURRENT_WF_FILE, "w", encoding="utf-8") as f:
                 json.dump(wf, f, ensure_ascii=False, indent=2)
@@ -336,11 +331,6 @@ class ConsoleHandler(http.server.SimpleHTTPRequestHandler):
             # 清理残留的工作流文件，确保普通模式不走工作流
             if os.path.exists(CURRENT_WF_FILE):
                 os.remove(CURRENT_WF_FILE)
-
-            # 清理残留的停止信号文件，避免刚启动就被停止
-            stop_file = os.path.join(DATA_DIR, "stop_signal")
-            if os.path.exists(stop_file):
-                os.remove(stop_file)
 
             # 用子进程启动爬虫 worker（不捕获stdout，直接输出到控制台）
             _crawl_process = subprocess.Popen(
