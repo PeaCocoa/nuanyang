@@ -636,18 +636,63 @@ function showToast(msg) {
 // 数据加载
 // =====================
 
+// 记录上次加载的视频数，用于检测更新
+let lastVideoCount = 0;
+
 async function loadData() {
     try {
-        const resp = await fetch(DATA_URL);
+        // 加时间戳破坏浏览器缓存 + no-cache 确保拿到最新数据
+        const resp = await fetch(DATA_URL + "?t=" + Date.now(), {
+            cache: "no-store"
+        });
         const data = await resp.json();
-        allVideos = data.videos || [];
-        renderCategories();
-        refreshList();
-        setupScrollObserver();
+        const newVideos = data.videos || [];
+        allVideos = newVideos;
+
+        // 如果视频数量变化或首次加载，重新渲染
+        if (lastVideoCount === 0) {
+            renderCategories();
+            refreshList();
+            setupScrollObserver();
+        } else if (newVideos.length !== lastVideoCount) {
+            // 数据更新了，静默刷新
+            renderCategories();
+            refreshList();
+            showToast("视频已更新");
+        }
+        lastVideoCount = newVideos.length;
+
+        // 记录更新时间到 localStorage
+        localStorage.setItem("nuanyang-updated", data.updated || "");
+
+        // 5分钟后自动检查更新
+        setTimeout(checkForUpdate, 5 * 60 * 1000);
     } catch (e) {
         videoListEl.innerHTML = '<div class="empty">数据加载失败，请稍后再试</div>';
         console.error("加载失败:", e);
     }
+}
+
+// 静默检查视频数据更新
+async function checkForUpdate() {
+    try {
+        const resp = await fetch(DATA_URL + "?t=" + Date.now(), {
+            cache: "no-store"
+        });
+        const data = await resp.json();
+        const newVideos = data.videos || [];
+        if (newVideos.length !== lastVideoCount) {
+            allVideos = newVideos;
+            lastVideoCount = newVideos.length;
+            renderCategories();
+            refreshList();
+            showToast("发现新视频，已更新");
+        }
+    } catch (e) {
+        // 静默失败
+    }
+    // 继续每5分钟检查
+    setTimeout(checkForUpdate, 5 * 60 * 1000);
 }
 
 // =====================
