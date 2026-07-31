@@ -571,8 +571,10 @@ function openPlayer(video) {
     playerContainer.innerHTML = `<iframe src="${video.iframe_url}"
         allowfullscreen="true"
         scrolling="no"
-        sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+        sandbox="allow-scripts allow-same-origin"
     ></iframe>`;
+    // 拦截iframe内跳转
+    blockIframeNavigation();
     playerModal.classList.add("active");
     document.body.style.overflow = "hidden";
 }
@@ -597,6 +599,45 @@ playerModal.addEventListener("click", (e) => {
 window.addEventListener("popstate", () => {
     if (playerModal.classList.contains("active")) closePlayer();
 });
+
+// === 拦截iframe内跳转，防止跳到B站网页或App ===
+function blockIframeNavigation() {
+    const iframe = playerContainer.querySelector("iframe");
+    if (!iframe) return;
+
+    // 拦截 iframe 内的点击导致的导航
+    try {
+        iframe.addEventListener("load", function() {
+            try {
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                // 拦截所有链接点击
+                doc.addEventListener("click", function(e) {
+                    const a = e.target.closest("a");
+                    if (a && a.href) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                }, true);
+                // 拦截 window.open
+                iframe.contentWindow.open = function() { return null; };
+            } catch(e) {
+                // 跨域无法访问，忽略
+            }
+        });
+    } catch(e) {}
+
+    // 拦截顶层窗口跳转（B站播放器可能尝试 window.top.location）
+    window.addEventListener("beforeunload", preventNav, { once: true });
+}
+
+function preventNav(e) {
+    // 如果播放器开着，阻止任何导航
+    if (playerModal.classList.contains("active")) {
+        e.preventDefault();
+        e.returnValue = "";
+        return "";
+    }
+}
 
 // =====================
 // 设置面板
