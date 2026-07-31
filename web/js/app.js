@@ -326,7 +326,7 @@ function renderCategories() {
             btn.classList.add("active");
             refreshList();
         });
-        categoriesEl.insertBefore(btn, categoriesEl.querySelector(".search-box"));
+        categoriesEl.insertBefore(btn, categoriesEl.querySelector(".search-box").nextSibling);
     });
 }
 
