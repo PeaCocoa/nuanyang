@@ -386,12 +386,13 @@ def run():
             log(f"[工作流] 筛选覆盖: 时长 {filter_override.get('duration_min',60)}-{filter_override.get('duration_max',3600)}s")
     else:
         upmasters = get_crawl_upmasters()
-        total_limit = MAX_VIDEOS_TOTAL
-        delay_ups = REQUEST_DELAY
-        delay_pages = SEARCH_PAGE_DELAY
+        settings = status.get_settings()
+        total_limit = settings.get("total_limit", MAX_VIDEOS_TOTAL)
+        delay_ups = settings.get("delay_between_ups", REQUEST_DELAY)
+        delay_pages = settings.get("delay_between_pages", SEARCH_PAGE_DELAY)
         stop_after_done = True
-        batch_size = 0
-        batch_delay = 60
+        batch_size = settings.get("batch_size", 0)
+        batch_delay = settings.get("batch_delay", 60)
 
     global _wf_delay_pages
     _wf_delay_pages = delay_pages

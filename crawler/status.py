@@ -60,11 +60,16 @@ MAX_LOGS = 300
 
 _default_settings = {
     "selected_ups": [],       # 空 = 全部UP主; 非空 = 只爬选中的
-    "max_videos_per_up": 5,
+    "max_videos_per_up": 50,  # 每位UP主最多保留的视频数
     "pubdate_days": 0,        # 0 = 不限制; >0 = 只取 N 天内的投稿
     "duration_min": 60,       # 最短时长（秒）
     "duration_max": 3600,     # 最长时长（秒，60分钟）
     "test_mode": False,       # 测试模式：只爬前2个UP主
+    "total_limit": 800,       # 视频总数上限
+    "delay_between_ups": 5,   # UP主之间的请求间隔（秒）
+    "delay_between_pages": 8, # 翻页间隔（秒）
+    "batch_size": 0,          # 批量大小（0=不分批）
+    "batch_delay": 60,        # 批次间隔（秒）
 }
 
 def get_settings() -> dict:
