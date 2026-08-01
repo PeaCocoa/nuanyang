@@ -628,7 +628,7 @@ body.dark .top-recommend-card {
 .toggle {
     position: relative;
     display: inline-block;
-    width: 52px;
+    width: 100px;
     height: 30px;
     flex-shrink: 0;
 }
@@ -875,7 +875,7 @@ body.dark .top-recommend-card {
     flex-shrink: 0;
     color: var(--rausch);
     font-weight: 600;
-    width: 52px;
+    width: 100px;
 }
 
 .changelog-text {
