@@ -634,6 +634,7 @@
         <div class="header-right">
             <span class="state-badge state-idle" id="stateBadge">空闲</span>
             <button class="btn btn-primary" id="startBtn" onclick="startCrawl()">立即开爬</button>
+            <button class="btn" id="resumeBtn" onclick="resumeCrawl()" style="display:none; background:#27ae60; color:#fff;">继续爬</button>
             <button class="btn" id="stopBtn" onclick="stopCrawl()" style="display:none; background:#e74c3c; color:#fff;">停止</button>
             <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">&#127769;</button>
         </div>
@@ -937,6 +938,22 @@
             }
         }
 
+        // === 断点续爬 ===
+        async function resumeCrawl() {
+            try {
+                const resp = await fetch('/api/resume', { method: 'POST' });
+                const data = await resp.json();
+                if (data.ok) {
+                    showToast('已从断点恢复爬取');
+                    switchTab('monitor');
+                } else {
+                    showToast(data.msg || '恢复失败');
+                }
+            } catch (e) {
+                showToast('无法连接服务器');
+            }
+        }
+
         // === 停止爬虫 ===
         async function stopCrawl() {
             try {
@@ -1098,6 +1115,9 @@
             startBtn.disabled = isRunning;
             startBtn.textContent = isRunning ? '运行中...' : '立即开爬';
             document.getElementById('stopBtn').style.display = isRunning ? '' : 'none';
+            // error 状态显示"继续爬"按钮
+            const resumeBtn = document.getElementById('resumeBtn');
+            resumeBtn.style.display = (data.state === 'error' && !isRunning) ? '' : 'none';
 
             // 副标题
             const subtitle = document.getElementById('subtitle');
@@ -1114,7 +1134,7 @@
                 const elapsed = data.end_time > 0 ? Math.round((data.end_time - data.start_time) / 1000) : 0;
                 subtitle.textContent = `完成 - 耗时 ${elapsed}s - ${data.total_videos} 条视频`;
             } else if (data.state === 'error') {
-                subtitle.textContent = '爬虫出错，请检查日志';
+                subtitle.textContent = '爬虫出错 - 可点击"继续爬"从断点恢复';
             } else {
                 subtitle.textContent = '就绪 - 点击"立即开爬"开始';
             }

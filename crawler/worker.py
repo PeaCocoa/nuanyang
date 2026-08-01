@@ -8,6 +8,7 @@ import os
 import re
 import time
 import random
+import sys
 
 # 添加项目根目录到 path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -17,6 +18,7 @@ from crawler.bilibili import BiliCrawler
 import crawler.status as status
 
 DATA_DIR = os.path.join(BASE_DIR, "data")
+PROGRESS_FILE = os.path.join(DATA_DIR, "crawl_progress.json")
 WEB_DIR = os.path.join(BASE_DIR, "web")
 
 # =====================
@@ -370,12 +372,50 @@ def git_push():
     return False
 
 # =====================
+# 断点续爬：进度保存/加载
+# =====================
+
+def save_progress(done_indices, all_videos_so_far):
+    """保存爬取进度，用于断点续爬"""
+    progress = {
+        "done_indices": list(done_indices),
+        "videos": all_videos_so_far,
+        "saved_at": time.time(),
+    }
+    try:
+        with open(PROGRESS_FILE, "w", encoding="utf-8") as f:
+            json.dump(progress, f, ensure_ascii=False)
+    except Exception as e:
+        log(f"[WARN] 保存进度失败: {e}", "warn")
+
+def load_progress():
+    """加载上次爬取进度"""
+    try:
+        if os.path.isfile(PROGRESS_FILE):
+            with open(PROGRESS_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return None
+
+def clear_progress():
+    """清除进度文件"""
+    if os.path.exists(PROGRESS_FILE):
+        try:
+            os.remove(PROGRESS_FILE)
+        except:
+            pass
+
+# =====================
 # 主流程
 # =====================
 
-def run():
+def run(resume=False):
     log("=" * 50)
-    log("暖阳爬虫启动 (Playwright 版本)")
+    if resume:
+        log("暖阳爬虫启动 - 续爬模式 (跳过已完成的UP主)")
+    else:
+        log("暖阳爬虫启动 (Playwright 版本)")
     log("=" * 50)
 
     # 检查是否有工作流配置
@@ -416,7 +456,37 @@ def run():
     _wf_delay_pages = delay_pages
     log(f"共 {len(upmasters)} 位 UP主待抓取")
 
+    # 断点续爬：加载已有进度
+    done_indices = set()
+    if resume:
+        progress = load_progress()
+        if progress:
+            done_indices = set(progress.get("done_indices", []))
+            all_videos = progress.get("videos", [])
+            log(f"[续爬] 已完成 {len(done_indices)} 个UP主，已有 {len(all_videos)} 条视频")
+            # 更新状态：标记已完成的UP
+            for i in range(len(upmasters)):
+                if i in done_indices:
+                    pass  # init后再标记
+        else:
+            log("[续爬] 未找到进度文件，从头开始爬取")
+            resume = False
+
     status.init(len(upmasters), upmasters)
+
+    # 续爬模式下，恢复已完成UP的状态
+    if resume and done_indices:
+        for i in done_indices:
+            if i < len(upmasters):
+                # 从旧状态中找该UP的视频数
+                old_videos_count = 0
+                old_status = status.get_status()
+                for u in old_status.get("ups", []):
+                    if u.get("name") == upmasters[i]["name"]:
+                        old_videos_count = u.get("videos", 0)
+                        break
+                status.update_up(i, "done", videos=old_videos_count)
+                status.add_videos(old_videos_count)
 
     headless = os.environ.get("NUANYANG_HEADLESS", "") == "1"
     crawler = BiliCrawler(headless=headless)
@@ -444,6 +514,10 @@ def run():
             if is_stop_requested():
                 log("[INFO] 收到停止指令，停止抓取")
                 break
+            # 断点续爬：跳过已完成的UP
+            if i in done_indices:
+                log(f"[{i+1}/{len(upmasters)}] 跳过已完成: {up['name']}")
+                continue
             name = up["name"]
             uid = up["uid"]
             categories = up.get("categories", [])
@@ -471,6 +545,10 @@ def run():
             status.update_up(i, "done", videos=len(up_videos))
             status.add_videos(len(up_videos))
 
+            # 保存进度（每个UP完成后）
+            done_indices.add(i)
+            save_progress(done_indices, all_videos)
+
             if is_stop_requested():
                 log("[INFO] 收到停止指令，停止抓取")
                 break
@@ -488,6 +566,9 @@ def run():
 
     except Exception as e:
         log(f"[ERROR] 爬虫异常: {e}", "error")
+        # 保存当前进度，支持续爬
+        save_progress(done_indices, all_videos)
+        log(f"[续爬] 进度已保存：已完成 {len(done_indices)}/{len(upmasters)}，可点击'继续爬'恢复", "info")
         status.finish("error")
         crawler.close()
         return
@@ -533,7 +614,10 @@ def run():
             except:
                 pass
 
+    # 爬取完成，清除进度文件
+    clear_progress()
     status.finish("done")
 
 if __name__ == "__main__":
-    run()
+    resume = "--resume" in sys.argv
+    run(resume=resume)

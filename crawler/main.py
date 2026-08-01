@@ -94,6 +94,9 @@ class ConsoleHandler(http.server.SimpleHTTPRequestHandler):
         if self.path == "/api/start":
             self._handle_start()
             return
+        if self.path == "/api/resume":
+            self._handle_resume()
+            return
         if self.path == "/api/stop":
             self._handle_stop()
             return
@@ -314,6 +317,33 @@ class ConsoleHandler(http.server.SimpleHTTPRequestHandler):
             self._serve_json({"ok": True})
         except Exception as e:
             self._serve_json({"ok": False, "msg": str(e)})
+
+    def _handle_resume(self):
+        """断点续爬：从上次中断处继续"""
+        global _crawl_process
+        with _crawl_lock:
+            if _crawl_process is not None and _crawl_process.poll() is None:
+                self._serve_json({"ok": False, "msg": "爬虫正在运行中"})
+                return
+            if status.is_running():
+                self._serve_json({"ok": False, "msg": "爬虫正在运行中"})
+                return
+
+            progress_file = os.path.join(DATA_DIR, "crawl_progress.json")
+            if not os.path.exists(progress_file):
+                self._serve_json({"ok": False, "msg": "没有可恢复的进度"})
+                return
+
+            if os.path.exists(CURRENT_WF_FILE):
+                os.remove(CURRENT_WF_FILE)
+
+            _crawl_process = subprocess.Popen(
+                [sys.executable, "-m", "crawler.worker", "--resume"],
+                cwd=BASE_DIR,
+                env={**os.environ, "PYTHONUNBUFFERED": "1"},
+            )
+
+        self._serve_json({"ok": True, "msg": "爬虫已从断点恢复"})
 
     def _handle_start(self):
         """通过子进程启动爬虫"""

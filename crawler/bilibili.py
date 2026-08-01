@@ -269,26 +269,55 @@ class BiliCrawler:
         """
         通过访问UP主空间页面，拦截页面自身的wbi API响应获取视频列表
         页面浏览走正常wbi签名，不会触发API风控
+        
+        使用 domcontentloaded + 显式等待API响应，避免 networkidle 超时
+        含3次重试机制，覆盖页面加载慢/网络波动场景
         """
-        captured = []
+        max_retries = 3
+        for attempt in range(max_retries):
+            captured = []
+            api_received = False
 
-        def _on_response(resp):
-            if 'arc/search' in resp.url and 'wbi' in resp.url:
+            def _on_response(resp):
+                nonlocal api_received
+                if 'arc/search' in resp.url:
+                    try:
+                        data = resp.json()
+                        if data.get('code') == 0 and data.get('data', {}).get('list', {}).get('vlist'):
+                            captured.extend(data['data']['list']['vlist'])
+                            api_received = True
+                    except:
+                        pass
+
+            self.page.on('response', _on_response)
+
+            try:
+                url = f"https://space.bilibili.com/{mid}/video?pn={page}&ps=30&order=pubdate"
+                # 用 domcontentloaded 代替 networkidle，避免B站页面持续网络活动导致超时
+                self.page.goto(url, wait_until='domcontentloaded', timeout=20000)
+                # 等待API响应到达（最多等15秒）
+                for _ in range(30):
+                    if api_received:
+                        break
+                    time.sleep(0.5)
+                
+                if api_received and captured:
+                    break
+                # 如果没收到数据，等2秒再重试
+                if attempt < max_retries - 1:
+                    print(f"  [WARN] 第{page}页未捕获到数据，重试({attempt+1}/{max_retries})...")
+                    time.sleep(3)
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    print(f"  [WARN] 页面加载失败: {e}，重试({attempt+1}/{max_retries})...")
+                    time.sleep(5)
+                else:
+                    print(f"  [ERROR] 第{page}页获取失败(已重试{max_retries}次): {e}")
+            finally:
                 try:
-                    data = resp.json()
-                    if data.get('code') == 0 and data.get('data', {}).get('list', {}).get('vlist'):
-                        captured.extend(data['data']['list']['vlist'])
+                    self.page.remove_listener('response', _on_response)
                 except:
                     pass
-
-        self.page.on('response', _on_response)
-
-        try:
-            url = f"https://space.bilibili.com/{mid}/video?pn={page}&ps=30&order=pubdate"
-            self.page.goto(url, wait_until='networkidle')
-            time.sleep(3)
-        finally:
-            self.page.remove_listener('response', _on_response)
 
         result = []
         for v in captured:
