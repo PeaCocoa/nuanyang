@@ -425,6 +425,14 @@ body {
     margin-left: var(--space-1);
 }
 
+.video-fav-badge {
+    flex-shrink: 0;
+    color: #FF6B35;
+    font-size: var(--font-small);
+    line-height: 1;
+    margin-left: var(--space-1);
+}
+
 .top-recommend-card {
     border: 2px solid #FF6B35;
     box-shadow: 0 2px 12px rgba(255, 107, 53, 0.15);
@@ -799,6 +807,42 @@ body.dark .top-recommend-card {
 .player-close:active {
     transform: scale(0.92);
     background: var(--rausch-dark);
+}
+
+.player-fav-btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--font-body);
+    font-weight: 600;
+    color: white;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.12s ease;
+    margin-right: var(--space-2);
+}
+
+.player-fav-btn .fav-icon {
+    font-size: 1.1em;
+    line-height: 1;
+}
+
+.player-fav-btn.favorited {
+    background: rgba(255, 107, 53, 0.3);
+    border-color: rgba(255, 107, 53, 0.6);
+    color: #FF6B35;
+}
+
+.player-fav-btn.favorited .fav-icon {
+    color: #FF6B35;
+}
+
+.player-fav-btn:active {
+    transform: scale(0.92);
 }
 
 .player-container {

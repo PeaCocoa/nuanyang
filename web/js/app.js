@@ -13,6 +13,7 @@ const STORAGE_KEYS = {
     recommend: "nuanyang-recommend",
     history: "nuanyang-history",
     batch: "nuanyang-batch",
+    favorites: "nuanyang-favorites",
 };
 
 // === 状态 ===
@@ -28,6 +29,7 @@ let settings = {
     batch: BATCH_DEFAULT,
 };
 let viewHistory = {};  // { bvid: { count, lastView, categories, upName, totalDuration } }
+let favorites = {};  // { bvid: { title, up_name, cover, categories, favoritedAt } }
 
 // === DOM ===
 const videoListEl = document.getElementById("videoList");
@@ -90,6 +92,9 @@ function loadSettings() {
 
         const hist = localStorage.getItem(STORAGE_KEYS.history);
         if (hist) viewHistory = JSON.parse(hist);
+
+        const fav = localStorage.getItem(STORAGE_KEYS.favorites);
+        if (fav) favorites = JSON.parse(fav);
     } catch (e) {
         console.warn("加载设置失败:", e);
     }
@@ -101,6 +106,7 @@ function saveSettings() {
     localStorage.setItem(STORAGE_KEYS.recommend, settings.recommend.toString());
     localStorage.setItem(STORAGE_KEYS.batch, settings.batch.toString());
     localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(viewHistory));
+    localStorage.setItem(STORAGE_KEYS.favorites, JSON.stringify(favorites));
 }
 
 function applyFontSize() {
@@ -216,6 +222,15 @@ function getCategoryAffinity() {
         }
         totalViews += h.count;
     }
+    // 收藏视频的分类微量增加亲和度
+    for (const bvid in favorites) {
+        const cats = favorites[bvid].categories || [];
+        for (const cat of cats) {
+            if (!cat) continue;
+            catScores[cat] = (catScores[cat] || 0) + 0.5;
+        }
+        totalViews += 0.5;
+    }
     if (totalViews === 0) return {};
     for (const cat in catScores) {
         catScores[cat] = catScores[cat] / totalViews;
@@ -232,6 +247,13 @@ function getUpAffinity() {
         if (!up) continue;
         upScores[up] = (upScores[up] || 0) + h.count;
         totalViews += h.count;
+    }
+    // 收藏视频的UP主微量增加亲和度
+    for (const bvid in favorites) {
+        const up = favorites[bvid].up_name || "";
+        if (!up) continue;
+        upScores[up] = (upScores[up] || 0) + 0.5;
+        totalViews += 0.5;
     }
     if (totalViews === 0) return {};
     for (const up in upScores) {
@@ -264,9 +286,12 @@ function selectVideos(pool, count) {
                 : 0.1;
             // sqrt 平滑：降低高亲和度UP的权重优势，让其他UP也有曝光机会
             const upScore = Math.sqrt(upAffinity[v.up_name] || 0.01);
+            let weight = 0.4 * catScore + 0.3 * upScore + 0.3;
+            // 收藏过的视频权重增加
+            if (favorites[v.bvid]) weight *= 1.5;
             return {
                 video: v,
-                weight: 0.4 * catScore + 0.3 * upScore + 0.3,
+                weight: weight,
             };
         });
         let totalWeight = weighted.reduce((s, w) => s + w.weight, 0);
@@ -318,7 +343,7 @@ function selectVideos(pool, count) {
 // =====================
 
 function renderCategories() {
-    const cats = ["全部"];
+    const cats = ["全部", "我的收藏"];
     const seen = new Set(["全部"]);
     allVideos.forEach(v => {
         const videoCats = getVideoCategories(v);
@@ -349,7 +374,9 @@ function renderCategories() {
 
 function getPool() {
     let pool = allVideos;
-    if (currentCategory !== "全部") {
+    if (currentCategory === "我的收藏") {
+        pool = pool.filter(v => !!favorites[v.bvid]);
+    } else if (currentCategory !== "全部") {
         pool = pool.filter(v => getVideoCategories(v).includes(currentCategory));
     }
     if (searchKeyword) {
@@ -427,6 +454,7 @@ function renderTopRecommendation(video) {
             <div class="video-title">${video.title}</div>
             <div class="video-meta">
                 <span class="video-up">${video.up_name}</span>
+                ${favorites[video.bvid] ? '<span class="video-fav-badge">\u2665</span>' : ''}
                 <span class="video-top-badge">今日推荐</span>
             </div>
         </div>
@@ -506,6 +534,9 @@ function renderVideoCard(video) {
     const badge = video.recommended
         ? `<span class="video-recommend-badge">推荐</span>`
         : "";
+    const favBadge = favorites[video.bvid]
+        ? `<span class="video-fav-badge">\u2665</span>`
+        : "";
 
     const catText = formatCategories(video);
 
@@ -518,6 +549,7 @@ function renderVideoCard(video) {
             <div class="video-title">${video.title}</div>
             <div class="video-meta">
                 <span class="video-up">${video.up_name}</span>
+                ${favBadge}
                 ${badge}
             </div>
         </div>
@@ -605,6 +637,7 @@ function openPlayer(video) {
     blockIframeNavigation();
     playerModal.classList.add("active");
     document.body.style.overflow = "hidden";
+    updateFavoriteButton();
 }
 
 function closePlayer() {
@@ -620,6 +653,44 @@ function closePlayer() {
 }
 
 playerClose.addEventListener("click", closePlayer);
+
+// =====================
+// 收藏功能
+// =====================
+
+function toggleFavorite() {
+    if (!currentPlayingVideo) return;
+    const bvid = currentPlayingVideo.bvid;
+    if (favorites[bvid]) {
+        delete favorites[bvid];
+        showToast("已取消收藏");
+    } else {
+        favorites[bvid] = {
+            title: currentPlayingVideo.title,
+            up_name: currentPlayingVideo.up_name,
+            cover: currentPlayingVideo.cover || "",
+            categories: getVideoCategories(currentPlayingVideo),
+            favoritedAt: Date.now(),
+        };
+        showToast("已收藏");
+    }
+    saveSettings();
+    updateFavoriteButton();
+}
+
+function updateFavoriteButton() {
+    const btn = document.getElementById('playerFavBtn');
+    if (!btn || !currentPlayingVideo) return;
+    const isFav = !!favorites[currentPlayingVideo.bvid];
+    btn.classList.toggle('favorited', isFav);
+    btn.querySelector('.fav-icon').textContent = isFav ? '\u2665' : '\u2661';
+    btn.querySelector('.fav-text').textContent = isFav ? '已收藏' : '收藏';
+}
+
+const playerFavBtn = document.getElementById('playerFavBtn');
+if (playerFavBtn) {
+    playerFavBtn.addEventListener('click', toggleFavorite);
+}
 playerModal.addEventListener("click", (e) => {
     if (e.target === playerModal) closePlayer();
 });
