@@ -152,12 +152,14 @@
             <!-- 关于 -->
             <div class="settings-section">
                 <h3 class="settings-section-title">关于</h3>
-                <div class="settings-row">
+                <div class="settings-row" id="aboutRow" style="cursor:pointer;">
                     <div class="settings-row-label">
                         <span class="settings-row-name">暖阳</span>
                         <span class="settings-row-desc" id="updateTime">公益开源项目</span>
                     </div>
+                    <svg id="changelogArrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--mute);transition:transform 0.3s;flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
+                <div class="changelog-wrap" id="changelogWrap" style="display:none;">
                 <div class="settings-row">
                     <div class="settings-row-label">
                         <span class="settings-row-name">展示页</span>
@@ -178,15 +180,19 @@
                     </div>
                     <div class="changelog" id="changelog">
                         <div class="changelog-item">
-                            <span class="changelog-date">08-01</span>
+                            <span class="changelog-version">第4次</span>
                             <span class="changelog-text">新增展示页、大屏多列显示、封面完整显示、视频推荐更均匀、分类栏鼠标可滑动、刷新按钮重新获取数据</span>
                         </div>
                         <div class="changelog-item">
-                            <span class="changelog-date">07-31</span>
+                            <span class="changelog-version">第3次</span>
                             <span class="changelog-text">视频内容实时更新、深色模式、5档字号、搜索框位置调整、播放更稳定</span>
                         </div>
                         <div class="changelog-item">
-                            <span class="changelog-date">07-30</span>
+                            <span class="changelog-version">第2次</span>
+                            <span class="changelog-text">搜索功能、高仿UP主过滤、设置中心、3秒观看门槛、隐私提示</span>
+                        </div>
+                        <div class="changelog-item">
+                            <span class="changelog-version">第1次</span>
                             <span class="changelog-text">暖阳主站上线、随机展示与无限滚动、个性化推荐、可安装到桌面、法律协议</span>
                         </div>
                     </div>
@@ -203,6 +209,7 @@
                         <a href="legal.html#mit" target="_blank" style="padding: 4px 12px; background: #f5f5f5; border-radius: 6px; font-size: 13px; color: #FF6B35; text-decoration: none;">MIT开源协议</a>
                     </div>
                     <p class="settings-hint" style="margin-top: 8px;">使用本项目，即表示您同意《免责声明》《用户协议》《隐私协议》《MIT开源协议》</p>
+                </div>
                 </div>
             </div>
         </div>

@@ -871,11 +871,11 @@ body.dark .top-recommend-card {
     border-bottom: none;
 }
 
-.changelog-date {
+.changelog-version {
     flex-shrink: 0;
     color: var(--rausch);
     font-weight: 600;
-    width: 48px;
+    width: 52px;
 }
 
 .changelog-text {
@@ -885,4 +885,17 @@ body.dark .top-recommend-card {
 
 body.dark .changelog-item {
     border-color: var(--hairline);
+}
+
+/* === 更新日志展开 === */
+.changelog-wrap {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.3s ease;
+}
+.changelog-wrap.show {
+    max-height: 400px;
+}
+#changelogArrow.rotated {
+    transform: rotate(90deg);
 }

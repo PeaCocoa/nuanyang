@@ -815,6 +815,17 @@ loadData();
     });
 })();
 
+// 更新日志点击展开/收起
+const aboutRow = document.getElementById('aboutRow');
+const changelogWrap = document.getElementById('changelogWrap');
+const changelogArrow = document.getElementById('changelogArrow');
+if (aboutRow && changelogWrap) {
+    aboutRow.addEventListener('click', () => {
+        const isShow = changelogWrap.classList.toggle('show');
+        if (changelogArrow) changelogArrow.classList.toggle('rotated', isShow);
+    });
+}
+
 // 设置面板更新时间（从localStorage恢复）
 const savedUpdate = localStorage.getItem('nuanyang-updated');
 if (savedUpdate) {
