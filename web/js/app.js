@@ -255,16 +255,18 @@ function selectVideos(pool, count) {
         const recommendCount = Math.min(Math.ceil(count * 0.7), unviewed.length);
         const revisitCount = Math.min(count - recommendCount, viewed.length);
 
-        // 按综合权重从未看过中选：30%分类 + 70%UP主
-        // 对多分类视频，取所有分类中最大的亲和度
+        // 按综合权重从未看过中选：40%分类 + 30%UP主(平方根平滑) + 30%基础
+        // 平方根平滑防止头部UP形成正反馈循环（马太效应）
         const weighted = unviewed.map(v => {
             const cats = getVideoCategories(v);
             const catScore = cats.length > 0
-                ? Math.max(...cats.map(c => catAffinity[c] || 0.05))
-                : 0.05;
+                ? Math.max(...cats.map(c => catAffinity[c] || 0.1))
+                : 0.1;
+            // sqrt 平滑：降低高亲和度UP的权重优势，让其他UP也有曝光机会
+            const upScore = Math.sqrt(upAffinity[v.up_name] || 0.01);
             return {
                 video: v,
-                weight: 0.3 * catScore + 0.7 * (upAffinity[v.up_name] || 0.05) + 0.05,
+                weight: 0.4 * catScore + 0.3 * upScore + 0.3,
             };
         });
         let totalWeight = weighted.reduce((s, w) => s + w.weight, 0);
