@@ -326,8 +326,8 @@ body {
 .video-cover {
     width: 100%;
     aspect-ratio: 16 / 9;
-    object-fit: cover;
-    background: var(--cloud);
+    object-fit: contain;
+    background: #000;
     display: block;
     border-radius: var(--radius-md);
     transition: background 0.25s ease;
