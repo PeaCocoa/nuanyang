@@ -44,9 +44,10 @@
   "duration_min": 30,
   "duration_max": 3600,
   "test_mode": false,
-  "total_limit": 800,
+  "total_limit": 1300,
   "delay_between_ups": 1,
   "delay_between_pages": 1,
   "batch_size": 0,
-  "batch_delay": 60
+  "batch_delay": 60,
+  "up_priority": "science_last"
 }

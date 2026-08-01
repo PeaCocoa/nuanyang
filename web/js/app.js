@@ -745,6 +745,11 @@ async function loadData() {
 
         // 记录更新时间到 localStorage
         localStorage.setItem("nuanyang-updated", data.updated || "");
+        // 更新设置面板中的更新时间
+        const updateEl = document.getElementById('updateTime');
+        if (updateEl && data.updated) {
+            updateEl.textContent = '最近更新：' + data.updated;
+        }
 
         // 5分钟后自动检查更新
         setTimeout(checkForUpdate, 5 * 60 * 1000);
@@ -809,6 +814,13 @@ loadData();
         el.scrollLeft = scrollLeft - (x - startX);
     });
 })();
+
+// 设置面板更新时间（从localStorage恢复）
+const savedUpdate = localStorage.getItem('nuanyang-updated');
+if (savedUpdate) {
+    const el = document.getElementById('updateTime');
+    if (el) el.textContent = '最近更新：' + savedUpdate;
+}
 
 // === 搜索功能 ===
 let searchDebounce = null;

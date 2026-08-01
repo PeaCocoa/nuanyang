@@ -848,3 +848,41 @@ body.dark .top-recommend-card {
     height: 1px;
     width: 100%;
 }
+
+
+/* === 更新日志 === */
+.changelog {
+    margin-top: var(--space-3);
+    max-height: 200px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.changelog-item {
+    display: flex;
+    gap: var(--space-3);
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--hairline);
+    font-size: var(--font-small);
+    line-height: 1.5;
+}
+
+.changelog-item:last-child {
+    border-bottom: none;
+}
+
+.changelog-date {
+    flex-shrink: 0;
+    color: var(--rausch);
+    font-weight: 600;
+    width: 48px;
+}
+
+.changelog-text {
+    color: var(--ash);
+    flex: 1;
+}
+
+body.dark .changelog-item {
+    border-color: var(--hairline);
+}
