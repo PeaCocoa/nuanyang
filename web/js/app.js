@@ -289,9 +289,24 @@ function selectVideos(pool, count) {
             result.push(shuffled[i]);
         }
     } else {
-        const shuffled = [...pool].sort(() => Math.random() - 0.5);
-        for (let i = 0; i < Math.min(count, shuffled.length); i++) {
-            result.push(shuffled[i]);
+        // 非个性化模式：按UP主均匀分配，避免视频数多的UP刷屏
+        const upGroups = {};
+        for (const v of pool) {
+            const up = v.up_name || "未知";
+            if (!upGroups[up]) upGroups[up] = [];
+            upGroups[up].push(v);
+        }
+        const upNames = Object.keys(upGroups);
+        // 每个UP内部先打乱
+        upNames.forEach(up => upGroups[up].sort(() => Math.random() - 0.5));
+
+        const takeCount = Math.min(count, pool.length);
+        for (let i = 0; i < takeCount; i++) {
+            // 随机选一个还有视频的UP
+            const availableUps = upNames.filter(up => upGroups[up].length > 0);
+            if (availableUps.length === 0) break;
+            const pickedUp = availableUps[Math.floor(Math.random() * availableUps.length)];
+            result.push(upGroups[pickedUp].pop());
         }
     }
 
