@@ -894,7 +894,7 @@ body.dark .changelog-item {
     transition: max-height 0.3s ease;
 }
 .changelog-wrap.show {
-    max-height: 400px;
+    max-height: 500px;
 }
 #changelogArrow.rotated {
     transform: rotate(90deg);
