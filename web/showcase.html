@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="暖阳展示">
     <link rel="icon" href="favicon.png" type="image/png">
-    <title>关于暖阳 - 展示</title>
+    <title>关于暖阳</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/showcase.css">
 </head>
@@ -16,17 +16,20 @@
 
     <!-- 顶栏 -->
     <header class="showcase-header">
-        <a href="index.html" class="showcase-back">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
-            </svg>
-            <span>返回暖阳</span>
-        </a>
         <h1 class="showcase-title">关于暖阳</h1>
+        <button class="showcase-settings-btn" id="showcaseSettingsBtn" aria-label="显示设置">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+        </button>
     </header>
 
     <!-- 介绍区 -->
     <section class="showcase-intro">
+        <div class="intro-logo-bg">
+            <img src="icons/icon-512.png" alt="暖阳LOGO">
+        </div>
         <div class="intro-content">
             <h2 class="intro-name">暖阳</h2>
             <p class="intro-slogan">精选好视频，温暖每一天</p>
@@ -50,9 +53,7 @@
         <p class="demo-subheading">选择设备，体验暖阳在不同华为设备上的真实效果</p>
 
         <!-- 设备切换栏 -->
-        <div class="device-selector" id="deviceSelector">
-            <!-- JS 动态生成 -->
-        </div>
+        <div class="device-selector" id="deviceSelector"></div>
 
         <!-- 页面切换标签 -->
         <div class="page-tabs" id="pageTabs">
@@ -72,16 +73,60 @@
         </div>
 
         <!-- 设备信息 -->
-        <div class="device-info" id="deviceInfo">
-            <!-- JS 动态生成 -->
-        </div>
+        <div class="device-info" id="deviceInfo"></div>
     </section>
 
     <!-- 底部 -->
     <footer class="showcase-footer">
         <p>暖阳 · 公益开源项目 · MIT 协议</p>
-        <p class="footer-link"><a href="index.html">返回暖阳主站 →</a></p>
     </footer>
+
+    <!-- 悬浮进入主站按钮 -->
+    <a href="index.html" class="floating-home-btn" aria-label="进入暖阳主站">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+    </a>
+
+    <!-- 设置浮层 -->
+    <div class="showcase-settings-overlay" id="showcaseSettingsOverlay"></div>
+    <aside class="showcase-settings-panel" id="showcaseSettingsPanel">
+        <div class="settings-header">
+            <h2 class="settings-title">显示设置</h2>
+            <button class="settings-close" id="showcaseSettingsClose" aria-label="关闭">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="settings-body">
+            <div class="settings-section">
+                <h3 class="settings-section-title">外观</h3>
+                <div class="settings-row">
+                    <div class="settings-row-label">
+                        <span class="settings-row-name">深色模式</span>
+                        <span class="settings-row-desc">夜间使用更护眼</span>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="showcaseDarkToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="settings-row settings-row-column">
+                    <div class="settings-row-label">
+                        <span class="settings-row-name">字号大小</span>
+                        <span class="settings-row-desc">选择适合的阅读字号</span>
+                    </div>
+                    <div class="font-options" id="showcaseFontOptions">
+                        <button class="font-option" data-font="font-sm">小</button>
+                        <button class="font-option" data-font="font-md">标准</button>
+                        <button class="font-option active" data-font="font-lg">较大</button>
+                        <button class="font-option" data-font="font-xl">大</button>
+                        <button class="font-option" data-font="font-2xl">超大</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
 
     <script src="js/showcase.js"></script>
 </body>

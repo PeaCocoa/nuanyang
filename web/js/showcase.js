@@ -3,7 +3,7 @@
  * 6台华为设备外框 + iframe嵌入暖阳主站
  */
 
-// === 设备数据 ===
+// === 设备数据（屏幕坐标为精确测量值）===
 const DEVICES = [
     {
         id: 'mate80',
@@ -11,7 +11,7 @@ const DEVICES = [
         img: 'assets/devices/mate80.png',
         imgRatio: '1 / 1',
         orientation: 'portrait',
-        screen: { left: 50, right: 98, top: 0.9, bottom: 98.4, radius: 16 },
+        screen: { left: 50.3, right: 97.2, top: 1.8, bottom: 97.6, radius: 16 },
         spec: '6.75英寸 OLED · 2832×1280 · 麒麟9020',
         iconType: 'phone'
     },
@@ -21,7 +21,7 @@ const DEVICES = [
         img: 'assets/devices/nova16.png',
         imgRatio: '1 / 1.28',
         orientation: 'portrait',
-        screen: { left: 48.4, right: 97, top: 0.6, bottom: 98.9, radius: 14 },
+        screen: { left: 48.5, right: 97.6, top: 1.6, bottom: 98.2, radius: 14 },
         spec: '6.68英寸 OLED · 2800×1280 · 麒麟9010S',
         iconType: 'phone'
     },
@@ -31,7 +31,7 @@ const DEVICES = [
         img: 'assets/devices/enjoy90.png',
         imgRatio: '1 / 1',
         orientation: 'portrait',
-        screen: { left: 46.2, right: 97.6, top: 2.4, bottom: 96.8, radius: 14 },
+        screen: { left: 46.8, right: 96.8, top: 2.4, bottom: 95.8, radius: 14 },
         spec: '6.67英寸 LCD · 1604×720 · 麒麟8000A',
         iconType: 'phone'
     },
@@ -41,28 +41,28 @@ const DEVICES = [
         img: 'assets/devices/matext.png',
         imgRatio: '1.57 / 1',
         orientation: 'landscape',
-        screen: { left: 1, right: 98.8, top: 1.4, bottom: 98.4, radius: 8 },
+        screen: { left: 1.1, right: 98.0, top: 1.5, bottom: 97.4, radius: 8 },
         spec: '10.2英寸 OLED · 2232×3184 · 三折叠全展开',
         iconType: 'trifold'
     },
     {
-        id: 'matebook',
-        name: 'MateBook 14',
+        id: 'matepad',
+        name: 'MatePad Edge',
         img: 'assets/devices/matebook.png',
         imgRatio: '1 / 1.09',
         orientation: 'landscape',
-        screen: { left: 7, right: 92.9, top: 1.8, bottom: 57.2, radius: 4 },
-        spec: '14.2英寸 OLED · 2880×1920 · 鸿蒙PC',
+        screen: { left: 7.4, right: 92.7, top: 1.8, bottom: 57.7, radius: 4 },
+        spec: '14.2英寸 OLED · 3120×2080 · 麒麟X90A',
         iconType: 'laptop'
     },
     {
-        id: 'matepad',
-        name: 'MatePad 11.5',
+        id: 'matemini',
+        name: 'MatePad Mini',
         img: 'assets/devices/matepad.png',
         imgRatio: '1.74 / 1',
         orientation: 'landscape',
-        screen: { left: 2.2, right: 83.3, top: 20.2, bottom: 97.1, radius: 8 },
-        spec: '11.5英寸 · 2200×1440 · 120Hz',
+        screen: { left: 1.7, right: 83.1, top: 21.5, bottom: 96.7, radius: 8 },
+        spec: '8.8英寸 OLED · 2560×1600 · 麒麟9010',
         iconType: 'tablet'
     }
 ];
@@ -89,24 +89,37 @@ const deviceStage = document.getElementById('deviceStage');
 const deviceInfo = document.getElementById('deviceInfo');
 const pageTabs = document.getElementById('pageTabs');
 
+// 设置面板 DOM
+const settingsBtn = document.getElementById('showcaseSettingsBtn');
+const settingsPanel = document.getElementById('showcaseSettingsPanel');
+const settingsOverlay = document.getElementById('showcaseSettingsOverlay');
+const settingsClose = document.getElementById('showcaseSettingsClose');
+const darkToggle = document.getElementById('showcaseDarkToggle');
+const fontOptions = document.getElementById('showcaseFontOptions');
+
 // === 初始化 ===
 function init() {
     // 同步深色模式
     const darkMode = localStorage.getItem('nuanyang-dark') || 'auto';
     if (darkMode === 'on' || (darkMode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         document.body.classList.add('dark');
+        darkToggle.checked = true;
     }
 
     // 同步字号
     const fontSize = localStorage.getItem('nuanyang-font') || 'font-lg';
-    document.body.className = document.body.className.replace(/font-\w+/, fontSize);
-    if (document.body.classList.contains('dark')) {
-        document.body.classList.add(fontSize);
-    }
+    document.body.classList.remove('font-sm', 'font-md', 'font-lg', 'font-xl', 'font-2xl');
+    document.body.classList.add(fontSize);
+
+    // 更新字号按钮选中状态
+    fontOptions.querySelectorAll('.font-option').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.font === fontSize);
+    });
 
     renderDeviceSelector();
     renderDevice();
     setupPageTabs();
+    setupSettings();
 }
 
 // === 渲染设备切换栏 ===
@@ -186,7 +199,6 @@ function switchDevice(id) {
     currentDevice = DEVICES.find(d => d.id === id);
     if (!currentDevice) return;
 
-    // 更新切换栏
     deviceSelector.querySelectorAll('.device-thumb').forEach(thumb => {
         thumb.classList.toggle('active', thumb.dataset.device === id);
     });
@@ -224,6 +236,48 @@ function updateIframeSrc() {
         url = 'index.html?demo=search';
     }
     deviceIframe.src = url;
+}
+
+// === 设置面板 ===
+function setupSettings() {
+    // 打开
+    settingsBtn.addEventListener('click', () => {
+        settingsPanel.classList.add('active');
+        settingsOverlay.classList.add('active');
+    });
+
+    // 关闭
+    settingsClose.addEventListener('click', closeSettings);
+    settingsOverlay.addEventListener('click', closeSettings);
+
+    // 深色模式切换
+    darkToggle.addEventListener('change', () => {
+        if (darkToggle.checked) {
+            document.body.classList.add('dark');
+            localStorage.setItem('nuanyang-dark', 'on');
+        } else {
+            document.body.classList.remove('dark');
+            localStorage.setItem('nuanyang-dark', 'off');
+        }
+    });
+
+    // 字号切换
+    fontOptions.querySelectorAll('.font-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const fontClass = btn.dataset.font;
+            document.body.classList.remove('font-sm', 'font-md', 'font-lg', 'font-xl', 'font-2xl');
+            document.body.classList.add(fontClass);
+            localStorage.setItem('nuanyang-font', fontClass);
+
+            fontOptions.querySelectorAll('.font-option').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        });
+    });
+}
+
+function closeSettings() {
+    settingsPanel.classList.remove('active');
+    settingsOverlay.classList.remove('active');
 }
 
 // === 启动 ===
