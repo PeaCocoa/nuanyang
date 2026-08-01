@@ -410,8 +410,6 @@ function renderTopRecommendation(video) {
             <div class="video-title">${video.title}</div>
             <div class="video-meta">
                 <span class="video-up">${video.up_name}</span>
-                <span class="video-meta-dot">·</span>
-                <span class="video-category-tag">${catText}</span>
                 <span class="video-top-badge">今日推荐</span>
             </div>
         </div>
@@ -503,8 +501,6 @@ function renderVideoCard(video) {
             <div class="video-title">${video.title}</div>
             <div class="video-meta">
                 <span class="video-up">${video.up_name}</span>
-                <span class="video-meta-dot">·</span>
-                <span class="video-category-tag">${catText}</span>
                 ${badge}
             </div>
         </div>
@@ -547,15 +543,30 @@ function setupScrollObserver() {
 // 刷新
 // =====================
 
-refreshBtn.addEventListener("click", () => {
+refreshBtn.addEventListener("click", async () => {
     refreshBtn.style.transform = "rotate(360deg)";
     refreshBtn.style.transition = "transform 0.5s ease";
     setTimeout(() => {
         refreshBtn.style.transform = "";
         refreshBtn.style.transition = "";
     }, 500);
+    // 重新从服务器获取最新数据，而非仅从内存缓存刷新
+    try {
+        const resp = await fetch(DATA_URL + "?t=" + Date.now(), { cache: "no-store" });
+        const data = await resp.json();
+        const newVideos = data.videos || [];
+        if (newVideos.length !== allVideos.length) {
+            allVideos = newVideos;
+            lastVideoCount = newVideos.length;
+            renderCategories();
+            showToast("发现新视频，已更新");
+        } else {
+            showToast("已是最新");
+        }
+    } catch (e) {
+        showToast("刷新失败，请稍后重试");
+    }
     refreshList();
-    showToast("已刷新");
 });
 
 // =====================
@@ -759,6 +770,28 @@ applyBatch();
 recommendToggle.checked = settings.recommend;
 loadData();
 
+
+// === 分类栏鼠标拖拽滚动（适配无触控设备）===
+(function() {
+    const el = document.getElementById('categories');
+    if (!el) return;
+    let isDown = false, startX, scrollLeft;
+    el.addEventListener('mousedown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.closest('.search-box')) return;
+        isDown = true;
+        el.style.cursor = 'grabbing';
+        startX = e.pageX - el.offsetLeft;
+        scrollLeft = el.scrollLeft;
+    });
+    el.addEventListener('mouseleave', () => { isDown = false; el.style.cursor = ''; });
+    el.addEventListener('mouseup', () => { isDown = false; el.style.cursor = ''; });
+    el.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - el.offsetLeft;
+        el.scrollLeft = scrollLeft - (x - startX);
+    });
+})();
 
 // === 搜索功能 ===
 let searchDebounce = null;

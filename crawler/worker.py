@@ -216,12 +216,20 @@ def get_crawl_upmasters():
     all_ups = load_upmasters()
     settings = status.get_settings()
     selected = settings.get("selected_ups", [])
+    priority = settings.get("up_priority", "normal")
 
-    if not selected:
-        return all_ups
+    if selected:
+        selected_set = set(selected)
+        all_ups = [up for up in all_ups if up["name"] in selected_set]
 
-    selected_set = set(selected)
-    return [up for up in all_ups if up["name"] in selected_set]
+    # 科普类UP排后：将含科普/科技/教育分类的UP排到列表末尾
+    if priority == "science_last":
+        science_cats = {"科普探索", "科技数码", "科技前沿", "教育学习"}
+        normal = [up for up in all_ups if not science_cats.intersection(set(up.get("categories", [])))]
+        science = [up for up in all_ups if science_cats.intersection(set(up.get("categories", [])))]
+        all_ups = normal + science
+
+    return all_ups
 
 
 def load_workflow():

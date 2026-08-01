@@ -514,6 +514,8 @@
         .wf-tpl-end { background: #2d3436; color: #fff; }
 
         .wf-canvas-wrap {
+            resize: vertical;
+            min-height: 300px;
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -583,6 +585,9 @@
 
         /* 节点配置面板 */
         .wf-config-panel {
+            resize: horizontal;
+            min-width: 200px;
+            max-width: 500px;
             flex: 0 0 280px;
             border-left: 1px solid var(--hairline);
             padding: 16px;
@@ -722,7 +727,7 @@
                             <div class="settings-label">视频总数上限</div>
                             <div class="settings-desc">达到此数量后停止抓取</div>
                         </div>
-                        <input type="number" class="settings-input" id="inputTotalLimit" min="10" max="2000" value="800">
+                        <input type="number" class="settings-input" id="inputTotalLimit" min="10" max="1900" value="1900">
                     </div>
                 </div>
 
@@ -795,6 +800,16 @@
                 <!-- UP主选择 -->
                 <div class="settings-group">
                     <div class="settings-group-title">UP主选择</div>
+                    <div class="settings-row" style="margin-bottom:12px;">
+                        <div>
+                            <div class="settings-label">UP优先级</div>
+                            <div class="settings-desc">科普类UP排后爬，确保老人爱看的先爬</div>
+                        </div>
+                        <select class="settings-input" id="inputUpPriority" style="width:auto;">
+                            <option value="normal">原序</option>
+                            <option value="science_last">科普排后</option>
+                        </select>
+                    </div>
                     <div class="settings-desc" style="margin-bottom:8px;">不勾选则爬取全部UP主</div>
                     <div class="up-select-actions">
                         <a class="link-btn" onclick="selectAllUps(true)">全选</a>
@@ -993,7 +1008,8 @@
 
             // 数值输入
             document.getElementById('inputMaxVideos').value = currentSettings.max_videos_per_up ?? 50;
-            document.getElementById('inputTotalLimit').value = currentSettings.total_limit ?? 800;
+            document.getElementById('inputTotalLimit').value = currentSettings.total_limit ?? 1900;
+            document.getElementById('inputUpPriority').value = currentSettings.up_priority || 'normal';
             document.getElementById('inputDelayUps').value = currentSettings.delay_between_ups ?? 5;
             document.getElementById('inputDelayPages').value = currentSettings.delay_between_pages ?? 8;
             document.getElementById('inputBatchSize').value = currentSettings.batch_size ?? 0;
@@ -1019,7 +1035,8 @@
             const settings = {
                 test_mode: currentSettings.test_mode || false,
                 max_videos_per_up: parseInt(document.getElementById('inputMaxVideos').value) || 50,
-                total_limit: parseInt(document.getElementById('inputTotalLimit').value) || 800,
+                total_limit: parseInt(document.getElementById('inputTotalLimit').value) || 1900,
+                up_priority: document.getElementById('inputUpPriority').value,
                 delay_between_ups: parseInt(document.getElementById('inputDelayUps').value) || 5,
                 delay_between_pages: parseInt(document.getElementById('inputDelayPages').value) || 8,
                 batch_size: parseInt(document.getElementById('inputBatchSize').value) || 0,
@@ -1212,6 +1229,7 @@
 
         // 拖拽节点
         function dragNode(e, type) {
+            document.getElementById('wfConfigPanel').classList.remove('show');
             e.dataTransfer.setData('node-type', type);
         }
 
