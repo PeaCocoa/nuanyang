@@ -695,6 +695,18 @@ async function loadData() {
             renderCategories();
             refreshList();
             setupScrollObserver();
+            // 展示页demo模式：通过URL参数自动展示对应页面
+            const demo = new URLSearchParams(location.search).get('demo');
+            if (demo === 'play' && allVideos.length > 0) {
+                setTimeout(() => openPlayer(allVideos[0]), 600);
+            } else if (demo === 'search') {
+                setTimeout(() => {
+                    searchInput.value = '科普';
+                    searchKeyword = '科普';
+                    searchClear.style.display = 'block';
+                    refreshList();
+                }, 600);
+            }
         } else if (newVideos.length !== lastVideoCount) {
             // 数据更新了，静默刷新
             renderCategories();

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FF385C">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="暖阳展示">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <title>关于暖阳 - 展示</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/showcase.css">
+</head>
+<body class="font-lg">
+
+    <!-- 顶栏 -->
+    <header class="showcase-header">
+        <a href="index.html" class="showcase-back">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+            </svg>
+            <span>返回暖阳</span>
+        </a>
+        <h1 class="showcase-title">关于暖阳</h1>
+    </header>
+
+    <!-- 介绍区 -->
+    <section class="showcase-intro">
+        <div class="intro-content">
+            <h2 class="intro-name">暖阳</h2>
+            <p class="intro-slogan">精选好视频，温暖每一天</p>
+            <p class="intro-desc">
+                暖阳是一个公益开源项目，为老年人精选B站优质短视频内容。<br>
+                我们相信，科技的温度在于让每个人都能轻松获取有价值的信息与陪伴。
+            </p>
+            <div class="intro-tags">
+                <span class="intro-tag">零成本</span>
+                <span class="intro-tag">无服务器</span>
+                <span class="intro-tag">PWA</span>
+                <span class="intro-tag">开源 MIT</span>
+                <span class="intro-tag">适老化设计</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 试玩区 -->
+    <section class="showcase-demo">
+        <h3 class="demo-heading">试一试</h3>
+        <p class="demo-subheading">选择设备，体验暖阳在不同华为设备上的真实效果</p>
+
+        <!-- 设备切换栏 -->
+        <div class="device-selector" id="deviceSelector">
+            <!-- JS 动态生成 -->
+        </div>
+
+        <!-- 页面切换标签 -->
+        <div class="page-tabs" id="pageTabs">
+            <button class="page-tab active" data-page="home">首页</button>
+            <button class="page-tab" data-page="play">播放页</button>
+            <button class="page-tab" data-page="search">搜索页</button>
+        </div>
+
+        <!-- 设备展示区 -->
+        <div class="device-stage" id="deviceStage">
+            <div class="device-frame" id="deviceFrame">
+                <img class="device-img" id="deviceImg" src="" alt="设备外框">
+                <div class="device-screen" id="deviceScreen">
+                    <iframe id="deviceIframe" src="" frameborder="0" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- 设备信息 -->
+        <div class="device-info" id="deviceInfo">
+            <!-- JS 动态生成 -->
+        </div>
+    </section>
+
+    <!-- 底部 -->
+    <footer class="showcase-footer">
+        <p>暖阳 · 公益开源项目 · MIT 协议</p>
+        <p class="footer-link"><a href="index.html">返回暖阳主站 →</a></p>
+    </footer>
+
+    <script src="js/showcase.js"></script>
+</body>
+</html>
