@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-02 19:15"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-02 19:45"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -175,13 +175,13 @@ window.addEventListener("storage", (e) => {
     }
 });
 
+const FONT_SIZES = ["font-sm", "font-md", "font-lg", "font-xl", "font-2xl"];
 function applyFontSize() {
     document.body.classList.remove("font-sm", "font-md", "font-lg", "font-xl", "font-2xl");
     document.body.classList.add(settings.fontSize);
-
-    document.querySelectorAll(".font-option[data-size]").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.size === settings.fontSize);
-    });
+    const idx = FONT_SIZES.indexOf(settings.fontSize);
+    const range = document.getElementById("fontRange");
+    if (range && idx >= 0) range.value = idx;
 }
 
 function resolveColorScheme() {
@@ -221,9 +221,8 @@ function applyTheme() {
 }
 
 function applyBatch() {
-    document.querySelectorAll(".font-option[data-batch]").forEach(btn => {
-        btn.classList.toggle("active", parseInt(btn.dataset.batch) === settings.batch);
-    });
+    const range = document.getElementById("batchRange");
+    if (range) range.value = settings.batch;
 }
 
 // =====================
@@ -280,27 +279,37 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () 
 // 字号选择
 // =====================
 
-fontOptions.addEventListener("click", (e) => {
-    const btn = e.target.closest(".font-option[data-size]");
-    if (!btn) return;
-    settings.fontSize = btn.dataset.size;
-    applyFontSize();
-    saveSettings();
-    showToast("字号已调整");
-});
+if (fontOptions) {
+    const range = document.getElementById("fontRange");
+    if (range) {
+        range.addEventListener("input", () => {
+            settings.fontSize = FONT_SIZES[parseInt(range.value)];
+            applyFontSize();
+            saveSettings();
+        });
+        range.addEventListener("change", () => {
+            showToast("字号已调整");
+        });
+    }
+}
 
 // =====================
 // 批量数量选择
 // =====================
 
-batchOptions.addEventListener("click", (e) => {
-    const btn = e.target.closest(".font-option[data-batch]");
-    if (!btn) return;
-    settings.batch = parseInt(btn.dataset.batch);
-    applyBatch();
-    saveSettings();
-    showToast("每次展示 " + settings.batch + " 条");
-});
+if (batchOptions) {
+    const range = document.getElementById("batchRange");
+    if (range) {
+        range.addEventListener("input", () => {
+            settings.batch = parseInt(range.value);
+            applyBatch();
+            saveSettings();
+        });
+        range.addEventListener("change", () => {
+            showToast("每次展示 " + settings.batch + " 条");
+        });
+    }
+}
 
 // =====================
 // 个性化推荐

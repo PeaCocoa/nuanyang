@@ -13,7 +13,7 @@
     <link rel="icon" href="favicon.png" type="image/png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <title>暖阳 - 精选好视频</title>
-    <link rel="stylesheet" href="css/style.css?v=7">
+    <link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body class="font-lg">
     <!-- 液态玻璃 SVG 滤镜（来源：liunian.js.org） -->
@@ -119,12 +119,10 @@
                         <span class="settings-row-name">字号大小</span>
                         <span class="settings-row-desc">选择适合的阅读字号</span>
                     </div>
-                    <div class="font-options" id="fontOptions">
-                        <button class="font-option" data-size="font-sm">小</button>
-                        <button class="font-option" data-size="font-md">标准</button>
-                        <button class="font-option active" data-size="font-lg">较大</button>
-                        <button class="font-option" data-size="font-xl">大</button>
-                        <button class="font-option" data-size="font-2xl">超大</button>
+                    <div class="slider-options" id="fontOptions">
+                        <span class="slider-label">小</span>
+                        <input type="range" class="range-slider" id="fontRange" min="0" max="4" step="1" value="2">
+                        <span class="slider-label">超大</span>
                     </div>
                 </div>
             </div>
@@ -164,11 +162,10 @@
                         <span class="settings-row-name">每次展示数量</span>
                         <span class="settings-row-desc">每次加载的视频条数</span>
                     </div>
-                    <div class="font-options" id="batchOptions">
-                        <button class="font-option" data-batch="4">4条</button>
-                        <button class="font-option active" data-batch="6">6条</button>
-                        <button class="font-option" data-batch="8">8条</button>
-                        <button class="font-option" data-batch="10">10条</button>
+                    <div class="slider-options" id="batchOptions">
+                        <span class="slider-label">4条</span>
+                        <input type="range" class="range-slider" id="batchRange" min="4" max="10" step="2" value="6">
+                        <span class="slider-label">10条</span>
                     </div>
                 </div>
 
@@ -429,11 +426,11 @@
     <!-- Toast 提示 -->
     <div class="toast" id="toast"></div>
 
-    <script src="js/app.js?v=7"></script>
+    <script src="js/app.js?v=8"></script>
     <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js?v=7').catch(function(){});
+            navigator.serviceWorker.register('/sw.js?v=8').catch(function(){});
         });
     }
     </script>
