@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-02 21:20"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-02 22:30"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -101,41 +101,53 @@ function escapeHtml(text) {
 // =====================
 
 function loadSettings() {
+    // 每项独立 try-catch，防止单项解析失败导致后续数据不加载
     try {
         const font = localStorage.getItem(STORAGE_KEYS.font);
         if (font) settings.fontSize = font;
+    } catch (e) { console.warn("加载字体设置失败:", e); }
 
+    try {
         const theme = localStorage.getItem(STORAGE_KEYS.theme);
         if (theme) {
             settings.theme = theme;
         } else {
-            // 兼容旧版 darkMode 设置
             const dark = localStorage.getItem(STORAGE_KEYS.dark);
             if (dark === "on") settings.theme = "dark";
             else if (dark === "off") settings.theme = "light";
             else settings.theme = "auto";
         }
+    } catch (e) { console.warn("加载主题设置失败:", e); }
 
+    try {
         const rec = localStorage.getItem(STORAGE_KEYS.recommend);
         if (rec === "true") settings.recommend = true;
+    } catch (e) { console.warn("加载推荐设置失败:", e); }
 
+    try {
         const dig = localStorage.getItem(STORAGE_KEYS.digest);
         if (dig === "true") settings.digest = true;
+    } catch (e) { console.warn("加载摘要设置失败:", e); }
 
+    try {
         const li = localStorage.getItem(STORAGE_KEYS.liquidIntensity);
         if (li !== null) settings.liquidIntensity = parseInt(li);
+    } catch (e) { console.warn("加载液态强度失败:", e); }
 
+    try {
         const batch = localStorage.getItem(STORAGE_KEYS.batch);
         if (batch) settings.batch = parseInt(batch);
+    } catch (e) { console.warn("加载批次设置失败:", e); }
 
+    try {
         const hist = localStorage.getItem(STORAGE_KEYS.history);
         if (hist) viewHistory = JSON.parse(hist);
+    } catch (e) { console.warn("加载观看历史失败:", e); }
 
+    try {
         const fav = localStorage.getItem(STORAGE_KEYS.favorites);
         if (fav) favorites = JSON.parse(fav);
-    } catch (e) {
-        console.warn("加载设置失败:", e);
-    }
+    } catch (e) { console.warn("加载收藏数据失败:", e); }
 }
 
 function saveSettings() {
@@ -943,9 +955,9 @@ function refreshList() {
     displayedBvids = new Set();
     videoListEl.innerHTML = "";
 
-    // 置顶推荐：最常看UP主的今日/昨日新视频
-    // 搜索时不显示置顶推荐，只显示搜索结果
-    if (!searchKeyword) {
+    // 置顶推荐：仅在"全部"分类且无搜索时显示
+    // "我的收藏"等特定分类不显示置顶推荐，避免混淆
+    if (!searchKeyword && currentCategory === "全部") {
         const topRecs = getTopRecommendations();
         topRecs.forEach(v => {
             displayedBvids.add(v.bvid);
