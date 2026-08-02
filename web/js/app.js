@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-02 20:10"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-02 20:20"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -29,7 +29,7 @@ let isLoading = false;
 let settings = {
     fontSize: "font-lg",
     darkMode: "auto",       // 兼容旧版
-    theme: "auto",         // auto / light / dark / frosted / liquid
+    theme: "auto",         // auto / light / dark / liquid
     recommend: false,
     digest: false,
     liquidIntensity: 50, // 0=毛玻璃 50=液态玻璃 100=清透
@@ -242,10 +242,10 @@ function applyTheme() {
 const LIQUID_ORIGINAL = {
     thumbBlur: 0.2,
     thumbDisplace: 21.232824823888038,
-    thumbFlood: 0.4,
+    thumbFlood: 0.5,
     searchBlur: 1,
     searchDisplace: 54.97305784439829,
-    searchFlood: 0.25,
+    searchFlood: 0.2,
 };
 
 function applyLiquidIntensity() {
@@ -278,12 +278,12 @@ function applyLiquidIntensity() {
     // thumb-filter
     setAttr("thumb-blur", "stdDeviation", (LIQUID_ORIGINAL.thumbBlur * blurMult).toFixed(3));
     setAttr("thumb-displace", "scale", (LIQUID_ORIGINAL.thumbDisplace * displaceMult).toFixed(3));
-    setAttr("thumb-flood", "flood-opacity", (LIQUID_ORIGINAL.thumbFlood * floodMult).toFixed(3));
+    setAttr("thumb-flood", "slope", (LIQUID_ORIGINAL.thumbFlood * floodMult).toFixed(3));
 
     // searchbox-filter
     setAttr("search-blur", "stdDeviation", (LIQUID_ORIGINAL.searchBlur * blurMult).toFixed(3));
     setAttr("search-displace", "scale", (LIQUID_ORIGINAL.searchDisplace * displaceMult).toFixed(3));
-    setAttr("search-flood", "flood-opacity", (LIQUID_ORIGINAL.searchFlood * floodMult).toFixed(3));
+    setAttr("search-flood", "slope", (LIQUID_ORIGINAL.searchFlood * floodMult).toFixed(3));
 }
 
 // 液态玻璃强度滑动条事件
@@ -345,7 +345,7 @@ if (darkModeToggle) {
     });
 }
 
-// 系统深浅色变化时，auto/frosted/liquid 需要跟随
+// 系统深浅色变化时，auto/liquid 需要跟随
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
     if (["auto", "liquid"].includes(settings.theme)) {
         applyTheme();
