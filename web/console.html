@@ -890,7 +890,7 @@
         const API_UPMASTERS = '/api/upmasters';
         const API_START = '/api/start';
 
-        let lastLogCount = 0;
+        let lastLogKeyCache = "";
         let isDark = false;
         let allUpmasters = [];
         let currentSettings = {};
@@ -1184,14 +1184,16 @@
             // 日志
             const logContainer = document.getElementById('logContainer');
             if (data.logs && data.logs.length > 0) {
-                if (data.logs.length !== lastLogCount) {
+                const lastLog = data.logs[data.logs.length - 1];
+                const lastLogKey = lastLog.time + '|' + lastLog.msg;
+                if (lastLogKey !== lastLogKeyCache) {
                     logContainer.innerHTML = data.logs.map(l => `
                         <div class="log-line">
                             <span class="log-time">${l.time}</span>
                             <span class="log-msg ${l.level}">${escapeHtml(l.msg)}</span>
                         </div>
                     `).join('');
-                    lastLogCount = data.logs.length;
+                    lastLogKeyCache = lastLogKey;
                     if (document.getElementById('autoScroll').checked) {
                         logContainer.scrollTop = logContainer.scrollHeight;
                     }
