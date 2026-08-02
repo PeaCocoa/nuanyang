@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-02 23:15"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-02 23:45"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -147,8 +147,17 @@ function loadSettings() {
 
     try {
         const fav = localStorage.getItem(STORAGE_KEYS.favorites);
-        if (fav) favorites = JSON.parse(fav);
-    } catch (e) { console.warn("加载收藏数据失败:", e); }
+        console.log("[暖阳诊断] nuanyang-favorites 原始值:", fav ? fav.substring(0, 200) : "null");
+        if (fav) {
+            favorites = JSON.parse(fav);
+            console.log("[暖阳诊断] 收藏数量:", Object.keys(favorites).length);
+        } else {
+            console.log("[暖阳诊断] localStorage中无收藏数据");
+        }
+    } catch (e) {
+        console.warn("[暖阳诊断] 加载收藏数据失败:", e);
+        console.log("[暖阳诊断] 原始值:", localStorage.getItem(STORAGE_KEYS.favorites));
+    }
 }
 
 function saveSettings() {
@@ -160,7 +169,15 @@ function saveSettings() {
     localStorage.setItem(STORAGE_KEYS.liquidIntensity, settings.liquidIntensity.toString());
     localStorage.setItem(STORAGE_KEYS.batch, settings.batch.toString());
     localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(viewHistory));
-    localStorage.setItem(STORAGE_KEYS.favorites, JSON.stringify(favorites));
+    const favData = JSON.stringify(favorites);
+    const favCount = Object.keys(favorites).length;
+    const existingFav = localStorage.getItem(STORAGE_KEYS.favorites);
+    // 保护：如果当前内存中favorites为空，但localStorage中有数据，可能是加载失败，不覆盖
+    if (favCount === 0 && existingFav && existingFav !== "{}") {
+        console.warn("[暖阳诊断] 收藏数据为空但localStorage有值，跳过保存防止覆盖。现有:", existingFav.substring(0, 100));
+    } else {
+        localStorage.setItem(STORAGE_KEYS.favorites, favData);
+    }
 }
 
 // 多窗口设置同步：监听 storage 事件（其他窗口修改 localStorage 时触发）
@@ -993,7 +1010,11 @@ function loadMoreVideos() {
                     videoListEl.appendChild(hint);
                 }
             } else {
-                videoListEl.innerHTML = '<div class="empty">暂无视频，请稍后再来看看</div>';
+                if (currentCategory === "我的收藏") {
+                    videoListEl.innerHTML = '<div class="empty">还没有收藏的视频<br>点击视频播放页的♡即可收藏</div>';
+                } else {
+                    videoListEl.innerHTML = '<div class="empty">暂无视频，请稍后再来看看</div>';
+                }
             }
             isLoading = false;
             loadMoreEl.style.display = "none";
@@ -1439,6 +1460,38 @@ document.addEventListener("visibilitychange", () => {
         el.scrollLeft = scrollLeft - (x - startX);
     });
 })();
+
+// === 诊断工具（可在控制台调用）===
+window.debugFavorites = function() {
+    const raw = localStorage.getItem("nuanyang-favorites");
+    console.log("=== 暖阳收藏诊断 ===");
+    console.log("localStorage 原始值:", raw);
+    console.log("localStorage 长度:", raw ? raw.length : 0);
+    try {
+        const parsed = JSON.parse(raw);
+        const keys = Object.keys(parsed);
+        console.log("收藏数量:", keys.length);
+        if (keys.length > 0) {
+            console.log("前5个收藏bvid:", keys.slice(0, 5));
+            console.log("第一个收藏详情:", parsed[keys[0]]);
+        }
+        console.log("内存中 favorites 对象:", favorites);
+        console.log("内存中收藏数量:", Object.keys(favorites).length);
+        console.log("allVideos 数量:", allVideos.length);
+        if (keys.length > 0 && allVideos.length > 0) {
+            const matched = keys.filter(bvid => allVideos.some(v => v.bvid === bvid));
+            console.log("匹配allVideos的收藏:", matched.length, "/", keys.length);
+            if (matched.length === 0) {
+                console.warn("警告: 收藏的bvid与当前视频库不匹配！可能是视频数据已更新");
+                console.log("收藏bvid示例:", keys[0]);
+                console.log("视频库bvid示例:", allVideos[0].bvid);
+            }
+        }
+    } catch(e) {
+        console.error("解析失败:", e);
+    }
+    console.log("====================");
+};
 
 // 更新日志弹窗
 const aboutRow = document.getElementById('aboutRow');
