@@ -550,18 +550,24 @@ function getPool() {
 }
 
 function getTopRecommendations(force = false) {
-    // 个性化推荐置顶：最常看UP主的今日/昨日且没看过的新视频
+    // 个性化推荐置顶：最常看UP主或偏好分类的今日/昨日且没看过的新视频
     if (!force && !settings.recommend) return [];
     if (Object.keys(viewHistory).length === 0) return [];
 
     const upAffinity = getUpAffinity();
-    // 取观看次数最多的前3个UP主
-    const topUps = Object.entries(upAffinity)
+    const catAffinity = getCategoryAffinity();
+    // 取观看次数最多的前5个UP主（放宽范围）
+    const topUps = new Set(Object.entries(upAffinity)
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 3)
-        .map(([name]) => name);
+        .slice(0, 5)
+        .map(([name]) => name));
+    // 取偏好度最高的前5个分类
+    const topCats = new Set(Object.entries(catAffinity)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([name]) => name));
 
-    if (topUps.length === 0) return [];
+    if (topUps.size === 0 && topCats.size === 0) return [];
 
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000;
@@ -571,19 +577,27 @@ function getTopRecommendations(force = false) {
     // 已看过的视频
     const viewedBvids = new Set(Object.keys(viewHistory));
 
-    // 找到这些UP主的今日/昨日新视频，且没看过
+    // 找到今日/昨日新视频：匹配偏好UP主 OR 偏好分类
     const candidates = allVideos.filter(v => {
         if (viewedBvids.has(v.bvid)) return false;
-        if (!topUps.includes(v.up_name)) return false;
         const pubdate = v.pubdate || 0;
-        return pubdate >= dayBeforeStart && pubdate < todayStart + 86400;
+        if (pubdate < dayBeforeStart || pubdate >= todayStart + 86400) return false;
+        const matchUp = topUps.has(v.up_name);
+        const vCats = getVideoCategories(v);
+        const matchCat = vCats.some(c => topCats.has(c));
+        return matchUp || matchCat;
+    });
+
+    // 按综合权重排序：UP主亲和度 + 分类亲和度
+    candidates.sort((a, b) => {
+        const scoreA = (upAffinity[a.up_name] || 0) + Math.max(...getVideoCategories(a).map(c => catAffinity[c] || 0), 0);
+        const scoreB = (upAffinity[b.up_name] || 0) + Math.max(...getVideoCategories(b).map(c => catAffinity[c] || 0), 0);
+        return scoreB - scoreA;
     });
 
     // 每个UP主最多取1条，总共最多3条
     const result = [];
     const usedUps = new Set();
-    // 按UP主亲和度排序
-    candidates.sort((a, b) => (upAffinity[b.up_name] || 0) - (upAffinity[a.up_name] || 0));
     for (const v of candidates) {
         if (result.length >= 3) break;
         if (usedUps.has(v.up_name)) continue;
@@ -666,13 +680,25 @@ function getDailyDigest() {
 
     // 3. 今日推荐（复用 getTopRecommendations，force=true 跳过 recommend 检查）
     let todayRecommend = getTopRecommendations(true);
-    // 如果没有推荐（新用户无观看记录），回退到今日热门视频
+    // 如果没有推荐（无匹配的偏好UP主/分类新视频），回退到按分类偏好+播放量排序
     if (todayRecommend.length === 0) {
+        const catAffinity = getCategoryAffinity();
+        const upAffinity = getUpAffinity();
         todayRecommend = allVideos.filter(v => {
             if (viewedBvids.has(v.bvid)) return false;
             const pubdate = v.pubdate || 0;
             return pubdate >= todayStart && pubdate < todayStart + 86400;
-        }).sort((a, b) => (b.play || 0) - (a.play || 0)).slice(0, 5);
+        }).map(v => {
+            const cats = getVideoCategories(v);
+            const catScore = cats.length > 0
+                ? Math.max(...cats.map(c => catAffinity[c] || 0))
+                : 0;
+            const upScore = upAffinity[v.up_name] || 0;
+            // 综合分：分类权重50% + UP主权重20% + 播放量归一化30%
+            const playScore = Math.log10((v.play || 10) + 1) / 6; // log10归一化，10万播放约0.5
+            const score = 0.5 * catScore + 0.2 * upScore + 0.3 * playScore;
+            return { ...v, _score: score };
+        }).sort((a, b) => b._score - a._score).slice(0, 5);
     }
 
     // 4. 央视推荐（央视系列UP主近3日更新）
