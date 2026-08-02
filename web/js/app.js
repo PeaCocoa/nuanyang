@@ -776,12 +776,15 @@ function refreshList() {
     videoListEl.innerHTML = "";
 
     // 置顶推荐：最常看UP主的今日/昨日新视频
-    const topRecs = getTopRecommendations();
-    topRecs.forEach(v => {
-        displayedBvids.add(v.bvid);
-        displayedVideos.push(v);
-        renderTopRecommendation(v);
-    });
+    // 搜索时不显示置顶推荐，只显示搜索结果
+    if (!searchKeyword) {
+        const topRecs = getTopRecommendations();
+        topRecs.forEach(v => {
+            displayedBvids.add(v.bvid);
+            displayedVideos.push(v);
+            renderTopRecommendation(v);
+        });
+    }
 
     loadMoreVideos();
 }
@@ -798,10 +801,14 @@ function loadMoreVideos() {
 
         if (available.length === 0) {
             if (displayedVideos.length > 0) {
-                const hint = document.createElement("div");
-                hint.className = "empty";
-                hint.textContent = "已经到底了，更多好视频正在路上";
-                videoListEl.appendChild(hint);
+                // 检查是否已有“已到底”提示，避免重复添加
+                const existingHint = videoListEl.querySelector('.empty:last-child');
+                if (!existingHint) {
+                    const hint = document.createElement("div");
+                    hint.className = "empty";
+                    hint.textContent = "已经到底了，更多好视频正在路上";
+                    videoListEl.appendChild(hint);
+                }
             } else {
                 videoListEl.innerHTML = '<div class="empty">暂无视频，请稍后再来看看</div>';
             }
