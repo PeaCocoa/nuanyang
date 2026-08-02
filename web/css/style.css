@@ -453,6 +453,8 @@ body.dark .top-recommend-card {
     font-size: var(--font-large);
     color: var(--mute);
     font-weight: 500;
+    grid-column: 1 / -1;
+    width: 100%;
 }
 
 /* === 底部加载更多 === */

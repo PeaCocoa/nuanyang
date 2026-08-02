@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-02 16:40"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-02 17:00"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -453,7 +453,7 @@ function selectVideos(pool, count) {
     const result = [];
     const used = new Set();
 
-    if (settings.recommend && Object.keys(viewHistory).length > 0) {
+    if (settings.recommend && Object.keys(viewHistory).length > 0 && !searchKeyword) {
         const catAffinity = getCategoryAffinity();
         const upAffinity = getUpAffinity();
         const viewedBvids = new Set(Object.keys(viewHistory));
@@ -594,11 +594,16 @@ function getPool() {
     }
     if (searchKeyword) {
         const kw = searchKeyword.toLowerCase();
+        // 模糊搜索：关键词拆成单字，每个字都需在标题/UP名/分类中至少一处出现
+        // 如"科普"能匹配"科学普及"（科→科学，普→普及）
+        const chars = kw.split('').filter(c => c.trim());
         pool = pool.filter(v => {
             const title = (v.title || "").toLowerCase();
             const upName = (v.up_name || "").toLowerCase();
             const cats = getVideoCategories(v).join(" ").toLowerCase();
-            return title.includes(kw) || upName.includes(kw) || cats.includes(kw);
+            const haystack = title + ' ' + upName + ' ' + cats;
+            // 所有字符都能在文本中找到，即认为匹配
+            return chars.every(ch => haystack.includes(ch));
         });
     }
     return pool;
