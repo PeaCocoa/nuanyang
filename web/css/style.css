@@ -950,9 +950,11 @@ body.dark .changelog-item {
     font-size: 15px;
     font-weight: 700;
     color: var(--rausch);
-    padding: var(--space-3) 0 var(--space-1);
-    margin-top: var(--space-2);
+    padding: var(--space-5) 0 var(--space-3);
+    margin-top: var(--space-4);
     border-bottom: 2px solid var(--rausch);
+    grid-column: 1 / -1;
+    width: 100%;
 }
 
 .digest-card {
@@ -974,11 +976,13 @@ body.dark .changelog-item {
 .digest-greeting-card {
     background: linear-gradient(135deg, #FF385C, #E00B41);
     color: #fff;
-    padding: var(--space-4) var(--space-5);
+    padding: var(--space-5) var(--space-6);
     border-radius: var(--radius-md);
     display: flex;
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--space-4);
+    grid-column: 1 / -1;
+    width: 100%;
 }
 
 .digest-greeting-icon {
@@ -1009,6 +1013,40 @@ body.dark .digest-greeting-card {
     margin: 0 auto;
 }
 
+.digest-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+/* 桌面端：digest-content 继承主页多列网格 */
+@media (min-width: 768px) {
+    .digest-content {
+        max-width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-6) var(--space-5);
+        padding: 0 var(--space-2);
+    }
+    .digest-card { max-width: 420px; }
+}
+
+@media (min-width: 1200px) {
+    .digest-content {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    .digest-card { max-width: 380px; }
+}
+
+@media (min-width: 1600px) {
+    .digest-content {
+        grid-template-columns: repeat(4, 1fr);
+        max-width: 1800px;
+    }
+}
+
 .digest-header {
     display: flex;
     align-items: center;
@@ -1035,4 +1073,9 @@ body.dark .digest-greeting-card {
     font-size: 18px;
     font-weight: 700;
     color: var(--ink);
+}
+
+body.dark .digest-section-header {
+    color: var(--rausch);
+    border-color: var(--rausch);
 }

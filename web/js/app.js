@@ -853,7 +853,13 @@ refreshBtn.addEventListener("click", async () => {
     } catch (e) {
         showToast("刷新失败，请稍后重试");
     }
-    refreshList();
+    // 根据当前视图刷新对应内容
+    if (currentView === "digest") {
+        renderDigestPage();
+        showToast("每日摘要已刷新");
+    } else {
+        refreshList();
+    }
 });
 
 // =====================
