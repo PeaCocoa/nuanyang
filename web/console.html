@@ -1085,12 +1085,9 @@
         // === 轮询状态 ===
         async function poll() {
             try {
-                console.log('[poll] fetching...');
                 const resp = await fetch(API_STATUS + '?t=' + Date.now());
-                console.log('[poll] response status:', resp.status);
                 if (!resp.ok) return;
                 const data = await resp.json();
-                console.log('[poll] data:', data.state, data.done_ups, '/', data.total_ups);
                 render(data);
             } catch (e) {}
         }

@@ -68,6 +68,13 @@ function formatCategories(video) {
     return cats.length > 0 ? cats.join(" · ") : "";
 }
 
+function escapeHtml(text) {
+    if (!text) return "";
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // =====================
 // 设置管理
 // =====================
@@ -454,8 +461,8 @@ function renderTopRecommendation(video) {
     card.className = "video-card top-recommend-card";
 
     const coverHtml = video.cover
-        ? `<img class="video-cover" src="${video.cover}" alt="${video.title}" loading="lazy" referrerpolicy="no-referrer"
-             onerror="this.outerHTML='<div class=\'video-cover-placeholder\'>暖阳</div>'">`
+        ? `<img class="video-cover" src="${video.cover}" alt="${escapeHtml(video.title)}" loading="lazy" referrerpolicy="no-referrer"
+             onerror="this.outerHTML='<div class=\\'video-cover-placeholder\\'>暖阳</div>'">`
         : `<div class="video-cover-placeholder">暖阳</div>`;
 
     const catText = formatCategories(video);
@@ -466,9 +473,9 @@ function renderTopRecommendation(video) {
             ${video.duration_text ? `<span class="video-duration">${video.duration_text}</span>` : ""}
         </div>
         <div class="video-info">
-            <div class="video-title">${video.title}</div>
+            <div class="video-title">${escapeHtml(video.title)}</div>
             <div class="video-meta">
-                <span class="video-up">${video.up_name}</span>
+                <span class="video-up">${escapeHtml(video.up_name)}</span>
                 ${favorites[video.bvid] ? '<span class="video-fav-badge">\u2665</span>' : ''}
                 <span class="video-top-badge">今日推荐</span>
             </div>
@@ -505,13 +512,17 @@ function loadMoreVideos() {
         const available = pool.filter(v => !displayedBvids.has(v.bvid));
 
         if (available.length === 0) {
-            const freshPool = pool.filter(v => true);
-            const selected = selectVideos(freshPool, settings.batch);
-            selected.forEach(v => {
-                displayedBvids.add(v.bvid);
-                displayedVideos.push(v);
-                renderVideoCard(v);
-            });
+            if (displayedVideos.length > 0) {
+                const hint = document.createElement("div");
+                hint.className = "empty";
+                hint.textContent = "已经到底了，更多好视频正在路上";
+                videoListEl.appendChild(hint);
+            } else {
+                videoListEl.innerHTML = '<div class="empty">暂无视频，请稍后再来看看</div>';
+            }
+            isLoading = false;
+            loadMoreEl.style.display = "none";
+            return;
         } else {
             const selected = selectVideos(available, Math.min(settings.batch, available.length));
             selected.forEach(v => {
@@ -542,7 +553,7 @@ function renderVideoCard(video) {
     card.className = "video-card";
 
     const coverHtml = video.cover
-        ? `<img class="video-cover" src="${video.cover}" alt="${video.title}" loading="lazy" referrerpolicy="no-referrer"
+        ? `<img class="video-cover" src="${video.cover}" alt="${escapeHtml(video.title)}" loading="lazy" referrerpolicy="no-referrer"
              onerror="this.outerHTML='<div class=\\'video-cover-placeholder\\'>暖阳</div>'">`
         : `<div class="video-cover-placeholder">暖阳</div>`;
 
@@ -561,9 +572,9 @@ function renderVideoCard(video) {
             ${video.duration_text ? `<span class="video-duration">${video.duration_text}</span>` : ""}
         </div>
         <div class="video-info">
-            <div class="video-title">${video.title}</div>
+            <div class="video-title">${escapeHtml(video.title)}</div>
             <div class="video-meta">
-                <span class="video-up">${video.up_name}</span>
+                <span class="video-up">${escapeHtml(video.up_name)}</span>
                 ${favBadge}
                 ${badge}
             </div>
@@ -580,7 +591,7 @@ function renderVideoCard(video) {
 const scrollSentinel = document.getElementById("scrollSentinel");
 
 const scrollObserver = new IntersectionObserver((entries) => {
-    if (entries[0].isIntersecting && !isLoading) {
+    if (entries[0].isIntersecting && !isLoading && displayedVideos.length < 60) {
         loadMoreVideos();
     }
 }, { rootMargin: "300px" });
@@ -656,6 +667,10 @@ function openPlayer(video) {
 }
 
 function closePlayer() {
+    if (_preventNavRef) {
+        window.removeEventListener("beforeunload", _preventNavRef);
+        _preventNavRef = null;
+    }
     if (currentPlayingVideo && playerOpenTime > 0) {
         const watchMs = Date.now() - playerOpenTime;
         recordView(currentPlayingVideo, watchMs);
@@ -715,7 +730,13 @@ window.addEventListener("popstate", () => {
 });
 
 // === 拦截iframe内跳转，防止跳到B站网页或App ===
+let _preventNavRef = null;
+
 function blockIframeNavigation() {
+    if (_preventNavRef) {
+        window.removeEventListener("beforeunload", _preventNavRef);
+        _preventNavRef = null;
+    }
     const iframe = playerContainer.querySelector("iframe");
     if (!iframe) return;
 
@@ -741,6 +762,7 @@ function blockIframeNavigation() {
     } catch(e) {}
 
     // 拦截顶层窗口跳转（B站播放器可能尝试 window.top.location）
+    _preventNavRef = preventNav;
     window.addEventListener("beforeunload", preventNav, { once: true });
 }
 
@@ -863,8 +885,10 @@ async function checkForUpdate() {
     } catch (e) {
         // 静默失败
     }
-    // 继续每5分钟检查
-    setTimeout(checkForUpdate, 5 * 60 * 1000);
+    // 页面可见时继续检查，不可见时暂停
+    if (!document.hidden) {
+        setTimeout(checkForUpdate, 5 * 60 * 1000);
+    }
 }
 
 // =====================
@@ -877,6 +901,14 @@ applyDarkMode();
 applyBatch();
 recommendToggle.checked = settings.recommend;
 loadData();
+
+
+// 页面重新可见时恢复自动更新检查
+document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && !isLoading) {
+        setTimeout(checkForUpdate, 30 * 1000);
+    }
+});
 
 
 // === 分类栏鼠标拖拽滚动（适配无触控设备）===
