@@ -537,13 +537,20 @@
         padding: var(--space-8) var(--space-4);
     }
 
-    .feature-image {
-        order: -1;
+    .feature-content {
         width: 100%;
     }
 
+    .feature-image {
+        order: -1;
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
     .feature-image img {
-        max-height: 280px;
+        max-height: 240px;
+        max-width: 100%;
     }
 
     .feature-stats {
@@ -556,7 +563,7 @@
     }
 
     .device-thumb {
-        min-width: 72px;
+        min-width: 64px;
         padding: var(--space-2) var(--space-3);
     }
 
@@ -565,17 +572,51 @@
         height: 28px;
     }
 
+    /* 竖屏设备：限制高度避免溢出屏幕 */
     .device-frame.portrait {
-        max-height: 480px;
+        max-height: 420px;
     }
 
+    .device-frame.portrait .device-img {
+        max-height: 420px;
+        width: auto;
+    }
+
+    /* 横屏设备：限制宽度，等比缩放 */
     .device-frame.landscape {
         max-width: 100%;
     }
 
+    .device-frame.landscape .device-img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* 设备展示区：减小最小高度，增加横向溢出处理 */
     .device-stage {
         padding: var(--space-2);
-        min-height: 400px;
+        min-height: 320px;
+        overflow-x: hidden;
+        overflow-y: visible;
+    }
+
+    /* 设备选择栏横向滚动 */
+    .device-selector {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: var(--space-2);
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .device-selector::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* 页面标签换行处理 */
+    .page-tabs {
+        flex-wrap: wrap;
     }
 
     .floating-home-btn {
@@ -592,15 +633,72 @@
     }
 
     .device-thumb {
-        min-width: 64px;
+        min-width: 56px;
         padding: var(--space-2);
     }
 
     .device-thumb-name {
-        font-size: 11px;
+        font-size: 10px;
+    }
+
+    .device-thumb-icon {
+        width: 24px;
+        height: 24px;
     }
 
     .device-frame.portrait {
-        max-height: 400px;
+        max-height: 360px;
     }
+
+    .device-frame.portrait .device-img {
+        max-height: 360px;
+    }
+
+    .device-stage {
+        min-height: 280px;
+        padding: var(--space-1);
+    }
+
+    .feature-image img {
+        max-height: 200px;
+    }
+
+    .intro-name {
+        font-size: 24px;
+    }
+
+    .intro-desc {
+        font-size: 14px;
+    }
+
+    .feature-title {
+        font-size: 18px;
+    }
+
+    .demo-heading {
+        font-size: 20px;
+    }
+
+    .access-heading {
+        font-size: 20px;
+    }
+
+    .page-tab {
+        padding: var(--space-1) var(--space-3);
+        font-size: 12px;
+    }
+}
+
+
+/* === 全局溢出保护 === */
+.showcase-demo {
+    overflow-x: hidden;
+}
+
+.device-frame {
+    max-width: 100%;
+}
+
+.device-frame .device-img {
+    max-width: 100%;
 }

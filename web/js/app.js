@@ -48,6 +48,9 @@ const settingsClose = document.getElementById("settingsClose");
 const darkModeToggle = document.getElementById("darkModeToggle");
 const recommendToggle = document.getElementById("recommendToggle");
 const digestToggle = document.getElementById("digestToggle");
+const digestBtn = document.getElementById("digestBtn");
+const digestViewEl = document.getElementById("digestView");
+const digestBackBtn = document.getElementById("digestBackBtn");
 const fontOptions = document.getElementById("fontOptions");
 const batchOptions = document.getElementById("batchOptions");
 const clearHistoryBtn = document.getElementById("clearHistoryBtn");
@@ -56,6 +59,7 @@ const toastEl = document.getElementById("toast");
 const searchInput = document.getElementById("searchInput");
 const searchClear = document.getElementById("searchClear");
 let searchKeyword = "";
+let currentView = "main"; // main / digest
 
 // =====================
 // 工具函数：获取视频分类（兼容数组/字符串）
@@ -220,9 +224,119 @@ digestToggle.addEventListener("change", () => {
         showToast("每日摘要已开启");
     } else {
         showToast("每日摘要已关闭");
+        if (currentView === "digest") showDigestPage(false);
     }
-    refreshList();
+    const dBtn = document.getElementById("digestBtn");
+    if (dBtn) dBtn.style.display = settings.digest ? "" : "none";
 });
+
+// 每日摘要页面切换
+if (digestBtn) {
+    digestBtn.addEventListener("click", () => {
+        if (allVideos.length === 0) {
+            showToast("视频数据加载中...");
+            return;
+        }
+        showDigestPage(true);
+    });
+}
+
+if (digestBackBtn) {
+    digestBackBtn.addEventListener("click", () => showDigestPage(false));
+}
+
+function showDigestPage(show) {
+    currentView = show ? "digest" : "main";
+    if (show) {
+        videoListEl.style.display = "none";
+        loadMoreEl.style.display = "none";
+        scrollSentinel.style.display = "none";
+        categoriesEl.style.display = "none";
+        digestViewEl.style.display = "block";
+        renderDigestPage();
+    } else {
+        videoListEl.style.display = "";
+        scrollSentinel.style.display = "";
+        categoriesEl.style.display = "";
+        digestViewEl.style.display = "none";
+        digestViewEl.innerHTML = "";
+    }
+}
+
+function renderDigestPage() {
+    digestViewEl.innerHTML = "";
+    const digest = getDailyDigest();
+
+    // 暖阳祝语
+    if (digest.greeting) {
+        const card = document.createElement("div");
+        card.className = "digest-greeting-card";
+        card.innerHTML = '<div class="digest-greeting-icon">☀️</div>' +
+            '<div class="digest-greeting-text">' + escapeHtml(digest.greeting) + '</div>';
+        digestViewEl.appendChild(card);
+    }
+
+    // 收藏的UP主今日更新
+    if (digest.favoriteUpdates.length > 0) {
+        renderDigestSectionPage(digestViewEl, "收藏的UP主今日更新", digest.favoriteUpdates, "暖阳推荐-收藏更新");
+    }
+
+    // 今日推荐
+    if (digest.todayRecommend.length > 0) {
+        renderDigestSectionPage(digestViewEl, "今日推荐", digest.todayRecommend, "暖阳推荐-今日推荐");
+    }
+
+    // 央视推荐
+    if (digest.cctvRecommend.length > 0) {
+        renderDigestSectionPage(digestViewEl, "央视推荐", digest.cctvRecommend, "暖阳推荐-央视推荐");
+    }
+
+    // 如果全部为空
+    if (digest.favoriteUpdates.length === 0 && digest.todayRecommend.length === 0 && digest.cctvRecommend.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "今天暂无摘要内容，去看看视频列表吧";
+        digestViewEl.appendChild(empty);
+    }
+}
+
+function renderDigestSectionPage(container, title, videos, badgeText) {
+    const header = document.createElement("div");
+    header.className = "digest-section-header";
+    header.textContent = title;
+    container.appendChild(header);
+
+    videos.forEach(v => {
+        const card = document.createElement("div");
+        card.className = "video-card digest-card";
+
+        const coverHtml = video.cover
+            ? `<img class="video-cover" src="${v.cover}" alt="${escapeHtml(v.title)}" loading="lazy" referrerpolicy="no-referrer"
+                 onerror="this.outerHTML='<div class=\\'video-cover-placeholder\\'>暖阳</div>'">`
+            : `<div class="video-cover-placeholder">暖阳</div>`;
+
+        const favBadge = favorites[v.bvid]
+            ? '<span class="video-fav-badge">♥</span>'
+            : "";
+
+        card.innerHTML = `
+            <div class="video-cover-wrap">
+                ${coverHtml}
+                ${v.duration_text ? `<span class="video-duration">${v.duration_text}</span>` : ""}
+            </div>
+            <div class="video-info">
+                <div class="video-title">${escapeHtml(v.title)}</div>
+                <div class="video-meta">
+                    <span class="video-up">${escapeHtml(v.up_name)}</span>
+                    ${favBadge}
+                    <span class="video-digest-badge">${badgeText}</span>
+                </div>
+            </div>
+        `;
+        card.addEventListener("click", () => openPlayer(v));
+        container.appendChild(card);
+    });
+}
 
 let playerOpenTime = 0;
 const MIN_WATCH_MS = 3000;
@@ -564,77 +678,6 @@ function getDailyDigest() {
     return { greeting, favoriteUpdates, todayRecommend, cctvRecommend };
 }
 
-function renderDigest() {
-    const digest = getDailyDigest();
-
-    // 暖阳祝语
-    if (digest.greeting) {
-        const card = document.createElement("div");
-        card.className = "digest-greeting-card";
-        card.innerHTML = '<div class="digest-greeting-icon">☀️</div>' +
-            '<div class="digest-greeting-text">' + escapeHtml(digest.greeting) + '</div>';
-        videoListEl.appendChild(card);
-    }
-
-    // 收藏的UP主今日更新
-    if (digest.favoriteUpdates.length > 0) {
-        renderDigestSection("收藏的UP主今日更新", digest.favoriteUpdates, "暖阳推荐-收藏更新");
-    }
-
-    // 今日推荐
-    if (digest.todayRecommend.length > 0) {
-        renderDigestSection("今日推荐", digest.todayRecommend, "暖阳推荐-今日推荐");
-    }
-
-    // 央视推荐
-    if (digest.cctvRecommend.length > 0) {
-        renderDigestSection("央视推荐", digest.cctvRecommend, "暖阳推荐-央视推荐");
-    }
-}
-
-function renderDigestSection(title, videos, badgeText) {
-    const header = document.createElement("div");
-    header.className = "digest-section-header";
-    header.textContent = title;
-    videoListEl.appendChild(header);
-
-    videos.forEach(v => {
-        displayedBvids.add(v.bvid);
-        displayedVideos.push(v);
-        renderDigestCard(v, badgeText);
-    });
-}
-
-function renderDigestCard(video, badgeText) {
-    const card = document.createElement("div");
-    card.className = "video-card digest-card";
-
-    const coverHtml = video.cover
-        ? `<img class="video-cover" src="${video.cover}" alt="${escapeHtml(video.title)}" loading="lazy" referrerpolicy="no-referrer"
-             onerror="this.outerHTML='<div class=\\'video-cover-placeholder\\'>暖阳</div>'">`
-        : `<div class="video-cover-placeholder">暖阳</div>`;
-
-    const favBadge = favorites[video.bvid]
-        ? '<span class="video-fav-badge">♥</span>'
-        : "";
-
-    card.innerHTML = `
-        <div class="video-cover-wrap">
-            ${coverHtml}
-            ${video.duration_text ? `<span class="video-duration">${video.duration_text}</span>` : ""}
-        </div>
-        <div class="video-info">
-            <div class="video-title">${escapeHtml(video.title)}</div>
-            <div class="video-meta">
-                <span class="video-up">${escapeHtml(video.up_name)}</span>
-                ${favBadge}
-                <span class="video-digest-badge">${badgeText}</span>
-            </div>
-        </div>
-    `;
-    card.addEventListener("click", () => openPlayer(video));
-    videoListEl.appendChild(card);
-}
 
 function refreshList() {
     isLoading = false;
@@ -642,18 +685,13 @@ function refreshList() {
     displayedBvids = new Set();
     videoListEl.innerHTML = "";
 
-    if (settings.digest) {
-        // 每日摘要模式：祝语 + 收藏更新 + 今日推荐 + 央视推荐
-        renderDigest();
-    } else {
-        // 置顶推荐：最常看UP主的今日/昨日新视频
-        const topRecs = getTopRecommendations();
-        topRecs.forEach(v => {
-            displayedBvids.add(v.bvid);
-            displayedVideos.push(v);
-            renderTopRecommendation(v);
-        });
-    }
+    // 置顶推荐：最常看UP主的今日/昨日新视频
+    const topRecs = getTopRecommendations();
+    topRecs.forEach(v => {
+        displayedBvids.add(v.bvid);
+        displayedVideos.push(v);
+        renderTopRecommendation(v);
+    });
 
     loadMoreVideos();
 }
@@ -789,6 +827,10 @@ refreshBtn.addEventListener("click", async () => {
         if (newVideos.length !== allVideos.length) {
             allVideos = newVideos;
             lastVideoCount = newVideos.length;
+
+        // 根据设置显示/隐藏每日摘要入口按钮
+        const digestBtn = document.getElementById("digestBtn");
+        if (digestBtn) digestBtn.style.display = settings.digest ? "" : "none";
             renderCategories();
             showToast("发现新视频，已更新");
         } else {

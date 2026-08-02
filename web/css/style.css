@@ -1000,3 +1000,39 @@ body.dark .digest-card {
 body.dark .digest-greeting-card {
     background: linear-gradient(135deg, #C02A48, #A00A31);
 }
+
+
+/* === 每日摘要页面 === */
+.digest-view {
+    padding: var(--space-4) var(--space-5) var(--space-8);
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.digest-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding-bottom: var(--space-4);
+}
+
+.digest-back-btn {
+    background: none;
+    border: none;
+    color: var(--ink);
+    cursor: pointer;
+    padding: var(--space-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.digest-back-btn:active {
+    opacity: 0.6;
+}
+
+.digest-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+}

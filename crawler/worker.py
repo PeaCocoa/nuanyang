@@ -169,7 +169,7 @@ def filter_and_transform_override(videos, up_name, categories, override):
     pubdate_days = override.get("pubdate_days", 0)
 
     EXCLUDE_KEYWORDS = [
-        "抽奖福利", "恰饽", "广告", "推广", "赞助",
+        "抽奖福利", "恰饭", "广告", "推广", "赞助",
         "恐怖", "惊悚", "血腥", "暴力",
         "擦边", "色情", "低俗",
     ]
@@ -458,33 +458,30 @@ def run(resume=False):
 
     # 断点续爬：加载已有进度
     done_indices = set()
+    resume_video_counts = {}  # UP索引 → 视频数（从进度文件恢复）
     if resume:
         progress = load_progress()
         if progress:
             done_indices = set(progress.get("done_indices", []))
             all_videos = progress.get("videos", [])
             log(f"[续爬] 已完成 {len(done_indices)} 个UP主，已有 {len(all_videos)} 条视频")
-            # 更新状态：标记已完成的UP
-            for i in range(len(upmasters)):
+            # 从进度文件中的视频列表统计每个UP的视频数
+            from collections import Counter
+            up_counts = Counter(v.get("up_name", "") for v in all_videos)
+            for i, up in enumerate(upmasters):
                 if i in done_indices:
-                    pass  # init后再标记
+                    resume_video_counts[i] = up_counts.get(up["name"], 0)
         else:
             log("[续爬] 未找到进度文件，从头开始爬取")
             resume = False
 
     status.init(len(upmasters), upmasters)
 
-    # 续爬模式下，恢复已完成UP的状态
+    # 续爬模式下，恢复已完成UP的状态（用进度文件中的视频数，而非空的 status）
     if resume and done_indices:
         for i in done_indices:
             if i < len(upmasters):
-                # 从旧状态中找该UP的视频数
-                old_videos_count = 0
-                old_status = status.get_status()
-                for u in old_status.get("ups", []):
-                    if u.get("name") == upmasters[i]["name"]:
-                        old_videos_count = u.get("videos", 0)
-                        break
+                old_videos_count = resume_video_counts.get(i, 0)
                 status.update_up(i, "done", videos=old_videos_count)
                 status.add_videos(old_videos_count)
 
@@ -507,7 +504,9 @@ def run(resume=False):
         return
     log(f"[INFO] API正常，测试获取到 {len(test_results)} 条视频")
 
-    all_videos = []
+    # 续爬模式下 all_videos 已从进度文件加载，不重置
+    if not resume or not all_videos:
+        all_videos = []
 
     try:
         for i, up in enumerate(upmasters):
@@ -561,7 +560,7 @@ def run(resume=False):
                 time.sleep(batch_delay)
 
             if len(all_videos) >= total_limit:
-                log(f"达到总数上限 {MAX_VIDEOS_TOTAL}，停止抓取")
+                log(f"达到总数上限 {total_limit}，停止抓取")
                 break
 
     except Exception as e:

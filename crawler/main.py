@@ -373,20 +373,9 @@ class ConsoleHandler(http.server.SimpleHTTPRequestHandler):
 
     def _handle_save_settings(self):
         try:
-            length = int(self.headers.get("Content-Length", 0))
-            raw = self.rfile.read(length)
-            body = raw.decode("utf-8") if raw else "{}"
-            settings_data = json.loads(body)
+            settings_data = self._read_json_body()
             saved = status.save_settings(settings_data)
             self._serve_json({"ok": True, "settings": saved})
-        except (UnicodeDecodeError, json.JSONDecodeError):
-            try:
-                body = raw.decode("latin-1").encode("latin-1").decode("utf-8")
-                settings_data = json.loads(body)
-                saved = status.save_settings(settings_data)
-                self._serve_json({"ok": True, "settings": saved})
-            except Exception as e:
-                self._serve_json({"ok": False, "msg": f"解码失败: {e}"})
         except Exception as e:
             self._serve_json({"ok": False, "msg": str(e)})
 
@@ -405,10 +394,15 @@ def _pipe_output(proc):
         pass
 
 
+class ReusableTCPServer(socketserver.TCPServer):
+    """允许端口复用的TCPServer，避免重启时端口占用"""
+    allow_reuse_address = True
+
+
 def start_http_server():
     """启动HTTP服务器"""
     try:
-        server = socketserver.TCPServer(("0.0.0.0", CONSOLE_PORT), ConsoleHandler)
+        server = ReusableTCPServer(("0.0.0.0", CONSOLE_PORT), ConsoleHandler)
         print(f"[INFO] 控制台地址: http://localhost:{CONSOLE_PORT}/console.html")
         server.serve_forever()
     except OSError as e:

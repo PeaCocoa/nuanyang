@@ -103,11 +103,37 @@ def save_settings(settings: dict) -> dict:
 # =====================
 
 def is_running() -> bool:
-    """检查爬虫是否正在运行（从文件读取，跨进程准确）"""
+    """检查爬虫是否正在运行（从文件读取，跨进程准确）
+
+    防僵死：如果状态文件超过10分钟没更新且状态为 running，
+    自动降级为 idle（worker 崩溃后没来得及调用 finish 的情况）
+    """
     with _lock:
         try:
             status_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "crawl_status.json")
             if os.path.exists(status_file):
+                # 检查文件修改时间，超过10分钟视为僵死
+                file_mtime = os.path.getmtime(status_file)
+                if time.time() - file_mtime > 600:
+                    # 文件太久没更新，可能 worker 已崩溃
+                    if _status.get("state") == "running" or os.path.exists(status_file):
+                        with open(status_file, "r", encoding="utf-8") as f:
+                            saved = json.load(f)
+                        if saved.get("state") == "running":
+                            # 自动降级
+                            saved["state"] = "idle"
+                            saved["current_up"] = ""
+                            saved["current_step"] = ""
+                            saved["logs"].append({
+                                "time": time.strftime("%H:%M:%S"),
+                                "level": "warn",
+                                "msg": "[WARN] 爬虫状态超过10分钟未更新，自动降级为空闲（可能崩溃）",
+                            })
+                            with open(status_file, "w", encoding="utf-8") as f:
+                                json.dump(saved, f, ensure_ascii=False)
+                            _status["state"] = "idle"
+                            return False
+
                 with open(status_file, "r", encoding="utf-8") as f:
                     saved = json.load(f)
                 file_state = saved.get("state", "idle")

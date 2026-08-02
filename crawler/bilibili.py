@@ -199,7 +199,7 @@ class BiliCrawler:
             else:
                 print("[WARN] Cookie检测通过，nav验证未通过，继续尝试...")
         else:
-            print("[WARN] 等待登录超时（3分钟），继续尝试...")
+            print("[WARN] 等待登录超时（30分钟），继续尝试...")
             time.sleep(2)
 
     def is_logged_in(self) -> bool:
