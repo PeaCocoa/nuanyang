@@ -1466,10 +1466,10 @@ body[data-theme="liquid"][data-color-scheme="dark"] .category-btn {
     border: 1px solid rgba(255, 255, 255, 0.06);
 }
 body[data-theme="liquid"] .category-btn.active {
-    backdrop-filter: url("#thumb-filter") saturate(130%);
-    -webkit-backdrop-filter: blur(12px) saturate(130%);
-    background: rgba(255, 255, 255, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.35);
+    backdrop-filter: url("#thumb-filter") saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 /* --- 视频卡片：液态玻璃折射（核心效果） --- */
@@ -1509,9 +1509,9 @@ body[data-theme="liquid"][data-color-scheme="dark"] .settings-panel {
 
 /* --- 设置关闭按钮：液态玻璃 --- */
 body[data-theme="liquid"] .settings-close {
-    backdrop-filter: url("#thumb-filter") saturate(115%);
-    -webkit-backdrop-filter: blur(12px) saturate(115%);
-    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: url("#thumb-filter") saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    background: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 body[data-theme="liquid"][data-color-scheme="dark"] .settings-close {
@@ -1521,9 +1521,9 @@ body[data-theme="liquid"][data-color-scheme="dark"] .settings-close {
 
 /* --- Toggle 开关：液态玻璃 --- */
 body[data-theme="liquid"] .toggle-slider {
-    backdrop-filter: url("#thumb-filter") saturate(115%);
-    -webkit-backdrop-filter: blur(8px) saturate(115%);
-    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: url("#thumb-filter") saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 body[data-theme="liquid"][data-color-scheme="dark"] .toggle-slider {
@@ -1545,11 +1545,11 @@ body[data-theme="liquid"] .toggle-slider::before {
 
 /* --- 顶栏按钮：液态玻璃药丸 --- */
 body[data-theme="liquid"] .header-btn {
-    backdrop-filter: url("#thumb-filter") saturate(115%);
-    -webkit-backdrop-filter: blur(12px) saturate(115%);
-    background: rgba(255, 255, 255, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    backdrop-filter: url("#thumb-filter") saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    background: rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 body[data-theme="liquid"][data-color-scheme="dark"] .header-btn {
     background: rgba(255, 255, 255, 0.08);
@@ -1570,10 +1570,10 @@ body[data-theme="liquid"][data-color-scheme="dark"] .search-box {
 
 /* --- 设置操作按钮：液态玻璃 --- */
 body[data-theme="liquid"] .settings-action-btn {
-    backdrop-filter: url("#thumb-filter") saturate(115%);
-    -webkit-backdrop-filter: blur(8px) saturate(115%);
-    background: rgba(255, 56, 92, 0.12);
-    border: 1px solid rgba(255, 56, 92, 0.3);
+    backdrop-filter: url("#thumb-filter") saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    background: rgba(255, 56, 92, 0.15);
+    border: 1px solid rgba(255, 56, 92, 0.35);
 }
 body[data-theme="liquid"][data-color-scheme="dark"] .settings-action-btn {
     background: rgba(255, 56, 92, 0.1);
@@ -1606,9 +1606,9 @@ body[data-theme="liquid"][data-color-scheme="dark"] .skin-picker {
 
 /* --- 皮肤选择器关闭按钮 --- */
 body[data-theme="liquid"] .skin-picker-close {
-    backdrop-filter: url("#thumb-filter") saturate(115%);
-    -webkit-backdrop-filter: blur(12px) saturate(115%);
-    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: url("#thumb-filter") saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    background: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 body[data-theme="liquid"][data-color-scheme="dark"] .skin-picker-close {
@@ -1618,9 +1618,10 @@ body[data-theme="liquid"][data-color-scheme="dark"] .skin-picker-close {
 
 /* --- 皮肤选项：液态玻璃 --- */
 body[data-theme="liquid"] .skin-option {
-    backdrop-filter: url("#thumb-filter") saturate(115%);
-    -webkit-backdrop-filter: blur(8px) saturate(115%);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: url("#thumb-filter") saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 body[data-theme="liquid"][data-color-scheme="dark"] .skin-option {
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -1666,10 +1667,10 @@ body[data-theme="liquid"] .digest-card {
 
 /* --- 每日摘要返回按钮：液态玻璃 --- */
 body[data-theme="liquid"] .digest-back-btn {
-    backdrop-filter: url("#thumb-filter") saturate(115%);
-    -webkit-backdrop-filter: blur(8px) saturate(115%);
-    background: rgba(255, 255, 255, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: url("#thumb-filter") saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: var(--radius-pill);
 }
 body[data-theme="liquid"][data-color-scheme="dark"] .digest-back-btn {
