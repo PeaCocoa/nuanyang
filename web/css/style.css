@@ -943,3 +943,60 @@ body.dark .changelog-item {
 #changelogArrow.rotated {
     transform: rotate(90deg);
 }
+
+
+/* === 每日摘要 === */
+.digest-section-header {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--rausch);
+    padding: var(--space-3) 0 var(--space-1);
+    margin-top: var(--space-2);
+    border-bottom: 2px solid var(--rausch);
+}
+
+.digest-card {
+    border: 2px solid var(--rausch);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.video-digest-badge {
+    font-size: 11px;
+    color: #fff;
+    background: var(--rausch);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.digest-greeting-card {
+    background: linear-gradient(135deg, #FF385C, #E00B41);
+    color: #fff;
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.digest-greeting-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+}
+
+.digest-greeting-text {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+/* 深色模式适配 */
+body.dark .digest-card {
+    border-color: var(--rausch);
+}
+
+body.dark .digest-greeting-card {
+    background: linear-gradient(135deg, #C02A48, #A00A31);
+}

@@ -14,6 +14,7 @@ const STORAGE_KEYS = {
     history: "nuanyang-history",
     batch: "nuanyang-batch",
     favorites: "nuanyang-favorites",
+    digest: "nuanyang-digest",
 };
 
 // === 状态 ===
@@ -26,6 +27,7 @@ let settings = {
     fontSize: "font-lg",
     darkMode: "auto",       // auto / on / off
     recommend: false,
+    digest: false,
     batch: BATCH_DEFAULT,
 };
 let viewHistory = {};  // { bvid: { count, lastView, categories, upName, totalDuration } }
@@ -45,6 +47,7 @@ const settingsOverlay = document.getElementById("settingsOverlay");
 const settingsClose = document.getElementById("settingsClose");
 const darkModeToggle = document.getElementById("darkModeToggle");
 const recommendToggle = document.getElementById("recommendToggle");
+const digestToggle = document.getElementById("digestToggle");
 const fontOptions = document.getElementById("fontOptions");
 const batchOptions = document.getElementById("batchOptions");
 const clearHistoryBtn = document.getElementById("clearHistoryBtn");
@@ -93,6 +96,9 @@ function loadSettings() {
 
         const rec = localStorage.getItem(STORAGE_KEYS.recommend);
         if (rec === "true") settings.recommend = true;
+
+        const dig = localStorage.getItem(STORAGE_KEYS.digest);
+        if (dig === "true") settings.digest = true;
 
         const batch = localStorage.getItem(STORAGE_KEYS.batch);
         if (batch) settings.batch = parseInt(batch);
@@ -200,6 +206,21 @@ clearHistoryBtn.addEventListener("click", () => {
     viewHistory = {};
     saveSettings();
     showToast("观看记录已清除");
+    refreshList();
+});
+
+// =====================
+// 每日摘要
+// =====================
+
+digestToggle.addEventListener("change", () => {
+    settings.digest = digestToggle.checked;
+    saveSettings();
+    if (settings.digest) {
+        showToast("每日摘要已开启");
+    } else {
+        showToast("每日摘要已关闭");
+    }
     refreshList();
 });
 
@@ -413,9 +434,9 @@ function getPool() {
     return pool;
 }
 
-function getTopRecommendations() {
+function getTopRecommendations(force = false) {
     // 个性化推荐置顶：最常看UP主的今日/昨日且没看过的新视频
-    if (!settings.recommend || Object.keys(viewHistory).length === 0) return [];
+    if ((!force && !settings.recommend) || Object.keys(viewHistory).length === 0) return [];
 
     const upAffinity = getUpAffinity();
     // 取观看次数最多的前3个UP主
@@ -485,19 +506,154 @@ function renderTopRecommendation(video) {
     videoListEl.appendChild(card);
 }
 
+// =====================
+// 每日摘要
+// =====================
+
+function getDailyDigest() {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime() / 1000;
+    const threeDaysAgo = todayStart - 86400 * 3;
+    const viewedBvids = new Set(Object.keys(viewHistory));
+
+    // 1. 暖阳祝语
+    const hour = now.getHours();
+    let greeting = "";
+    if (hour >= 5 && hour < 9) greeting = "早上好！新的一天，暖阳陪你开始";
+    else if (hour >= 9 && hour < 12) greeting = "上午好！看个好视频，心情不错";
+    else if (hour >= 12 && hour < 14) greeting = "中午好！吃饺看视频，双重享受";
+    else if (hour >= 14 && hour < 18) greeting = "下午好！来点好内容，给下午加加油";
+    else if (hour >= 18 && hour < 22) greeting = "晚上好！今天辛苦了，好好放松一下";
+    else greeting = "夜深了，早点休息，明天暖阳还在";
+
+    const tips = [
+        "记得多喝水，照顾好自己",
+        "笑一笑，十年少",
+        "生命在于运动，别忘了活动活动",
+        "好视频配好心情，享受当下",
+        "今天也要元气满满哦",
+        "愿这缕暖阳温暖你的每一天",
+    ];
+    greeting += " · " + tips[Math.floor(Math.random() * tips.length)];
+
+    // 2. 收藏的UP主今日更新
+    const favUpNames = new Set();
+    for (const bvid in favorites) {
+        if (favorites[bvid].up_name) favUpNames.add(favorites[bvid].up_name);
+    }
+    const favoriteUpdates = allVideos.filter(v => {
+        if (!favUpNames.has(v.up_name)) return false;
+        if (viewedBvids.has(v.bvid)) return false;
+        const pubdate = v.pubdate || 0;
+        return pubdate >= todayStart && pubdate < todayStart + 86400;
+    }).slice(0, 5);
+
+    // 3. 今日推荐（复用 getTopRecommendations，force=true 跳过 recommend 检查）
+    const todayRecommend = getTopRecommendations(true);
+
+    // 4. 央视推荐（央视系列UP主近3日更新）
+    const cctvKeywords = ["央视", "央广", "央广总垂"];
+    const cctvRecommend = allVideos.filter(v => {
+        if (viewedBvids.has(v.bvid)) return false;
+        if (!v.up_name) return false;
+        if (!cctvKeywords.some(kw => v.up_name.includes(kw))) return false;
+        const pubdate = v.pubdate || 0;
+        return pubdate >= threeDaysAgo && pubdate < todayStart + 86400;
+    }).sort((a, b) => (b.pubdate || 0) - (a.pubdate || 0)).slice(0, 5);
+
+    return { greeting, favoriteUpdates, todayRecommend, cctvRecommend };
+}
+
+function renderDigest() {
+    const digest = getDailyDigest();
+
+    // 暖阳祝语
+    if (digest.greeting) {
+        const card = document.createElement("div");
+        card.className = "digest-greeting-card";
+        card.innerHTML = '<div class="digest-greeting-icon">☀️</div>' +
+            '<div class="digest-greeting-text">' + escapeHtml(digest.greeting) + '</div>';
+        videoListEl.appendChild(card);
+    }
+
+    // 收藏的UP主今日更新
+    if (digest.favoriteUpdates.length > 0) {
+        renderDigestSection("收藏的UP主今日更新", digest.favoriteUpdates, "暖阳推荐-收藏更新");
+    }
+
+    // 今日推荐
+    if (digest.todayRecommend.length > 0) {
+        renderDigestSection("今日推荐", digest.todayRecommend, "暖阳推荐-今日推荐");
+    }
+
+    // 央视推荐
+    if (digest.cctvRecommend.length > 0) {
+        renderDigestSection("央视推荐", digest.cctvRecommend, "暖阳推荐-央视推荐");
+    }
+}
+
+function renderDigestSection(title, videos, badgeText) {
+    const header = document.createElement("div");
+    header.className = "digest-section-header";
+    header.textContent = title;
+    videoListEl.appendChild(header);
+
+    videos.forEach(v => {
+        displayedBvids.add(v.bvid);
+        displayedVideos.push(v);
+        renderDigestCard(v, badgeText);
+    });
+}
+
+function renderDigestCard(video, badgeText) {
+    const card = document.createElement("div");
+    card.className = "video-card digest-card";
+
+    const coverHtml = video.cover
+        ? `<img class="video-cover" src="${video.cover}" alt="${escapeHtml(video.title)}" loading="lazy" referrerpolicy="no-referrer"
+             onerror="this.outerHTML='<div class=\\'video-cover-placeholder\\'>暖阳</div>'">`
+        : `<div class="video-cover-placeholder">暖阳</div>`;
+
+    const favBadge = favorites[video.bvid]
+        ? '<span class="video-fav-badge">♥</span>'
+        : "";
+
+    card.innerHTML = `
+        <div class="video-cover-wrap">
+            ${coverHtml}
+            ${video.duration_text ? `<span class="video-duration">${video.duration_text}</span>` : ""}
+        </div>
+        <div class="video-info">
+            <div class="video-title">${escapeHtml(video.title)}</div>
+            <div class="video-meta">
+                <span class="video-up">${escapeHtml(video.up_name)}</span>
+                ${favBadge}
+                <span class="video-digest-badge">${badgeText}</span>
+            </div>
+        </div>
+    `;
+    card.addEventListener("click", () => openPlayer(video));
+    videoListEl.appendChild(card);
+}
+
 function refreshList() {
     isLoading = false;
     displayedVideos = [];
     displayedBvids = new Set();
     videoListEl.innerHTML = "";
 
-    // 置顶推荐：最常看UP主的今日/昨日新视频
-    const topRecs = getTopRecommendations();
-    topRecs.forEach(v => {
-        displayedBvids.add(v.bvid);
-        displayedVideos.push(v);
-        renderTopRecommendation(v);
-    });
+    if (settings.digest) {
+        // 每日摘要模式：祝语 + 收藏更新 + 今日推荐 + 央视推荐
+        renderDigest();
+    } else {
+        // 置顶推荐：最常看UP主的今日/昨日新视频
+        const topRecs = getTopRecommendations();
+        topRecs.forEach(v => {
+            displayedBvids.add(v.bvid);
+            displayedVideos.push(v);
+            renderTopRecommendation(v);
+        });
+    }
 
     loadMoreVideos();
 }
@@ -900,6 +1056,7 @@ applyFontSize();
 applyDarkMode();
 applyBatch();
 recommendToggle.checked = settings.recommend;
+digestToggle.checked = settings.digest;
 loadData();
 
 

@@ -127,6 +127,19 @@
 
                 <p class="settings-hint">该算法运行在本地，我们不上传您的观看数据。</p>
 
+                <div class="settings-row">
+                    <div class="settings-row-label">
+                        <span class="settings-row-name">每日摘要</span>
+                        <span class="settings-row-desc">收藏UP主更新、今日推荐、央视精选、暖阳祝语</span>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="digestToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <p class="settings-hint">打开后首页会显示每日精选内容，点击卡片即可播放。</p>
+
                 <div class="settings-row settings-row-column">
                     <div class="settings-row-label">
                         <span class="settings-row-name">每次展示数量</span>
@@ -161,6 +174,10 @@
                 </div>
                 <div class="changelog-wrap" id="changelogWrap">
                     <div class="changelog" id="changelog">
+                        <div class="changelog-item">
+                            <span class="changelog-version">8月2日 15:30</span>
+                            <span class="changelog-text">【新增】每日摘要功能：暖阳祝语、收藏UP主今日更新、今日推荐、央视推荐，在设置中手动开启<br>【修复】控制台日志超过300条后不再更新的严重Bug<br>【修复】视频展示完毕后重复渲染卡片、置顶推荐封面占位符转义错误、XSS安全防护、事件监听器累积、自动检查更新无限递归<br>今天修了一堆Bug，还加了每日摘要！</span>
+                        </div>
                         <div class="changelog-item">
                             <span class="changelog-version">8月2日 00:10</span>
                             <span class="changelog-text">【新增】视频收藏功能，播放器中点击收藏喜欢的视频<br>【新增】“我的收藏”分类，一键查看所有收藏的视频<br>【优化】个性化推荐中收藏过的视频权重增加，被收藏视频的UP主与分类亦微量提升<br>收藏夹住的好视频，暖阳替你记着！</span>
