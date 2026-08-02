@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-02 20:00"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-02 20:10"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -17,6 +17,7 @@ const STORAGE_KEYS = {
     batch: "nuanyang-batch",
     favorites: "nuanyang-favorites",
     digest: "nuanyang-digest",
+    liquidIntensity: "nuanyang-liquid-intensity",
 };
 
 // === 状态 ===
@@ -31,6 +32,7 @@ let settings = {
     theme: "auto",         // auto / light / dark / frosted / liquid
     recommend: false,
     digest: false,
+    liquidIntensity: 50, // 0=毛玻璃 50=液态玻璃 100=清透
     batch: BATCH_DEFAULT,
 };
 let viewHistory = {};  // { bvid: { count, lastView, categories, upName, totalDuration } }
@@ -63,6 +65,8 @@ const digestBackBtn = document.getElementById("digestBackBtn");
 const digestContentEl = document.getElementById("digestContent");
 const fontOptions = document.getElementById("fontOptions");
 const batchOptions = document.getElementById("batchOptions");
+const liquidIntensityRow = document.getElementById("liquidIntensityRow");
+const liquidIntensitySlider = document.getElementById("liquidIntensity");
 const clearHistoryBtn = document.getElementById("clearHistoryBtn");
 const loadMoreEl = document.getElementById("loadMore");
 const toastEl = document.getElementById("toast");
@@ -118,6 +122,9 @@ function loadSettings() {
         const dig = localStorage.getItem(STORAGE_KEYS.digest);
         if (dig === "true") settings.digest = true;
 
+        const li = localStorage.getItem(STORAGE_KEYS.liquidIntensity);
+        if (li !== null) settings.liquidIntensity = parseInt(li);
+
         const batch = localStorage.getItem(STORAGE_KEYS.batch);
         if (batch) settings.batch = parseInt(batch);
 
@@ -137,6 +144,7 @@ function saveSettings() {
     localStorage.setItem(STORAGE_KEYS.dark, settings.theme === "dark" ? "on" : "off");
     localStorage.setItem(STORAGE_KEYS.recommend, settings.recommend.toString());
     localStorage.setItem(STORAGE_KEYS.digest, settings.digest.toString());
+    localStorage.setItem(STORAGE_KEYS.liquidIntensity, settings.liquidIntensity.toString());
     localStorage.setItem(STORAGE_KEYS.batch, settings.batch.toString());
     localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(viewHistory));
     localStorage.setItem(STORAGE_KEYS.favorites, JSON.stringify(favorites));
@@ -158,6 +166,9 @@ window.addEventListener("storage", (e) => {
         applyTheme();
     } else if (e.key === STORAGE_KEYS.batch) {
         applyBatch();
+    } else if (e.key === STORAGE_KEYS.liquidIntensity) {
+        if (liquidIntensitySlider) liquidIntensitySlider.value = settings.liquidIntensity;
+        applyLiquidIntensity();
     } else if (e.key === STORAGE_KEYS.recommend) {
         recommendToggle.checked = settings.recommend;
         refreshList();
@@ -188,7 +199,7 @@ function applyFontSize() {
 function resolveColorScheme() {
     if (settings.theme === "dark") return "dark";
     if (settings.theme === "light") return "light";
-    // auto / frosted / liquid / classic: 跟随系统
+    // auto / liquid / classic: 跟随系统
     return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
@@ -196,7 +207,6 @@ const THEME_LABELS = {
     "auto": "跟随系统",
     "light": "白日",
     "dark": "黑夜",
-    "frosted": "毛玻璃",
     "liquid": "液态玻璃",
     "classic": "经典回忆",
 };
@@ -220,6 +230,71 @@ function applyTheme() {
     if (metaTheme) {
         metaTheme.content = colorScheme === "dark" ? "#1A1A1A" : "#FFFFFF";
     }
+    // 液态玻璃强度滑动条显示/隐藏
+    if (liquidIntensityRow) {
+        liquidIntensityRow.style.display = (settings.theme === "liquid") ? "" : "none";
+    }
+    applyLiquidIntensity();
+}
+
+// 液态玻璃强度：通过JS修改SVG filter原语参数实现无级调节
+// 0=毛玻璃(blur高,displace=0) 50=液态玻璃(原始值) 100=清透(全0)
+const LIQUID_ORIGINAL = {
+    thumbBlur: 0.2,
+    thumbDisplace: 21.232824823888038,
+    thumbFlood: 0.4,
+    searchBlur: 1,
+    searchDisplace: 54.97305784439829,
+    searchFlood: 0.25,
+};
+
+function applyLiquidIntensity() {
+    if (settings.theme !== "liquid") return;
+    const v = settings.liquidIntensity; // 0-100
+    const t = v / 100; // 0-1
+
+    // 0→0.5: 毛玻璃→液态玻璃 (blur: 4→原始, displace: 0→原始, flood: 0.3→原始)
+    // 0.5→1: 液态玻璃→清透 (blur: 原始→0, displace: 原始→0, flood: 原始→0)
+    let blurMult, displaceMult, floodMult;
+    if (t <= 0.5) {
+        const p = t / 0.5; // 0→1
+        blurMult = 4 + (1 - 4) * p; // 4→1 (相对于原始值的倍数)
+        displaceMult = p; // 0→1
+        floodMult = 0.3 + (1 - 0.3) * p; // 0.3→1... wait
+        // 实际上flood在毛玻璃时也应该有一定值
+        floodMult = 0.75 + 0.25 * p; // 0.75→1
+    } else {
+        const p = (t - 0.5) / 0.5; // 0→1
+        blurMult = 1 + (0 - 1) * p; // 1→0
+        displaceMult = 1 + (0 - 1) * p; // 1→0
+        floodMult = 1 + (0 - 1) * p; // 1→0
+    }
+
+    const setAttr = (id, attr, val) => {
+        const el = document.getElementById(id);
+        if (el) el.setAttribute(attr, val);
+    };
+
+    // thumb-filter
+    setAttr("thumb-blur", "stdDeviation", (LIQUID_ORIGINAL.thumbBlur * blurMult).toFixed(3));
+    setAttr("thumb-displace", "scale", (LIQUID_ORIGINAL.thumbDisplace * displaceMult).toFixed(3));
+    setAttr("thumb-flood", "flood-opacity", (LIQUID_ORIGINAL.thumbFlood * floodMult).toFixed(3));
+
+    // searchbox-filter
+    setAttr("search-blur", "stdDeviation", (LIQUID_ORIGINAL.searchBlur * blurMult).toFixed(3));
+    setAttr("search-displace", "scale", (LIQUID_ORIGINAL.searchDisplace * displaceMult).toFixed(3));
+    setAttr("search-flood", "flood-opacity", (LIQUID_ORIGINAL.searchFlood * floodMult).toFixed(3));
+}
+
+// 液态玻璃强度滑动条事件
+if (liquidIntensitySlider) {
+    liquidIntensitySlider.addEventListener("input", () => {
+        settings.liquidIntensity = parseInt(liquidIntensitySlider.value);
+        applyLiquidIntensity();
+    });
+    liquidIntensitySlider.addEventListener("change", () => {
+        saveSettings();
+    });
 }
 
 function applyBatch() {
@@ -272,7 +347,7 @@ if (darkModeToggle) {
 
 // 系统深浅色变化时，auto/frosted/liquid 需要跟随
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-    if (["auto", "frosted", "liquid"].includes(settings.theme)) {
+    if (["auto", "liquid"].includes(settings.theme)) {
         applyTheme();
     }
 });
@@ -1313,6 +1388,8 @@ applyTheme();
 applyBatch();
 recommendToggle.checked = settings.recommend;
 digestToggle.checked = settings.digest;
+if (liquidIntensitySlider) liquidIntensitySlider.value = settings.liquidIntensity;
+applyLiquidIntensity();
 loadData();
 
 

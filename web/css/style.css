@@ -766,14 +766,14 @@ body.dark .top-recommend-card {
 
 /* 液态玻璃模式下的滑动条 */
 body[data-theme="liquid"] .range-slider {
-    backdrop-filter: blur(8px) saturate(150%);
+    backdrop-filter: url("#thumb-filter") saturate(150%);
     -webkit-backdrop-filter: blur(8px) saturate(150%);
     background: rgba(255, 255, 255, 0.25);
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 body[data-theme="liquid"] .range-slider::-webkit-slider-thumb {
-    backdrop-filter: blur(8px) saturate(160%);
+    backdrop-filter: url("#thumb-filter") saturate(160%);
     -webkit-backdrop-filter: blur(8px) saturate(160%);
     background: rgba(255, 255, 255, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.5);
@@ -1384,62 +1384,6 @@ body.dark .digest-section-header {
 }
 
 /* ============================================
-   皮肤 4：毛玻璃 (Frosted Glass)
-   ============================================ */
-body[data-theme="frosted"] .header {
-    backdrop-filter: blur(20px) saturate(150%);
-    -webkit-backdrop-filter: blur(20px) saturate(150%);
-    background: rgba(255, 255, 255, 0.72);
-}
-body[data-theme="frosted"][data-color-scheme="dark"] .header {
-    background: rgba(26, 26, 26, 0.72);
-}
-
-body[data-theme="frosted"] .categories {
-    backdrop-filter: blur(20px) saturate(150%);
-    -webkit-backdrop-filter: blur(20px) saturate(150%);
-    background: rgba(255, 255, 255, 0.65);
-}
-body[data-theme="frosted"][data-color-scheme="dark"] .categories {
-    background: rgba(26, 26, 26, 0.65);
-}
-
-body[data-theme="frosted"] .settings-panel {
-    backdrop-filter: blur(24px) saturate(150%);
-    -webkit-backdrop-filter: blur(24px) saturate(150%);
-    background: rgba(255, 255, 255, 0.82);
-}
-body[data-theme="frosted"][data-color-scheme="dark"] .settings-panel {
-    background: rgba(26, 26, 26, 0.82);
-}
-
-body[data-theme="frosted"] .video-card {
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-}
-
-body[data-theme="frosted"] .footer {
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    background: rgba(255, 255, 255, 0.6);
-}
-body[data-theme="frosted"][data-color-scheme="dark"] .footer {
-    background: rgba(26, 26, 26, 0.6);
-}
-
-body[data-theme="frosted"] .skin-picker {
-    backdrop-filter: blur(24px) saturate(150%);
-    -webkit-backdrop-filter: blur(24px) saturate(150%);
-    background: rgba(255, 255, 255, 0.85);
-}
-body[data-theme="frosted"][data-color-scheme="dark"] .skin-picker {
-    background: rgba(26, 26, 26, 0.85);
-}
-
-
-
-
-/* ============================================
    皮肤 5：液态玻璃 (Liquid Glass) v2
    严格参考 https://liunian.js.org/posts/liquid-glass/ 源码
    核心：SVG feDisplacementMap + backdrop-filter: url(#filter-id)
@@ -1484,7 +1428,7 @@ body[data-theme="liquid"][data-color-scheme="dark"] .categories {
 
 /* --- 分类按钮：液态玻璃药丸 --- */
 body[data-theme="liquid"] .category-btn {
-    backdrop-filter: blur(8px) saturate(150%);
+    backdrop-filter: url("#thumb-filter") saturate(150%);
     -webkit-backdrop-filter: blur(8px) saturate(150%);
     background: rgba(255, 255, 255, 0.25);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -1495,7 +1439,7 @@ body[data-theme="liquid"][data-color-scheme="dark"] .category-btn {
     border: 1px solid rgba(255, 255, 255, 0.06);
 }
 body[data-theme="liquid"] .category-btn.active {
-    backdrop-filter: blur(12px) saturate(180%);
+    backdrop-filter: url("#thumb-filter") saturate(180%);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
     background: rgba(255, 255, 255, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.35);
@@ -1540,7 +1484,7 @@ body[data-theme="liquid"][data-color-scheme="dark"] .settings-panel {
 
 /* --- 设置关闭按钮：液态玻璃 --- */
 body[data-theme="liquid"] .settings-close {
-    backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: url("#thumb-filter") saturate(150%);
     -webkit-backdrop-filter: blur(12px) saturate(150%);
     background: rgba(255, 255, 255, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -1552,7 +1496,7 @@ body[data-theme="liquid"][data-color-scheme="dark"] .settings-close {
 
 /* --- Toggle 开关：液态玻璃 --- */
 body[data-theme="liquid"] .toggle-slider {
-    backdrop-filter: blur(8px) saturate(150%);
+    backdrop-filter: url("#thumb-filter") saturate(150%);
     -webkit-backdrop-filter: blur(8px) saturate(150%);
     background: rgba(255, 255, 255, 0.2);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -1562,7 +1506,7 @@ body[data-theme="liquid"][data-color-scheme="dark"] .toggle-slider {
     border: 1px solid rgba(255, 255, 255, 0.06);
 }
 body[data-theme="liquid"] .toggle input:checked + .toggle-slider {
-    backdrop-filter: blur(12px) saturate(180%);
+    backdrop-filter: url("#thumb-filter") saturate(180%);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
     background: rgba(255, 56, 92, 0.35);
     border: 1px solid rgba(255, 56, 92, 0.3);
@@ -1576,7 +1520,7 @@ body[data-theme="liquid"] .toggle-slider::before {
 
 /* --- 顶栏按钮：液态玻璃药丸 --- */
 body[data-theme="liquid"] .header-btn {
-    backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: url("#thumb-filter") saturate(150%);
     -webkit-backdrop-filter: blur(12px) saturate(150%);
     background: rgba(255, 255, 255, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.35);
@@ -1601,7 +1545,7 @@ body[data-theme="liquid"][data-color-scheme="dark"] .search-box {
 
 /* --- 设置操作按钮：液态玻璃 --- */
 body[data-theme="liquid"] .settings-action-btn {
-    backdrop-filter: blur(8px) saturate(150%);
+    backdrop-filter: url("#thumb-filter") saturate(150%);
     -webkit-backdrop-filter: blur(8px) saturate(150%);
     background: rgba(255, 56, 92, 0.12);
     border: 1px solid rgba(255, 56, 92, 0.3);
@@ -1612,7 +1556,7 @@ body[data-theme="liquid"][data-color-scheme="dark"] .settings-action-btn {
 
 /* --- 底部：液态玻璃 --- */
 body[data-theme="liquid"] .footer {
-    backdrop-filter: blur(20px) saturate(150%);
+    backdrop-filter: url("#searchbox-filter") saturate(150%);
     -webkit-backdrop-filter: blur(20px) saturate(150%);
     background: rgba(255, 255, 255, 0.35);
     border-top: 1px solid rgba(255, 255, 255, 0.2);
@@ -1637,7 +1581,7 @@ body[data-theme="liquid"][data-color-scheme="dark"] .skin-picker {
 
 /* --- 皮肤选择器关闭按钮 --- */
 body[data-theme="liquid"] .skin-picker-close {
-    backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: url("#thumb-filter") saturate(150%);
     -webkit-backdrop-filter: blur(12px) saturate(150%);
     background: rgba(255, 255, 255, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -1649,7 +1593,7 @@ body[data-theme="liquid"][data-color-scheme="dark"] .skin-picker-close {
 
 /* --- 皮肤选项：液态玻璃 --- */
 body[data-theme="liquid"] .skin-option {
-    backdrop-filter: blur(8px) saturate(150%);
+    backdrop-filter: url("#thumb-filter") saturate(150%);
     -webkit-backdrop-filter: blur(8px) saturate(150%);
     border: 1px solid rgba(255, 255, 255, 0.15);
 }
@@ -1657,7 +1601,7 @@ body[data-theme="liquid"][data-color-scheme="dark"] .skin-option {
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 body[data-theme="liquid"] .skin-option.selected {
-    backdrop-filter: blur(12px) saturate(180%);
+    backdrop-filter: url("#thumb-filter") saturate(180%);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
     background: rgba(255, 255, 255, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.35);
@@ -1665,7 +1609,7 @@ body[data-theme="liquid"] .skin-option.selected {
 
 /* --- Toast：液态玻璃浮泡 --- */
 body[data-theme="liquid"] .toast {
-    backdrop-filter: blur(20px) saturate(160%);
+    backdrop-filter: url("#thumb-filter") saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
     background: rgba(40, 40, 50, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.15);
@@ -1674,7 +1618,7 @@ body[data-theme="liquid"] .toast {
 
 /* --- 置顶推荐卡片：液态玻璃 --- */
 body[data-theme="liquid"] .top-recommend-card {
-    backdrop-filter: blur(20px) saturate(160%);
+    backdrop-filter: url("#thumb-filter") saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
     background: rgba(255, 255, 255, 0.3);
     border: 2px solid rgba(255, 107, 53, 0.4);
@@ -1683,12 +1627,12 @@ body[data-theme="liquid"] .top-recommend-card {
 
 /* --- 每日摘要：液态玻璃 --- */
 body[data-theme="liquid"] .digest-greeting-card {
-    backdrop-filter: blur(20px) saturate(160%);
+    backdrop-filter: url("#thumb-filter") saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
     box-shadow: 0 8px 32px rgba(255, 56, 92, 0.15);
 }
 body[data-theme="liquid"] .digest-card {
-    backdrop-filter: blur(16px) saturate(150%);
+    backdrop-filter: url("#thumb-filter") saturate(150%);
     -webkit-backdrop-filter: blur(16px) saturate(150%);
     background: rgba(255, 255, 255, 0.3);
     border: 2px solid rgba(255, 107, 53, 0.3);
@@ -1697,7 +1641,7 @@ body[data-theme="liquid"] .digest-card {
 
 /* --- 每日摘要返回按钮：液态玻璃 --- */
 body[data-theme="liquid"] .digest-back-btn {
-    backdrop-filter: blur(8px) saturate(150%);
+    backdrop-filter: url("#thumb-filter") saturate(150%);
     -webkit-backdrop-filter: blur(8px) saturate(150%);
     background: rgba(255, 255, 255, 0.25);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -1710,7 +1654,7 @@ body[data-theme="liquid"][data-color-scheme="dark"] .digest-back-btn {
 
 /* --- 加载更多：液态玻璃 --- */
 body[data-theme="liquid"] .load-more {
-    backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: url("#thumb-filter") saturate(150%);
     -webkit-backdrop-filter: blur(12px) saturate(150%);
     background: rgba(255, 255, 255, 0.25);
     border-radius: var(--radius-pill);
@@ -1730,7 +1674,7 @@ body[data-theme="liquid"] .player-header {
 
 /* --- 播放器关闭按钮：液态玻璃 --- */
 body[data-theme="liquid"] .player-close {
-    backdrop-filter: blur(12px) saturate(180%);
+    backdrop-filter: url("#thumb-filter") saturate(180%);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
     background: rgba(255, 56, 92, 0.35);
     border: 1px solid rgba(255, 56, 92, 0.3);
@@ -1739,13 +1683,13 @@ body[data-theme="liquid"] .player-close {
 
 /* --- 播放器收藏按钮：液态玻璃 --- */
 body[data-theme="liquid"] .player-fav-btn {
-    backdrop-filter: blur(12px) saturate(150%);
+    backdrop-filter: url("#thumb-filter") saturate(150%);
     -webkit-backdrop-filter: blur(12px) saturate(150%);
     background: rgba(255, 255, 255, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.25);
 }
 body[data-theme="liquid"] .player-fav-btn.favorited {
-    backdrop-filter: blur(12px) saturate(180%);
+    backdrop-filter: url("#thumb-filter") saturate(180%);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
     background: rgba(255, 107, 53, 0.3);
     border: 1px solid rgba(255, 107, 53, 0.5);
@@ -1769,14 +1713,14 @@ body[data-theme="liquid"] .search-clear {
 
 /* --- 关于行：液态玻璃 --- */
 body[data-theme="liquid"] #aboutRow {
-    backdrop-filter: blur(8px) saturate(150%);
+    backdrop-filter: url("#thumb-filter") saturate(150%);
     -webkit-backdrop-filter: blur(8px) saturate(150%);
     border-radius: var(--radius-sm);
 }
 
 /* --- 法律协议链接：液态玻璃 --- */
 body[data-theme="liquid"] .settings-section a[href*="legal"] {
-    backdrop-filter: blur(8px) saturate(150%);
+    backdrop-filter: url("#thumb-filter") saturate(150%);
     -webkit-backdrop-filter: blur(8px) saturate(150%);
     background: rgba(255, 255, 255, 0.25) !important;
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -2263,4 +2207,52 @@ body[data-theme="classic"] .settings-panel::-webkit-scrollbar-thumb {
     background: linear-gradient(180deg, #6B4F0E 0%, #4A3208 100%);
     border: 1px solid #2A1800;
     border-radius: 4px;
+}
+
+
+/* --- 液态玻璃强度滑动条 --- */
+.liquid-intensity-row {
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+.liquid-intensity-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-small);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-2);
+}
+.liquid-intensity-slider {
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(100,150,255,0.3), rgba(255,255,255,0.05));
+    border-radius: var(--radius-pill);
+    outline: none;
+    cursor: pointer;
+}
+.liquid-intensity-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fff, #d0e0ff);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    transition: transform 0.12s ease;
+}
+.liquid-intensity-slider::-webkit-slider-thumb:active {
+    transform: scale(1.2);
+}
+.liquid-intensity-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fff, #d0e0ff);
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
