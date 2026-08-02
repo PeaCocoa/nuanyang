@@ -286,12 +286,22 @@ function showDigestPage(show) {
         loadMoreEl.style.display = "none";
         scrollSentinel.style.display = "none";
         categoriesEl.style.display = "none";
+        // 隐藏 header 右侧按钮（摘要按钮和刷新按钮）
+        if (digestBtn) digestBtn.style.display = "none";
+        if (refreshBtn) refreshBtn.style.display = "none";
+        // 暂停滚动观察器，防止触发 loadMoreVideos
+        scrollObserver.disconnect();
         digestViewEl.style.display = "block";
         renderDigestPage();
     } else {
         videoListEl.style.display = "";
         scrollSentinel.style.display = "";
         categoriesEl.style.display = "";
+        // 恢复 header 按钮
+        if (refreshBtn) refreshBtn.style.display = "";
+        if (digestBtn) digestBtn.style.display = settings.digest ? "" : "none";
+        // 恢复滚动观察器
+        scrollObserver.observe(scrollSentinel);
         digestViewEl.style.display = "none";
     }
 }
@@ -778,6 +788,7 @@ function refreshList() {
 
 function loadMoreVideos() {
     if (isLoading) return;
+    if (currentView !== "main") return;
     isLoading = true;
     loadMoreEl.style.display = "flex";
 
