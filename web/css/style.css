@@ -1426,7 +1426,7 @@ body[data-theme="liquid"] .header {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 body[data-theme="liquid"][data-color-scheme="dark"] .header {
-    background: rgba(20, 20, 30, 0.5);
+    background: rgba(25, 25, 25, 0.5);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 /* 顶栏高光线 */
@@ -1449,7 +1449,7 @@ body[data-theme="liquid"] .categories {
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 body[data-theme="liquid"][data-color-scheme="dark"] .categories {
-    background: rgba(20, 20, 30, 0.4);
+    background: rgba(25, 25, 25, 0.4);
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -1486,7 +1486,7 @@ body[data-theme="liquid"] .video-card {
     position: relative;
 }
 body[data-theme="liquid"][data-color-scheme="dark"] .video-card {
-    background: rgba(30, 30, 40, 0.45);
+    background: rgba(35, 35, 35, 0.45);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 4px 22px rgba(0, 0, 0, 0.2);
 }
@@ -1503,7 +1503,7 @@ body[data-theme="liquid"] .settings-panel {
     box-shadow: -8px 0 40px rgba(0, 0, 0, 0.08);
 }
 body[data-theme="liquid"][data-color-scheme="dark"] .settings-panel {
-    background: rgba(20, 20, 30, 0.55);
+    background: rgba(25, 25, 25, 0.55);
     border-left: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -1587,7 +1587,7 @@ body[data-theme="liquid"] .footer {
     border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 body[data-theme="liquid"][data-color-scheme="dark"] .footer {
-    background: rgba(20, 20, 30, 0.35);
+    background: rgba(25, 25, 25, 0.35);
     border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -1600,7 +1600,7 @@ body[data-theme="liquid"] .skin-picker {
     box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.08);
 }
 body[data-theme="liquid"][data-color-scheme="dark"] .skin-picker {
-    background: rgba(20, 20, 30, 0.55);
+    background: rgba(25, 25, 25, 0.55);
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -1636,7 +1636,7 @@ body[data-theme="liquid"] .skin-option.selected {
 body[data-theme="liquid"] .toast {
     backdrop-filter: url("#thumb-filter") saturate(120%);
     -webkit-backdrop-filter: blur(20px) saturate(120%);
-    background: rgba(40, 40, 50, 0.5);
+    background: rgba(45, 45, 45, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
@@ -1693,7 +1693,7 @@ body[data-theme="liquid"][data-color-scheme="dark"] .load-more {
 body[data-theme="liquid"] .player-header {
     backdrop-filter: url("#searchbox-filter") saturate(130%);
     -webkit-backdrop-filter: blur(40px) saturate(130%);
-    background: rgba(20, 20, 30, 0.6);
+    background: rgba(25, 25, 25, 0.6);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -2857,4 +2857,16 @@ body[data-theme="liquid"] .changelog-entry { border-bottom-color: rgba(255,255,2
 body[data-theme="classic"] .changelog-modal {
     background: var(--paper, #f5ecd9);
     border: 2px solid var(--leather, #8B6914);
+}
+
+/* --- 液态玻璃按钮统一胶囊形 --- */
+body[data-theme="liquid"] .header-btn,
+body[data-theme="liquid"] .settings-close,
+body[data-theme="liquid"] .skin-picker-close,
+body[data-theme="liquid"] .settings-action-btn,
+body[data-theme="liquid"] .toast,
+body[data-theme="liquid"] .skin-option,
+body[data-theme="liquid"] .digest-back-btn,
+body[data-theme="liquid"] .changelog-modal-close {
+    border-radius: 999px !important;
 }
