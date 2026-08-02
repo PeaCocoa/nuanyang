@@ -51,6 +51,7 @@ const digestToggle = document.getElementById("digestToggle");
 const digestBtn = document.getElementById("digestBtn");
 const digestViewEl = document.getElementById("digestView");
 const digestBackBtn = document.getElementById("digestBackBtn");
+const digestContentEl = document.getElementById("digestContent");
 const fontOptions = document.getElementById("fontOptions");
 const batchOptions = document.getElementById("batchOptions");
 const clearHistoryBtn = document.getElementById("clearHistoryBtn");
@@ -259,12 +260,12 @@ function showDigestPage(show) {
         scrollSentinel.style.display = "";
         categoriesEl.style.display = "";
         digestViewEl.style.display = "none";
-        digestViewEl.innerHTML = "";
     }
 }
 
 function renderDigestPage() {
-    digestViewEl.innerHTML = "";
+    if (!digestContentEl) return;
+    digestContentEl.innerHTML = "";
     const digest = getDailyDigest();
 
     // 暖阳祝语
@@ -273,22 +274,22 @@ function renderDigestPage() {
         card.className = "digest-greeting-card";
         card.innerHTML = '<div class="digest-greeting-icon">☀️</div>' +
             '<div class="digest-greeting-text">' + escapeHtml(digest.greeting) + '</div>';
-        digestViewEl.appendChild(card);
+        digestContentEl.appendChild(card);
     }
 
     // 收藏的UP主今日更新
     if (digest.favoriteUpdates.length > 0) {
-        renderDigestSectionPage(digestViewEl, "收藏的UP主今日更新", digest.favoriteUpdates, "暖阳推荐-收藏更新");
+        renderDigestSectionPage(digestContentEl, "收藏的UP主今日更新", digest.favoriteUpdates, "暖阳推荐-收藏更新");
     }
 
     // 今日推荐
     if (digest.todayRecommend.length > 0) {
-        renderDigestSectionPage(digestViewEl, "今日推荐", digest.todayRecommend, "暖阳推荐-今日推荐");
+        renderDigestSectionPage(digestContentEl, "今日推荐", digest.todayRecommend, "暖阳推荐-今日推荐");
     }
 
     // 央视推荐
     if (digest.cctvRecommend.length > 0) {
-        renderDigestSectionPage(digestViewEl, "央视推荐", digest.cctvRecommend, "暖阳推荐-央视推荐");
+        renderDigestSectionPage(digestContentEl, "央视推荐", digest.cctvRecommend, "暖阳推荐-央视推荐");
     }
 
     // 如果全部为空
@@ -296,7 +297,7 @@ function renderDigestPage() {
         const empty = document.createElement("div");
         empty.className = "empty";
         empty.textContent = "今天暂无摘要内容，去看看视频列表吧";
-        digestViewEl.appendChild(empty);
+        digestContentEl.appendChild(empty);
     }
 }
 
@@ -310,7 +311,7 @@ function renderDigestSectionPage(container, title, videos, badgeText) {
         const card = document.createElement("div");
         card.className = "video-card digest-card";
 
-        const coverHtml = video.cover
+        const coverHtml = v.cover
             ? `<img class="video-cover" src="${v.cover}" alt="${escapeHtml(v.title)}" loading="lazy" referrerpolicy="no-referrer"
                  onerror="this.outerHTML='<div class=\\'video-cover-placeholder\\'>暖阳</div>'">`
             : `<div class="video-cover-placeholder">暖阳</div>`;
@@ -550,7 +551,8 @@ function getPool() {
 
 function getTopRecommendations(force = false) {
     // 个性化推荐置顶：最常看UP主的今日/昨日且没看过的新视频
-    if ((!force && !settings.recommend) || Object.keys(viewHistory).length === 0) return [];
+    if (!force && !settings.recommend) return [];
+    if (Object.keys(viewHistory).length === 0) return [];
 
     const upAffinity = getUpAffinity();
     // 取观看次数最多的前3个UP主
@@ -663,7 +665,15 @@ function getDailyDigest() {
     }).slice(0, 5);
 
     // 3. 今日推荐（复用 getTopRecommendations，force=true 跳过 recommend 检查）
-    const todayRecommend = getTopRecommendations(true);
+    let todayRecommend = getTopRecommendations(true);
+    // 如果没有推荐（新用户无观看记录），回退到今日热门视频
+    if (todayRecommend.length === 0) {
+        todayRecommend = allVideos.filter(v => {
+            if (viewedBvids.has(v.bvid)) return false;
+            const pubdate = v.pubdate || 0;
+            return pubdate >= todayStart && pubdate < todayStart + 86400;
+        }).sort((a, b) => (b.play || 0) - (a.play || 0)).slice(0, 5);
+    }
 
     // 4. 央视推荐（央视系列UP主近3日更新）
     const cctvKeywords = ["央视", "央广", "央广总垂"];
@@ -733,6 +743,7 @@ function loadMoreVideos() {
             videoListEl.innerHTML = '<div class="empty">暂无视频，请稍后再来看看</div>';
         } else {
             requestAnimationFrame(() => {
+                if (currentView !== "main") return;
                 const rect = scrollSentinel.getBoundingClientRect();
                 if (rect.top < window.innerHeight + 300 && !isLoading && displayedVideos.length < 60) {
                     loadMoreVideos();
@@ -785,6 +796,7 @@ function renderVideoCard(video) {
 const scrollSentinel = document.getElementById("scrollSentinel");
 
 const scrollObserver = new IntersectionObserver((entries) => {
+    if (currentView !== "main") return;
     if (entries[0].isIntersecting && !isLoading && displayedVideos.length < 60) {
         loadMoreVideos();
     }
@@ -793,9 +805,11 @@ const scrollObserver = new IntersectionObserver((entries) => {
 let scrollTimer = null;
 window.addEventListener("scroll", () => {
     if (scrollTimer) return;
+    if (currentView !== "main") return;
     scrollTimer = setTimeout(() => {
         scrollTimer = null;
         if (isLoading) return;
+        if (currentView !== "main") return;
         const rect = scrollSentinel.getBoundingClientRect();
         if (rect.top < window.innerHeight + 300) {
             loadMoreVideos();
