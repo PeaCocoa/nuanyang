@@ -127,6 +127,39 @@ function saveSettings() {
     localStorage.setItem(STORAGE_KEYS.favorites, JSON.stringify(favorites));
 }
 
+// 多窗口设置同步：监听 storage 事件（其他窗口修改 localStorage 时触发）
+window.addEventListener("storage", (e) => {
+    if (!e.key) return;
+    // 只处理暖阳的 key
+    if (!e.key.startsWith("nuanyang-")) return;
+    // 重新加载设置
+    const oldDigest = settings.digest;
+    loadSettings();
+    // 应用变化
+    if (e.key === STORAGE_KEYS.font) {
+        applyFontSize();
+    } else if (e.key === STORAGE_KEYS.dark) {
+        applyDarkMode();
+    } else if (e.key === STORAGE_KEYS.batch) {
+        applyBatch();
+    } else if (e.key === STORAGE_KEYS.recommend) {
+        recommendToggle.checked = settings.recommend;
+        refreshList();
+    } else if (e.key === STORAGE_KEYS.digest) {
+        digestToggle.checked = settings.digest;
+        const dBtn = document.getElementById("digestBtn");
+        if (dBtn) dBtn.style.display = settings.digest ? "" : "none";
+        if (!settings.digest && currentView === "digest") showDigestPage(false);
+    } else if (e.key === STORAGE_KEYS.history || e.key === STORAGE_KEYS.favorites) {
+        // 观看记录或收藏变化，刷新当前视图
+        if (currentView === "digest") {
+            renderDigestPage();
+        } else {
+            refreshList();
+        }
+    }
+});
+
 function applyFontSize() {
     document.body.classList.remove("font-sm", "font-md", "font-lg", "font-xl", "font-2xl");
     document.body.classList.add(settings.fontSize);
@@ -894,10 +927,25 @@ refreshBtn.addEventListener("click", async () => {
 
 let currentPlayingVideo = null;
 
+function formatPubdate(ts) {
+    if (!ts) return "";
+    const d = new Date(ts * 1000);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+}
+
 function openPlayer(video) {
     currentPlayingVideo = video;
     playerOpenTime = Date.now();
     playerTitle.textContent = video.title;
+    // 显示发布时间和UP主
+    const pubdateEl = document.getElementById("playerPubdate");
+    if (pubdateEl) {
+        const pubdate = formatPubdate(video.pubdate);
+        pubdateEl.textContent = pubdate ? `${video.up_name} · ${pubdate}` : video.up_name;
+    }
     playerContainer.innerHTML = `<iframe src="${video.iframe_url}"
         allowfullscreen="true"
         scrolling="no"
