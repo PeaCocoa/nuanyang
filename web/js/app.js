@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-02 19:49"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-02 19:55"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -136,6 +136,7 @@ function saveSettings() {
     localStorage.setItem(STORAGE_KEYS.theme, settings.theme);
     localStorage.setItem(STORAGE_KEYS.dark, settings.theme === "dark" ? "on" : "off");
     localStorage.setItem(STORAGE_KEYS.recommend, settings.recommend.toString());
+    localStorage.setItem(STORAGE_KEYS.digest, settings.digest.toString());
     localStorage.setItem(STORAGE_KEYS.batch, settings.batch.toString());
     localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(viewHistory));
     localStorage.setItem(STORAGE_KEYS.favorites, JSON.stringify(favorites));
