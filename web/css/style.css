@@ -1334,6 +1334,22 @@ body.dark .digest-section-header {
     border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
+.skin-preview-classic {
+    background: linear-gradient(145deg, #8B6914 0%, #A0761D 30%, #6B4F0E 70%, #8B6914 100%);
+    border: 1px solid #5A3F0A;
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.15), inset 0 -1px 2px rgba(0,0,0,0.3);
+}
+.skin-preview-classic .sp-card {
+    background: linear-gradient(145deg, #F5E6C8 0%, #E8D5B0 100%);
+    border: 1px solid #C0A878;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.5);
+}
+.skin-preview-classic .sp-card-2 {
+    background: linear-gradient(145deg, #D4B896 0%, #C0A070 100%);
+    border: 1px solid #A08850;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
 .skin-option-info {
     flex: 1;
     display: flex;
@@ -1775,4 +1791,484 @@ body[data-theme="liquid"] .settings-section a[href*="legal"] {
 }
 body[data-theme="liquid"][data-color-scheme="dark"] .settings-section a[href*="legal"] {
     background: rgba(255, 255, 255, 0.06) !important;
+}
+
+
+/* ============================================
+   皮肤 6：经典回忆 (Classic / Skeuomorphism)
+   拟物化设计：皮革纹理、纸张质感、立体按钮
+   色调：温暖棕褐、米色、琥珀
+   ============================================ */
+
+/* --- 背景纹理 --- */
+body[data-theme="classic"] {
+    background:
+        radial-gradient(ellipse at 30% 0%, rgba(180, 130, 40, 0.12) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 100%, rgba(120, 80, 20, 0.1) 0%, transparent 50%),
+        linear-gradient(180deg, #E8D5B0 0%, #DCC8A0 50%, #D0BC90 100%);
+}
+body[data-theme="classic"][data-color-scheme="dark"] {
+    background:
+        radial-gradient(ellipse at 30% 0%, rgba(100, 60, 10, 0.3) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 100%, rgba(60, 35, 5, 0.25) 0%, transparent 50%),
+        linear-gradient(180deg, #2A1F0E 0%, #221800 50%, #1A1208 100%);
+}
+
+/* --- 顶栏：皮革质感 --- */
+body[data-theme="classic"] .header {
+    background:
+        linear-gradient(180deg, rgba(139, 105, 20, 0.95) 0%, rgba(107, 79, 14, 0.95) 100%);
+    border-bottom: 2px solid #5A3F0A;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 220, 120, 0.25),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+        0 2px 6px rgba(0, 0, 0, 0.2);
+}
+body[data-theme="classic"][data-color-scheme="dark"] .header {
+    background:
+        linear-gradient(180deg, rgba(60, 42, 10, 0.96) 0%, rgba(40, 28, 6, 0.96) 100%);
+    border-bottom: 2px solid #2A1800;
+    box-shadow:
+        inset 0 1px 0 rgba(200, 150, 50, 0.15),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.4),
+        0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* --- 顶栏标题 --- */
+body[data-theme="classic"] .header h1 {
+    color: #FFE9B0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 0 1px rgba(255, 220, 120, 0.3);
+}
+body[data-theme="classic"] .header .subtitle {
+    color: #D4B896;
+}
+body[data-theme="classic"][data-color-scheme="dark"] .header h1 {
+    color: #C0A060;
+}
+
+/* --- 顶栏按钮：立体皮革按钮 --- */
+body[data-theme="classic"] .header-btn {
+    background: linear-gradient(180deg, #A0761D 0%, #7A5A14 100%);
+    border: 1px solid #5A3F0A;
+    border-radius: 8px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 220, 120, 0.3),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.2),
+        0 2px 4px rgba(0, 0, 0, 0.15);
+    color: #FFE9B0;
+}
+body[data-theme="classic"] .header-btn:active {
+    background: linear-gradient(180deg, #7A5A14 0%, #A0761D 100%);
+    box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.3),
+        inset 0 -1px 0 rgba(255, 220, 120, 0.15);
+}
+body[data-theme="classic"][data-color-scheme="dark"] .header-btn {
+    background: linear-gradient(180deg, #5A3F0A 0%, #3A2806 100%);
+    border: 1px solid #2A1800;
+    color: #C0A060;
+}
+
+/* --- 分类栏：木纹质感 --- */
+body[data-theme="classic"] .categories {
+    background:
+        linear-gradient(180deg, rgba(160, 118, 29, 0.9) 0%, rgba(130, 95, 20, 0.9) 100%);
+    border-top: 1px solid #6B4F0E;
+    border-bottom: 1px solid #5A3F0A;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+body[data-theme="classic"][data-color-scheme="dark"] .categories {
+    background:
+        linear-gradient(180deg, rgba(50, 35, 8, 0.92) 0%, rgba(35, 24, 4, 0.92) 100%);
+    border-top: 1px solid #2A1800;
+    border-bottom: 1px solid #1A1000;
+}
+
+/* --- 分类按钮：浮雕药丸 --- */
+body[data-theme="classic"] .category-btn {
+    background: linear-gradient(180deg, #F0DCAE 0%, #DCC8A0 100%);
+    border: 1px solid #B89860;
+    border-radius: 20px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        inset 0 -1px 1px rgba(0, 0, 0, 0.1),
+        0 1px 2px rgba(0, 0, 0, 0.1);
+    color: #5A3F0A;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+body[data-theme="classic"] .category-btn.active {
+    background: linear-gradient(180deg, #8B6914 0%, #6B4F0E 100%);
+    border: 1px solid #4A3208;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 220, 120, 0.25),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.3),
+        0 2px 4px rgba(0, 0, 0, 0.15);
+    color: #FFE9B0;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+body[data-theme="classic"][data-color-scheme="dark"] .category-btn {
+    background: linear-gradient(180deg, #4A3510 0%, #382808 100%);
+    border: 1px solid #2A1800;
+    color: #C0A060;
+}
+body[data-theme="classic"][data-color-scheme="dark"] .category-btn.active {
+    background: linear-gradient(180deg, #6B4F0E 0%, #4A3208 100%);
+    color: #FFE9B0;
+}
+
+/* --- 搜索框：羊皮纸凹陷 --- */
+body[data-theme="classic"] .search-box {
+    background: linear-gradient(180deg, #E8D5B0 0%, #DCC8A0 100%);
+    border: 2px solid #A08050;
+    border-radius: 12px;
+    box-shadow:
+        inset 0 2px 4px rgba(0, 0, 0, 0.15),
+        0 1px 0 rgba(255, 255, 255, 0.4);
+}
+body[data-theme="classic"] .search-box input {
+    color: #4A3208;
+}
+body[data-theme="classic"] .search-box input::placeholder {
+    color: #8B6914;
+}
+body[data-theme="classic"][data-color-scheme="dark"] .search-box {
+    background: linear-gradient(180deg, #2A1F0E 0%, #221800 100%);
+    border: 2px solid #4A3510;
+}
+body[data-theme="classic"][data-color-scheme="dark"] .search-box input {
+    color: #D4B896;
+}
+
+/* --- 视频卡片：纸张/羊皮纸质感 --- */
+body[data-theme="classic"] .video-card {
+    background: linear-gradient(145deg, #F5E6C8 0%, #E8D5B0 100%);
+    border: 1px solid #C0A878;
+    border-radius: 12px;
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.12),
+        0 1px 2px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+body[data-theme="classic"] .video-card:active {
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.1),
+        inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+body[data-theme="classic"] .video-card .card-title {
+    color: #3A2810;
+}
+body[data-theme="classic"] .video-card .card-up,
+body[data-theme="classic"] .video-card .card-meta {
+    color: #6B4F0E;
+}
+body[data-theme="classic"] .video-card .card-duration {
+    background: rgba(60, 40, 10, 0.85);
+    color: #FFE9B0;
+    border: 1px solid rgba(30, 20, 5, 0.6);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+body[data-theme="classic"] .video-card .recommend-badge {
+    background: linear-gradient(180deg, #B8860B 0%, #8B6914 100%);
+    border: 1px solid #5A3F0A;
+    color: #FFE9B0;
+    box-shadow: inset 0 1px 0 rgba(255, 220, 120, 0.3);
+}
+body[data-theme="classic"][data-color-scheme="dark"] .video-card {
+    background: linear-gradient(145deg, #3A2A12 0%, #2A1F0E 100%);
+    border: 1px solid #5A3F0A;
+}
+body[data-theme="classic"][data-color-scheme="dark"] .video-card .card-title {
+    color: #E8D5B0;
+}
+body[data-theme="classic"][data-color-scheme="dark"] .video-card .card-up,
+body[data-theme="classic"][data-color-scheme="dark"] .video-card .card-meta {
+    color: #A08050;
+}
+
+/* --- 设置面板：皮革面板 + 缝线 --- */
+body[data-theme="classic"] .settings-panel {
+    background:
+        linear-gradient(145deg, rgba(139, 105, 20, 0.97) 0%, rgba(107, 79, 14, 0.97) 100%);
+    border: 2px solid #5A3F0A;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 220, 120, 0.2),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.25),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+/* 缝线效果 */
+body[data-theme="classic"] .settings-panel::before {
+    content: "";
+    position: absolute;
+    top: 6px; left: 6px; right: 6px; bottom: 6px;
+    border: 1px dashed rgba(255, 220, 120, 0.25);
+    border-radius: 10px;
+    pointer-events: none;
+}
+body[data-theme="classic"] .settings-panel h3 {
+    color: #FFE9B0;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+body[data-theme="classic"] .settings-panel .settings-label {
+    color: #E8D5B0;
+}
+body[data-theme="classic"] .settings-panel .settings-desc {
+    color: #C0A060;
+}
+body[data-theme="classic"][data-color-scheme="dark"] .settings-panel {
+    background: linear-gradient(145deg, rgba(40, 28, 6, 0.97) 0%, rgba(28, 20, 4, 0.97) 100%);
+    border: 2px solid #2A1800;
+}
+
+/* --- 设置关闭按钮：皮革圆钮 --- */
+body[data-theme="classic"] .settings-close {
+    background: linear-gradient(180deg, #8B6914 0%, #5A3F0A 100%);
+    border: 1px solid #3A2806;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 220, 120, 0.25),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.3),
+        0 2px 4px rgba(0, 0, 0, 0.15);
+    color: #FFE9B0;
+}
+body[data-theme="classic"] .settings-close:active {
+    background: linear-gradient(180deg, #5A3F0A 0%, #8B6914 100%);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* --- 设置操作按钮：浮雕按钮 --- */
+body[data-theme="classic"] .settings-action-btn {
+    background: linear-gradient(180deg, #A0761D 0%, #7A5A14 100%);
+    border: 1px solid #5A3F0A;
+    border-radius: 8px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 220, 120, 0.3),
+        0 1px 3px rgba(0, 0, 0, 0.15);
+    color: #FFE9B0;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+body[data-theme="classic"] .settings-action-btn:active {
+    background: linear-gradient(180deg, #7A5A14 0%, #A0761D 100%);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+/* --- 关于行：凹陷面板 --- */
+body[data-theme="classic"] #aboutRow {
+    background: linear-gradient(145deg, rgba(58, 40, 16, 0.4) 0%, rgba(40, 28, 10, 0.4) 100%);
+    border: 1px solid rgba(90, 63, 10, 0.5);
+    border-radius: 8px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* --- 法律协议链接：羊皮纸按钮 --- */
+body[data-theme="classic"] .settings-section a[href*="legal"] {
+    background: linear-gradient(180deg, #DCC8A0 0%, #C0A878 100%) !important;
+    border: 1px solid #A08050 !important;
+    border-radius: 6px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 1px 2px rgba(0, 0, 0, 0.1);
+    color: #5A3F0A !important;
+}
+body[data-theme="classic"][data-color-scheme="dark"] .settings-section a[href*="legal"] {
+    background: linear-gradient(180deg, #4A3510 0%, #382808 100%) !important;
+    border: 1px solid #2A1800 !important;
+    color: #C0A060 !important;
+}
+
+/* --- Toggle 开关：拟物拨杆 --- */
+body[data-theme="classic"] .toggle-slider {
+    background: linear-gradient(180deg, #3A2810 0%, #2A1800 100%);
+    border: 1px solid #1A1000;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+body[data-theme="classic"] .toggle input:checked + .toggle-slider {
+    background: linear-gradient(180deg, #8B6914 0%, #6B4F0E 100%);
+    border: 1px solid #4A3208;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 -1px 0 rgba(255, 220, 120, 0.2);
+}
+body[data-theme="classic"] .toggle-slider::before {
+    background: linear-gradient(180deg, #F0DCAE 0%, #DCC8A0 100%);
+    border: 1px solid #A08050;
+    box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+body[data-theme="classic"] .toggle input:checked + .toggle-slider::before {
+    background: linear-gradient(180deg, #FFE9B0 0%, #F0DCAE 100%);
+}
+
+/* --- 滑动条：凹陷轨道 --- */
+body[data-theme="classic"] .range-slider {
+    background: linear-gradient(180deg, #3A2810 0%, #2A1800 100%);
+    border: 1px solid #1A1000;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+body[data-theme="classic"] .range-slider::-webkit-slider-thumb {
+    background: linear-gradient(180deg, #A0761D 0%, #6B4F0E 100%);
+    border: 1px solid #4A3208;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 220, 120, 0.3),
+        0 1px 3px rgba(0, 0, 0, 0.2);
+}
+body[data-theme="classic"] .range-slider::-moz-range-thumb {
+    background: linear-gradient(180deg, #A0761D 0%, #6B4F0E 100%);
+    border: 1px solid #4A3208;
+}
+
+/* --- 加载更多按钮 --- */
+body[data-theme="classic"] .load-more {
+    background: linear-gradient(180deg, #DCC8A0 0%, #C0A878 100%);
+    border: 1px solid #A08050;
+    border-radius: 10px;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        0 1px 3px rgba(0, 0, 0, 0.12);
+    color: #5A3F0A;
+}
+body[data-theme="classic"] .load-more:active {
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* --- 底部 --- */
+body[data-theme="classic"] .footer {
+    background:
+        linear-gradient(180deg, rgba(107, 79, 14, 0.9) 0%, rgba(90, 63, 10, 0.9) 100%);
+    border-top: 2px solid #5A3F0A;
+    box-shadow: inset 0 1px 0 rgba(255, 220, 120, 0.15);
+    color: #D4B896;
+}
+body[data-theme="classic"][data-color-scheme="dark"] .footer {
+    background: linear-gradient(180deg, rgba(28, 20, 4, 0.92) 0%, rgba(20, 14, 2, 0.92) 100%);
+    border-top: 2px solid #2A1800;
+    color: #8B6914;
+}
+
+/* --- 皮肤选择器：皮革面板 --- */
+body[data-theme="classic"] .skin-picker {
+    background:
+        linear-gradient(145deg, rgba(139, 105, 20, 0.97) 0%, rgba(107, 79, 14, 0.97) 100%);
+    border: 2px solid #5A3F0A;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 220, 120, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.3);
+}
+body[data-theme="classic"] .skin-picker::before {
+    content: "";
+    position: absolute;
+    top: 6px; left: 6px; right: 6px; bottom: 6px;
+    border: 1px dashed rgba(255, 220, 120, 0.2);
+    border-radius: 10px;
+    pointer-events: none;
+}
+body[data-theme="classic"] .skin-picker h3 {
+    color: #FFE9B0;
+}
+body[data-theme="classic"] .skin-option {
+    background: linear-gradient(145deg, #F5E6C8 0%, #E8D5B0 100%);
+    border: 1px solid #C0A878;
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+body[data-theme="classic"] .skin-option.selected {
+    background: linear-gradient(145deg, #8B6914 0%, #6B4F0E 100%);
+    border: 2px solid #FFE9B0;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 220, 120, 0.3),
+        0 2px 6px rgba(0, 0, 0, 0.2);
+}
+body[data-theme="classic"] .skin-option .skin-option-name {
+    color: #3A2810;
+}
+body[data-theme="classic"] .skin-option .skin-option-desc {
+    color: #6B4F0E;
+}
+body[data-theme="classic"] .skin-option.selected .skin-option-name {
+    color: #FFE9B0;
+}
+body[data-theme="classic"] .skin-option.selected .skin-option-desc {
+    color: #D4B896;
+}
+body[data-theme="classic"] .skin-option.selected .skin-check {
+    color: #FFE9B0;
+}
+body[data-theme="classic"] .skin-picker-close {
+    background: linear-gradient(180deg, #8B6914 0%, #5A3F0A 100%);
+    border: 1px solid #3A2806;
+    color: #FFE9B0;
+    box-shadow: inset 0 1px 0 rgba(255, 220, 120, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* --- 播放器弹窗 --- */
+body[data-theme="classic"] .player-header {
+    background: linear-gradient(180deg, rgba(139, 105, 20, 0.97) 0%, rgba(107, 79, 14, 0.97) 100%);
+    border-bottom: 2px solid #5A3F0A;
+    box-shadow: inset 0 1px 0 rgba(255, 220, 120, 0.2);
+}
+body[data-theme="classic"] .player-title {
+    color: #FFE9B0;
+}
+body[data-theme="classic"] .player-pubdate {
+    color: #C0A060;
+}
+body[data-theme="classic"] .player-close {
+    background: linear-gradient(180deg, #8B6914 0%, #5A3F0A 100%);
+    border: 1px solid #3A2806;
+    color: #FFE9B0;
+    box-shadow: inset 0 1px 0 rgba(255, 220, 120, 0.25), 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+body[data-theme="classic"] .player-close:active {
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+body[data-theme="classic"] .player-fav-btn {
+    background: linear-gradient(180deg, #A0761D 0%, #7A5A14 100%);
+    border: 1px solid #5A3F0A;
+    color: #FFE9B0;
+    box-shadow: inset 0 1px 0 rgba(255, 220, 120, 0.3), 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+body[data-theme="classic"] .player-fav-btn.active {
+    background: linear-gradient(180deg, #B8860B 0%, #8B6914 100%);
+}
+
+/* --- Toast 提示 --- */
+body[data-theme="classic"] .toast {
+    background: linear-gradient(145deg, rgba(60, 40, 10, 0.95) 0%, rgba(40, 28, 6, 0.95) 100%);
+    border: 1px solid #5A3F0A;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 220, 120, 0.15);
+    color: #FFE9B0;
+}
+
+/* --- 每日摘要返回按钮 --- */
+body[data-theme="classic"] .digest-back-btn {
+    background: linear-gradient(180deg, #A0761D 0%, #7A5A14 100%);
+    border: 1px solid #5A3F0A;
+    color: #FFE9B0;
+    box-shadow: inset 0 1px 0 rgba(255, 220, 120, 0.3), 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* --- 更新日志 --- */
+body[data-theme="classic"] .changelog-item {
+    border-bottom: 1px solid rgba(160, 118, 29, 0.3);
+}
+body[data-theme="classic"] .changelog-version {
+    color: #FFE9B0;
+}
+body[data-theme="classic"] .changelog-text {
+    color: #D4B896;
+}
+
+/* --- 滚动条 --- */
+body[data-theme="classic"] .categories::-webkit-scrollbar-track {
+    background: rgba(58, 40, 10, 0.3);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+body[data-theme="classic"] .categories::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #8B6914 0%, #5A3F0A 100%);
+    border: 1px solid #3A2806;
+    border-radius: 4px;
+}
+body[data-theme="classic"] .settings-panel::-webkit-scrollbar-track {
+    background: rgba(58, 40, 10, 0.2);
+}
+body[data-theme="classic"] .settings-panel::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #6B4F0E 0%, #4A3208 100%);
+    border: 1px solid #2A1800;
+    border-radius: 4px;
 }

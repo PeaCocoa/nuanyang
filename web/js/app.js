@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-02 19:30"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-02 19:50"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -187,7 +187,7 @@ function applyFontSize() {
 function resolveColorScheme() {
     if (settings.theme === "dark") return "dark";
     if (settings.theme === "light") return "light";
-    // auto / frosted / liquid: 跟随系统
+    // auto / frosted / liquid / classic: 跟随系统
     return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
@@ -197,6 +197,7 @@ const THEME_LABELS = {
     "dark": "黑夜",
     "frosted": "毛玻璃",
     "liquid": "液态玻璃",
+    "classic": "经典回忆",
 };
 
 function applyTheme() {

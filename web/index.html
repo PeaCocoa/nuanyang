@@ -13,7 +13,7 @@
     <link rel="icon" href="favicon.png" type="image/png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <title>暖阳 - 精选好视频</title>
-    <link rel="stylesheet" href="css/style.css?v=9">
+    <link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body class="font-lg">
     <!-- 液态玻璃 SVG 滤镜（来源：liunian.js.org） -->
@@ -190,6 +190,10 @@
                 </div>
                 <div class="changelog-wrap" id="changelogWrap">
                     <div class="changelog" id="changelog">
+                        <div class="changelog-item">
+                            <span class="changelog-version">8月2日 19:50</span>
+                            <span class="changelog-text">【新增】"经典回忆"拟物化主题：皮革纹理、纸张质感、立体按钮、缝线边框<br>【新增】液态玻璃全面覆盖：滑动条、开关、分类按钮、播放器等全部UI元素<br>【优化】字号选择改为滑动条，操作更直观<br>【优化】液态玻璃折射效果修复错位高光<br>暖阳的衣橱更丰富了！</span>
+                        </div>
                         <div class="changelog-item">
                             <span class="changelog-version">8月2日 18:00</span>
                             <span class="changelog-text">【新增】外观设置功能，5种皮肤可选：直觉记忆·跟随系统/白日/黑夜、毛玻璃、液态玻璃<br>【新增】皮肤选择浮窗，带预览缩略图<br>【优化】深色模式升级为完整主题系统，支持跟随系统自动切换<br>暖阳换上新衣裳了！</span>
@@ -404,6 +408,17 @@
                 </div>
                 <svg class="skin-check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
+            <div class="skin-option" data-theme="classic">
+                <div class="skin-preview skin-preview-classic">
+                    <div class="sp-card"></div>
+                    <div class="sp-card sp-card-2"></div>
+                </div>
+                <div class="skin-option-info">
+                    <span class="skin-option-name">经典回忆</span>
+                    <span class="skin-option-desc">拟物皮革，岁月质感</span>
+                </div>
+                <svg class="skin-check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
         </div>
     </div>
 
@@ -426,11 +441,11 @@
     <!-- Toast 提示 -->
     <div class="toast" id="toast"></div>
 
-    <script src="js/app.js?v=9"></script>
+    <script src="js/app.js?v=10"></script>
     <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js?v=9').catch(function(){});
+            navigator.serviceWorker.register('/sw.js?v=10').catch(function(){});
         });
     }
     </script>
