@@ -369,6 +369,8 @@ function renderCategories() {
 
     // 只移除分类按钮，保留搜索框
     categoriesEl.querySelectorAll(".category-btn").forEach(b => b.remove());
+    // 按顺序追加到搜索框后面：全部 → 我的收藏 → 其他分类
+    let anchor = categoriesEl.querySelector(".search-box");
     cats.forEach(cat => {
         const btn = document.createElement("button");
         btn.className = "category-btn" + (cat === currentCategory ? " active" : "");
@@ -380,7 +382,8 @@ function renderCategories() {
             btn.classList.add("active");
             refreshList();
         });
-        categoriesEl.insertBefore(btn, categoriesEl.querySelector(".search-box").nextSibling);
+        anchor.after(btn);
+        anchor = btn;
     });
 }
 
