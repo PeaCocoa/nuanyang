@@ -66,7 +66,8 @@ body.font-2xl {
     --font-title: 34px; --font-large: 29px; --font-body: 26px; --font-small: 22px; --font-micro: 18px;
 }
 
-/* === 深色模式 === */
+/* === 深色模式（data-color-scheme + body.dark 兼容） === */
+body[data-color-scheme="dark"],
 body.dark {
     --ink: #F7F7F7;
     --charcoal: #E0E0E0;
@@ -1095,4 +1096,480 @@ body.dark .digest-greeting-card {
 body.dark .digest-section-header {
     color: var(--rausch);
     border-color: var(--rausch);
+}
+
+
+/* ============================================
+   外观皮肤系统 v1
+   5种皮肤：auto / light / dark / frosted / liquid
+   ============================================ */
+
+/* === 皮肤选择浮窗 === */
+.skin-picker-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 210;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+.skin-picker-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+.skin-picker {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-width: 420px;
+    left: 50%;
+    transform: translate(-50%, 100%);
+    background: var(--canvas);
+    z-index: 211;
+    border-radius: 20px 20px 0 0;
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.15);
+}
+.skin-picker.active {
+    transform: translate(-50%, 0);
+}
+
+.skin-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-5) var(--space-5) var(--space-3);
+    flex-shrink: 0;
+}
+.skin-picker-title {
+    font-size: var(--font-large);
+    font-weight: 700;
+    color: var(--ink);
+}
+.skin-picker-close {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink);
+    background: var(--cloud);
+    border: none;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: transform 0.12s ease;
+}
+.skin-picker-close:active { transform: scale(0.9); }
+
+.skin-options {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 var(--space-5) var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.skin-option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background 0.15s ease;
+    position: relative;
+}
+.skin-option:active {
+    background: var(--cloud);
+}
+.skin-option.selected {
+    background: var(--cloud);
+}
+
+/* 预览缩略图 */
+.skin-preview {
+    flex-shrink: 0;
+    width: 56px;
+    height: 40px;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--hairline);
+}
+.sp-card {
+    position: absolute;
+    bottom: 4px;
+    left: 4px;
+    right: 4px;
+    height: 12px;
+    border-radius: 3px;
+}
+.sp-card-2 {
+    bottom: 20px;
+    left: 8px;
+    right: 12px;
+    height: 10px;
+}
+.sp-half {
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+}
+.sp-half-light { left: 0; background: #FFFFFF; }
+.sp-half-dark { right: 0; background: #1A1A1A; }
+
+/* 各皮肤预览样式 */
+.skin-preview-light { background: #FFFFFF; }
+.skin-preview-light .sp-card { background: #F7F7F7; border: 1px solid #DDD; }
+
+.skin-preview-dark { background: #1A1A1A; }
+.skin-preview-dark .sp-card { background: #2A2A2A; border: 1px solid #3A3A3A; }
+
+.skin-preview-auto { }
+.skin-preview-auto .sp-card { background: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.3); }
+
+.skin-preview-frosted {
+    background: linear-gradient(135deg, #e0e7ff 0%, #f0f0f0 50%, #ffe0e6 100%);
+}
+.skin-preview-frosted .sp-card {
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.skin-preview-liquid {
+    background: linear-gradient(135deg, #c8d6f5 0%, #e8d5f0 35%, #f5d5e0 70%, #d5e8f0 100%);
+}
+.skin-preview-liquid .sp-card {
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.skin-preview-liquid .sp-card-2 {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.skin-option-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.skin-option-name {
+    font-size: var(--font-body);
+    font-weight: 600;
+    color: var(--ink);
+}
+.skin-option-desc {
+    font-size: var(--font-micro);
+    color: var(--ash);
+    font-weight: 400;
+}
+
+.skin-check {
+    flex-shrink: 0;
+    color: var(--rausch);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.skin-option.selected .skin-check {
+    opacity: 1;
+}
+
+/* === 设置面板新增 === */
+.settings-row-value {
+    max-width: 120px;
+    text-align: right;
+}
+
+/* ============================================
+   皮肤 4：毛玻璃 (Frosted Glass)
+   ============================================ */
+body[data-theme="frosted"] .header {
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    background: rgba(255, 255, 255, 0.72);
+}
+body[data-theme="frosted"][data-color-scheme="dark"] .header {
+    background: rgba(26, 26, 26, 0.72);
+}
+
+body[data-theme="frosted"] .categories {
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    background: rgba(255, 255, 255, 0.65);
+}
+body[data-theme="frosted"][data-color-scheme="dark"] .categories {
+    background: rgba(26, 26, 26, 0.65);
+}
+
+body[data-theme="frosted"] .settings-panel {
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    background: rgba(255, 255, 255, 0.82);
+}
+body[data-theme="frosted"][data-color-scheme="dark"] .settings-panel {
+    background: rgba(26, 26, 26, 0.82);
+}
+
+body[data-theme="frosted"] .video-card {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+body[data-theme="frosted"] .footer {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.6);
+}
+body[data-theme="frosted"][data-color-scheme="dark"] .footer {
+    background: rgba(26, 26, 26, 0.6);
+}
+
+body[data-theme="frosted"] .skin-picker {
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    background: rgba(255, 255, 255, 0.85);
+}
+body[data-theme="frosted"][data-color-scheme="dark"] .skin-picker {
+    background: rgba(26, 26, 26, 0.85);
+}
+
+/* ============================================
+   皮肤 5：液态玻璃 (Liquid Glass)
+   UI 元素"浮"起来：通透、高光折射、漂浮投影
+   ============================================ */
+
+/* --- 全局背景：渐变流光 --- */
+body[data-theme="liquid"] {
+    background: linear-gradient(135deg, #dce4f5 0%, #e8daf0 25%, #f0dce0 50%, #d8e8f0 75%, #dce4f5 100%);
+    background-attachment: fixed;
+}
+body[data-theme="liquid"][data-color-scheme="dark"] {
+    background: linear-gradient(135deg, #0d1117 0%, #14141f 25%, #1a1020 50%, #0d1820 75%, #0d1117 100%);
+    background-attachment: fixed;
+}
+
+/* --- 顶栏：浮动玻璃 --- */
+body[data-theme="liquid"] .header {
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    background: rgba(255, 255, 255, 0.45);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.06);
+}
+body[data-theme="liquid"][data-color-scheme="dark"] .header {
+    background: rgba(20, 20, 30, 0.45);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* 高光线条 */
+body[data-theme="liquid"] .header::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    pointer-events: none;
+}
+
+/* --- 分类栏：浮动玻璃 --- */
+body[data-theme="liquid"] .categories {
+    backdrop-filter: blur(36px) saturate(170%);
+    -webkit-backdrop-filter: blur(36px) saturate(170%);
+    background: rgba(255, 255, 255, 0.35);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+body[data-theme="liquid"][data-color-scheme="dark"] .categories {
+    background: rgba(20, 20, 30, 0.35);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* --- 视频卡片：浮动玻璃面板 --- */
+body[data-theme="liquid"] .video-card {
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    background: rgba(255, 255, 255, 0.38);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.06),
+        0 2px 8px rgba(0, 0, 0, 0.03),
+        inset 0 1px 1px rgba(255, 255, 255, 0.4);
+    padding: var(--space-3);
+    margin-bottom: var(--space-2);
+    transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1), box-shadow 0.25s ease;
+}
+body[data-theme="liquid"][data-color-scheme="dark"] .video-card {
+    background: rgba(30, 30, 40, 0.38);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.2),
+        0 2px 8px rgba(0, 0, 0, 0.1),
+        inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+body[data-theme="liquid"] .video-card:active {
+    transform: scale(0.97);
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.08),
+        0 1px 4px rgba(0, 0, 0, 0.04),
+        inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+/* 卡片高光 */
+body[data-theme="liquid"] .video-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 15%;
+    right: 15%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    pointer-events: none;
+    border-radius: var(--radius-lg);
+}
+
+/* --- 视频封面：玻璃边框 --- */
+body[data-theme="liquid"] .video-cover {
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* --- 设置面板：浮动玻璃 Sheet --- */
+body[data-theme="liquid"] .settings-panel {
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    background: rgba(255, 255, 255, 0.55);
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: -8px 0 40px rgba(0, 0, 0, 0.08);
+}
+body[data-theme="liquid"][data-color-scheme="dark"] .settings-panel {
+    background: rgba(20, 20, 30, 0.55);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: -8px 0 40px rgba(0, 0, 0, 0.25);
+}
+
+/* --- 设置行：玻璃分隔 --- */
+body[data-theme="liquid"] .settings-section + .settings-section {
+    border-top-color: rgba(255, 255, 255, 0.2);
+}
+body[data-theme="liquid"][data-color-scheme="dark"] .settings-section + .settings-section {
+    border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+/* --- 按钮：玻璃药丸 --- */
+body[data-theme="liquid"] .header-btn {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+body[data-theme="liquid"][data-color-scheme="dark"] .header-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body[data-theme="liquid"] .font-option {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+body[data-theme="liquid"][data-color-scheme="dark"] .font-option {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body[data-theme="liquid"] .search-box {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+}
+body[data-theme="liquid"][data-color-scheme="dark"] .search-box {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* --- 底部：玻璃浮条 --- */
+body[data-theme="liquid"] .footer {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.35);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+body[data-theme="liquid"][data-color-scheme="dark"] .footer {
+    background: rgba(20, 20, 30, 0.35);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* --- 皮肤选择器：浮动玻璃 --- */
+body[data-theme="liquid"] .skin-picker {
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.08);
+}
+body[data-theme="liquid"][data-color-scheme="dark"] .skin-picker {
+    background: rgba(20, 20, 30, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* --- Toast：玻璃浮泡 --- */
+body[data-theme="liquid"] .toast {
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    background: rgba(40, 40, 50, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* --- 加载更多：玻璃 --- */
+body[data-theme="liquid"] .load-more {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+/* --- 置顶推荐卡片：液态玻璃增强 --- */
+body[data-theme="liquid"] .top-recommend-card {
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    background: rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255, 107, 53, 0.4);
+    box-shadow: 0 8px 32px rgba(255, 107, 53, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+/* --- 每日摘要：液态玻璃 --- */
+body[data-theme="liquid"] .digest-greeting-card {
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    box-shadow: 0 8px 32px rgba(255, 56, 92, 0.15);
+}
+
+body[data-theme="liquid"] .digest-card {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255, 107, 53, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* --- 毛玻璃模式：视频卡片微浮 --- */
+body[data-theme="frosted"] .video-card {
+    border-radius: var(--radius-md);
 }

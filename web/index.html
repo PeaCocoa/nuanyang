@@ -102,15 +102,13 @@
             <div class="settings-section">
                 <h3 class="settings-section-title">外观</h3>
 
-                <div class="settings-row">
+                <div class="settings-row" id="themeRow" style="cursor:pointer;">
                     <div class="settings-row-label">
-                        <span class="settings-row-name">深色模式</span>
-                        <span class="settings-row-desc">夜间使用更护眼</span>
+                        <span class="settings-row-name">样式</span>
+                        <span class="settings-row-desc">选择界面外观风格</span>
                     </div>
-                    <label class="toggle">
-                        <input type="checkbox" id="darkModeToggle">
-                        <span class="toggle-slider"></span>
-                    </label>
+                    <span class="settings-row-value" id="themeLabel" style="font-size:var(--font-small);color:var(--ash);font-weight:500;flex-shrink:0;">跟随系统</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--mute);margin-left:6px;flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
 
                 <div class="settings-row settings-row-column">
@@ -186,12 +184,17 @@
                 <div class="settings-row" id="aboutRow" style="cursor:pointer;">
                     <div class="settings-row-label">
                         <span class="settings-row-name">暖阳</span>
-                        <span class="settings-row-desc" id="updateTime">最近更新：2026-08-02 17:00</span>
+                        <span class="settings-row-desc" id="updateTime">最近更新：2026-08-02 18:00</span>
                     </div>
                     <svg id="changelogArrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--mute);transition:transform 0.3s;flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
                 <div class="changelog-wrap" id="changelogWrap">
                     <div class="changelog" id="changelog">
+                        <div class="changelog-item">
+                            <span class="changelog-version">8月2日 18:00</span>
+                            <span class="changelog-text">【新增】外观设置功能，5种皮肤可选：直觉记忆·跟随系统/白日/黑夜、毛玻璃、液态玻璃<br>【新增】皮肤选择浮窗，带预览缩略图<br>【优化】深色模式升级为完整主题系统，支持跟随系统自动切换<br>暖阳换上新衣裳了！</span>
+                        </div>
+                        <div class="changelog-item">
                         <div class="changelog-item">
                             <span class="changelog-version">8月2日 17:00</span>
                             <span class="changelog-text">【优化】搜索升级为模糊匹配，如"科普"能匹配到"科学普及"<br>【修复】搜索结果不再显示推荐标签<br>【修复】"已到底"提示独占一行居中，不再与视频卡片同行<br>搜索更聪明了！</span>
@@ -335,6 +338,74 @@
             </div>
         </div>
     </aside>
+
+    <!-- 皮肤选择浮窗 -->
+    <div class="skin-picker-overlay" id="skinPickerOverlay"></div>
+    <div class="skin-picker" id="skinPicker">
+        <div class="skin-picker-header">
+            <h3 class="skin-picker-title">样式</h3>
+            <button class="skin-picker-close" id="skinPickerClose" aria-label="关闭">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="skin-options" id="skinOptions">
+            <div class="skin-option" data-theme="auto">
+                <div class="skin-preview skin-preview-auto">
+                    <div class="sp-half sp-half-light"></div>
+                    <div class="sp-half sp-half-dark"></div>
+                    <div class="sp-card"></div>
+                </div>
+                <div class="skin-option-info">
+                    <span class="skin-option-name">直觉记忆·跟随系统</span>
+                    <span class="skin-option-desc">自动适应系统深浅色</span>
+                </div>
+                <svg class="skin-check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="skin-option" data-theme="light">
+                <div class="skin-preview skin-preview-light">
+                    <div class="sp-card"></div>
+                </div>
+                <div class="skin-option-info">
+                    <span class="skin-option-name">直觉记忆·白日</span>
+                    <span class="skin-option-desc">明亮清爽，日间首选</span>
+                </div>
+                <svg class="skin-check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="skin-option" data-theme="dark">
+                <div class="skin-preview skin-preview-dark">
+                    <div class="sp-card"></div>
+                </div>
+                <div class="skin-option-info">
+                    <span class="skin-option-name">直觉记忆·黑夜</span>
+                    <span class="skin-option-desc">深沉护眼，夜间伴侣</span>
+                </div>
+                <svg class="skin-check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="skin-option" data-theme="frosted">
+                <div class="skin-preview skin-preview-frosted">
+                    <div class="sp-card"></div>
+                </div>
+                <div class="skin-option-info">
+                    <span class="skin-option-name">毛玻璃</span>
+                    <span class="skin-option-desc">朦胧透亮，质感细腻</span>
+                </div>
+                <svg class="skin-check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="skin-option" data-theme="liquid">
+                <div class="skin-preview skin-preview-liquid">
+                    <div class="sp-card"></div>
+                    <div class="sp-card sp-card-2"></div>
+                </div>
+                <div class="skin-option-info">
+                    <span class="skin-option-name">液态玻璃</span>
+                    <span class="skin-option-desc">通透浮空，光影流转</span>
+                </div>
+                <svg class="skin-check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+        </div>
+    </div>
 
     <!-- 播放器弹窗 -->
     <div class="player-modal" id="playerModal">

@@ -6,11 +6,12 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-02 17:00"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-02 18:00"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
     dark: "nuanyang-dark",
+    theme: "nuanyang-theme",
     recommend: "nuanyang-recommend",
     history: "nuanyang-history",
     batch: "nuanyang-batch",
@@ -26,7 +27,8 @@ let displayedBvids = new Set(); // 已展示的BVID集合
 let isLoading = false;
 let settings = {
     fontSize: "font-lg",
-    darkMode: "auto",       // auto / on / off
+    darkMode: "auto",       // 兼容旧版
+    theme: "auto",         // auto / light / dark / frosted / liquid
     recommend: false,
     digest: false,
     batch: BATCH_DEFAULT,
@@ -47,6 +49,12 @@ const settingsPanel = document.getElementById("settingsPanel");
 const settingsOverlay = document.getElementById("settingsOverlay");
 const settingsClose = document.getElementById("settingsClose");
 const darkModeToggle = document.getElementById("darkModeToggle");
+const themeRow = document.getElementById("themeRow");
+const themeLabel = document.getElementById("themeLabel");
+const skinPicker = document.getElementById("skinPicker");
+const skinPickerOverlay = document.getElementById("skinPickerOverlay");
+const skinPickerClose = document.getElementById("skinPickerClose");
+const skinOptions = document.getElementById("skinOptions");
 const recommendToggle = document.getElementById("recommendToggle");
 const digestToggle = document.getElementById("digestToggle");
 const digestBtn = document.getElementById("digestBtn");
@@ -93,11 +101,15 @@ function loadSettings() {
         const font = localStorage.getItem(STORAGE_KEYS.font);
         if (font) settings.fontSize = font;
 
-        const dark = localStorage.getItem(STORAGE_KEYS.dark);
-        if (dark) {
-            settings.darkMode = dark;
+        const theme = localStorage.getItem(STORAGE_KEYS.theme);
+        if (theme) {
+            settings.theme = theme;
         } else {
-            settings.darkMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "on" : "off";
+            // 兼容旧版 darkMode 设置
+            const dark = localStorage.getItem(STORAGE_KEYS.dark);
+            if (dark === "on") settings.theme = "dark";
+            else if (dark === "off") settings.theme = "light";
+            else settings.theme = "auto";
         }
 
         const rec = localStorage.getItem(STORAGE_KEYS.recommend);
@@ -121,7 +133,8 @@ function loadSettings() {
 
 function saveSettings() {
     localStorage.setItem(STORAGE_KEYS.font, settings.fontSize);
-    localStorage.setItem(STORAGE_KEYS.dark, settings.darkMode);
+    localStorage.setItem(STORAGE_KEYS.theme, settings.theme);
+    localStorage.setItem(STORAGE_KEYS.dark, settings.theme === "dark" ? "on" : "off");
     localStorage.setItem(STORAGE_KEYS.recommend, settings.recommend.toString());
     localStorage.setItem(STORAGE_KEYS.batch, settings.batch.toString());
     localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(viewHistory));
@@ -139,8 +152,9 @@ window.addEventListener("storage", (e) => {
     // 应用变化
     if (e.key === STORAGE_KEYS.font) {
         applyFontSize();
-    } else if (e.key === STORAGE_KEYS.dark) {
-        applyDarkMode();
+    } else if (e.key === STORAGE_KEYS.theme || e.key === STORAGE_KEYS.dark) {
+        loadSettings();
+        applyTheme();
     } else if (e.key === STORAGE_KEYS.batch) {
         applyBatch();
     } else if (e.key === STORAGE_KEYS.recommend) {
@@ -170,10 +184,40 @@ function applyFontSize() {
     });
 }
 
-function applyDarkMode() {
-    const isDark = settings.darkMode === "on";
-    document.body.classList.toggle("dark", isDark);
-    darkModeToggle.checked = isDark;
+function resolveColorScheme() {
+    if (settings.theme === "dark") return "dark";
+    if (settings.theme === "light") return "light";
+    // auto / frosted / liquid: 跟随系统
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+const THEME_LABELS = {
+    "auto": "跟随系统",
+    "light": "白日",
+    "dark": "黑夜",
+    "frosted": "毛玻璃",
+    "liquid": "液态玻璃",
+};
+
+function applyTheme() {
+    const colorScheme = resolveColorScheme();
+    document.body.setAttribute("data-theme", settings.theme);
+    document.body.setAttribute("data-color-scheme", colorScheme);
+    // 兼容旧版 body.dark 类
+    document.body.classList.toggle("dark", colorScheme === "dark");
+    // 兼容旧版 toggle
+    if (darkModeToggle) darkModeToggle.checked = colorScheme === "dark";
+    // 更新设置面板标签
+    if (themeLabel) themeLabel.textContent = THEME_LABELS[settings.theme] || "跟随系统";
+    // 更新皮肤选择器选中状态
+    document.querySelectorAll(".skin-option").forEach(opt => {
+        opt.classList.toggle("selected", opt.dataset.theme === settings.theme);
+    });
+    // 更新 meta theme-color
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) {
+        metaTheme.content = colorScheme === "dark" ? "#1A1A1A" : "#FFFFFF";
+    }
 }
 
 function applyBatch() {
@@ -183,20 +227,52 @@ function applyBatch() {
 }
 
 // =====================
-// 主题切换
+// 主题切换（皮肤选择器）
 // =====================
 
-darkModeToggle.addEventListener("change", () => {
-    settings.darkMode = darkModeToggle.checked ? "on" : "off";
-    applyDarkMode();
-    saveSettings();
-});
+// 皮肤选择器：打开
+if (themeRow) {
+    themeRow.addEventListener("click", () => {
+        skinPickerOverlay.classList.add("active");
+        skinPicker.classList.add("active");
+    });
+}
+// 皮肤选择器：关闭
+if (skinPickerClose) {
+    skinPickerClose.addEventListener("click", closeSkinPicker);
+}
+if (skinPickerOverlay) {
+    skinPickerOverlay.addEventListener("click", closeSkinPicker);
+}
+function closeSkinPicker() {
+    skinPickerOverlay.classList.remove("active");
+    skinPicker.classList.remove("active");
+}
+// 皮肤选择器：选择皮肤
+if (skinOptions) {
+    skinOptions.addEventListener("click", (e) => {
+        const opt = e.target.closest(".skin-option");
+        if (!opt) return;
+        settings.theme = opt.dataset.theme;
+        applyTheme();
+        saveSettings();
+        closeSkinPicker();
+        showToast("已切换至" + (THEME_LABELS[settings.theme] || "跟随系统"));
+    });
+}
+// 兼容旧版深色模式 toggle（如果存在）
+if (darkModeToggle) {
+    darkModeToggle.addEventListener("change", () => {
+        settings.theme = darkModeToggle.checked ? "dark" : "light";
+        applyTheme();
+        saveSettings();
+    });
+}
 
-window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
-    const saved = localStorage.getItem(STORAGE_KEYS.dark);
-    if (!saved) {
-        settings.darkMode = e.matches ? "on" : "off";
-        applyDarkMode();
+// 系统深浅色变化时，auto/frosted/liquid 需要跟随
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    if (["auto", "frosted", "liquid"].includes(settings.theme)) {
+        applyTheme();
     }
 });
 
@@ -1222,7 +1298,7 @@ async function checkForUpdate() {
 
 loadSettings();
 applyFontSize();
-applyDarkMode();
+applyTheme();
 applyBatch();
 recommendToggle.checked = settings.recommend;
 digestToggle.checked = settings.digest;
