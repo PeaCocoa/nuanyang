@@ -99,11 +99,21 @@ const fontOptions = document.getElementById('showcaseFontOptions');
 
 // === 初始化 ===
 function init() {
-    // 同步深色模式
+    // 同步主题（液态玻璃/经典/白日/黑夜/跟随系统）
+    const theme = localStorage.getItem('nuanyang-theme') || 'auto';
     const darkMode = localStorage.getItem('nuanyang-dark') || 'auto';
-    if (darkMode === 'on' || (darkMode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.body.classList.add('dark');
-        darkToggle.checked = true;
+    const isDark = darkMode === 'on' || (darkMode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    
+    // 应用主题和配色方案
+    document.body.setAttribute('data-theme', theme);
+    document.body.setAttribute('data-color-scheme', isDark ? 'dark' : 'light');
+    document.body.classList.toggle('dark', isDark);
+    if (darkToggle) darkToggle.checked = isDark;
+
+    // 更新 meta theme-color
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) {
+        metaTheme.content = theme === 'liquid' ? '#000000' : (isDark ? '#1A1A1A' : '#FFFFFF');
     }
 
     // 同步字号
@@ -252,12 +262,14 @@ function setupSettings() {
 
     // 深色模式切换
     darkToggle.addEventListener('change', () => {
-        if (darkToggle.checked) {
-            document.body.classList.add('dark');
-            localStorage.setItem('nuanyang-dark', 'on');
-        } else {
-            document.body.classList.remove('dark');
-            localStorage.setItem('nuanyang-dark', 'off');
+        const isDark = darkToggle.checked;
+        document.body.classList.toggle('dark', isDark);
+        document.body.setAttribute('data-color-scheme', isDark ? 'dark' : 'light');
+        localStorage.setItem('nuanyang-dark', isDark ? 'on' : 'off');
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) {
+            const theme = localStorage.getItem('nuanyang-theme') || 'auto';
+            metaTheme.content = theme === 'liquid' ? '#000000' : (isDark ? '#1A1A1A' : '#FFFFFF');
         }
     });
 

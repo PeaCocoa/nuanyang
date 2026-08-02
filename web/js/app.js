@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-02 22:30"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-02 23:15"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -74,6 +74,7 @@ const searchInput = document.getElementById("searchInput");
 const searchClear = document.getElementById("searchClear");
 let searchKeyword = "";
 let currentView = "main"; // main / digest
+let allLoaded = false; // 是否已加载完所有视频
 
 // =====================
 // 工具函数：获取视频分类（兼容数组/字符串）
@@ -951,6 +952,7 @@ function getDailyDigest() {
 
 function refreshList() {
     isLoading = false;
+    allLoaded = false;
     displayedVideos = [];
     displayedBvids = new Set();
     videoListEl.innerHTML = "";
@@ -980,6 +982,7 @@ function loadMoreVideos() {
         const available = pool.filter(v => !displayedBvids.has(v.bvid));
 
         if (available.length === 0) {
+            allLoaded = true;
             if (displayedVideos.length > 0) {
                 // 检查是否已有“已到底”提示，避免重复添加
                 const existingHint = videoListEl.querySelector('.empty:last-child');
@@ -1013,7 +1016,7 @@ function loadMoreVideos() {
             requestAnimationFrame(() => {
                 if (currentView !== "main") return;
                 const rect = scrollSentinel.getBoundingClientRect();
-                if (rect.top < window.innerHeight + 300 && !isLoading && displayedVideos.length < 60) {
+                if (rect.top < window.innerHeight + 300 && !isLoading && !allLoaded && displayedVideos.length < 60) {
                     loadMoreVideos();
                 }
             });
@@ -1065,7 +1068,7 @@ const scrollSentinel = document.getElementById("scrollSentinel");
 
 const scrollObserver = new IntersectionObserver((entries) => {
     if (currentView !== "main") return;
-    if (entries[0].isIntersecting && !isLoading && displayedVideos.length < 60) {
+    if (entries[0].isIntersecting && !isLoading && !allLoaded && displayedVideos.length < 60) {
         loadMoreVideos();
     }
 }, { rootMargin: "300px" });
@@ -1077,6 +1080,7 @@ window.addEventListener("scroll", () => {
     scrollTimer = setTimeout(() => {
         scrollTimer = null;
         if (isLoading) return;
+        if (allLoaded) return;
         if (currentView !== "main") return;
         const rect = scrollSentinel.getBoundingClientRect();
         if (rect.top < window.innerHeight + 300) {

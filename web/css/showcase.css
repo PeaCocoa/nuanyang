@@ -702,3 +702,258 @@
 .device-frame .device-img {
     max-width: 100%;
 }
+
+
+/* ============================================
+   展示页皮肤适配
+   ============================================ */
+
+/* === 液态玻璃皮肤 === */
+body[data-theme="liquid"] {
+    background: #000000;
+    color: #F7F7F7;
+}
+
+body[data-theme="liquid"] .showcase-header {
+    background: rgba(25, 25, 25, 0.5);
+    backdrop-filter: blur(20px) saturate(130%);
+    -webkit-backdrop-filter: blur(20px) saturate(130%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body[data-theme="liquid"] .showcase-title {
+    color: #F7F7F7;
+}
+
+body[data-theme="liquid"] .showcase-settings-btn {
+    background: rgba(255, 255, 255, 0.08);
+    color: #E0E0E0;
+    backdrop-filter: blur(12px) saturate(140%);
+    -webkit-backdrop-filter: blur(12px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+body[data-theme="liquid"] .showcase-settings-btn:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* 介绍区 */
+body[data-theme="liquid"] .showcase-intro {
+    background: transparent;
+}
+
+body[data-theme="liquid"] .intro-name {
+    color: var(--rausch);
+    text-shadow: 0 0 40px rgba(255, 56, 92, 0.3);
+}
+
+body[data-theme="liquid"] .intro-slogan {
+    color: #E0E0E0;
+}
+
+body[data-theme="liquid"] .intro-desc {
+    color: #AAAAAA;
+}
+
+body[data-theme="liquid"] .intro-tag {
+    background: rgba(255, 255, 255, 0.06);
+    color: #E0E0E0;
+    backdrop-filter: blur(8px) saturate(120%);
+    -webkit-backdrop-filter: blur(8px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 特性区块 */
+body[data-theme="liquid"] .feature-section.feature-alt {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+body[data-theme="liquid"] .feature-title {
+    color: #F7F7F7;
+}
+
+body[data-theme="liquid"] .feature-desc {
+    color: #AAAAAA;
+}
+
+body[data-theme="liquid"] .feature-desc-sub {
+    color: #888888;
+}
+
+body[data-theme="liquid"] .feature-image img {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+body[data-theme="liquid"] .stat-num {
+    color: var(--rausch);
+}
+
+body[data-theme="liquid"] .stat-label {
+    color: #AAAAAA;
+}
+
+/* 试玩区 */
+body[data-theme="liquid"] .showcase-demo {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+body[data-theme="liquid"] .demo-heading {
+    color: #F7F7F7;
+}
+
+body[data-theme="liquid"] .demo-subheading {
+    color: #AAAAAA;
+}
+
+body[data-theme="liquid"] .device-thumb {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px) saturate(130%);
+    -webkit-backdrop-filter: blur(10px) saturate(130%);
+}
+
+body[data-theme="liquid"] .device-thumb:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body[data-theme="liquid"] .device-thumb.active {
+    border-color: var(--rausch);
+    background: rgba(255, 56, 92, 0.1);
+}
+
+body[data-theme="liquid"] .device-thumb-name {
+    color: #AAAAAA;
+}
+
+body[data-theme="liquid"] .device-thumb.active .device-thumb-name {
+    color: var(--rausch);
+}
+
+body[data-theme="liquid"] .page-tab {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #AAAAAA;
+    backdrop-filter: blur(10px) saturate(130%);
+    -webkit-backdrop-filter: blur(10px) saturate(130%);
+}
+
+body[data-theme="liquid"] .page-tab:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+body[data-theme="liquid"] .page-tab.active {
+    background: rgba(255, 255, 255, 0.9);
+    color: #000000;
+    border-color: rgba(255, 255, 255, 0.9);
+}
+
+/* 访问地址区 */
+body[data-theme="liquid"] .showcase-access {
+    background: transparent;
+}
+
+body[data-theme="liquid"] .access-heading {
+    color: #F7F7F7;
+}
+
+body[data-theme="liquid"] .access-slogan {
+    color: #E0E0E0;
+}
+
+body[data-theme="liquid"] .access-url {
+    color: #888888;
+}
+
+/* 底部 */
+body[data-theme="liquid"] .showcase-footer {
+    background: rgba(255, 255, 255, 0.02);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+body[data-theme="liquid"] .showcase-footer p {
+    color: #888888;
+}
+
+/* 悬浮按钮 */
+body[data-theme="liquid"] .floating-home-btn {
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+
+/* 设置面板 */
+body[data-theme="liquid"] .showcase-settings-panel {
+    background: rgba(20, 20, 20, 0.85);
+    backdrop-filter: blur(24px) saturate(130%);
+    -webkit-backdrop-filter: blur(24px) saturate(130%);
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.4);
+}
+
+body[data-theme="liquid"] .showcase-settings-overlay {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+body[data-theme="liquid"] .settings-title {
+    color: #F7F7F7;
+}
+
+body[data-theme="liquid"] .settings-section-title {
+    color: #E0E0E0;
+}
+
+body[data-theme="liquid"] .settings-row-name {
+    color: #E0E0E0;
+}
+
+body[data-theme="liquid"] .settings-row-desc {
+    color: #888888;
+}
+
+/* 设备信息 */
+body[data-theme="liquid"] .device-info-name {
+    color: #F7F7F7;
+}
+
+body[data-theme="liquid"] .device-info-spec {
+    color: #AAAAAA;
+}
+
+/* === 经典回忆皮肤 === */
+body[data-theme="classic"] {
+    background: #F5F0E8;
+}
+
+body[data-theme="classic"] .showcase-header {
+    background: #F5F0E8;
+    border-bottom: 1px solid #D5CFC5;
+}
+
+body[data-theme="classic"] .feature-section.feature-alt {
+    background: #EDE7DC;
+}
+
+body[data-theme="classic"] .showcase-demo {
+    background: #EDE7DC;
+}
+
+body[data-theme="classic"] .showcase-footer {
+    background: #F5F0E8;
+    border-top: 1px solid #D5CFC5;
+}
+
+body[data-theme="classic"] .showcase-access {
+    background: #F5F0E8;
+}
+
+body[data-theme="classic"] .device-thumb {
+    background: #FFF8EE;
+    border-color: #D5CFC5;
+}
+
+body[data-theme="classic"] .page-tab {
+    background: #FFF8EE;
+    border-color: #D5CFC5;
+}
