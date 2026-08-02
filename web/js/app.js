@@ -1388,6 +1388,7 @@ applyTheme();
 applyBatch();
 recommendToggle.checked = settings.recommend;
 digestToggle.checked = settings.digest;
+if (digestBtn) digestBtn.style.display = settings.digest ? "" : "none";
 if (liquidIntensitySlider) liquidIntensitySlider.value = settings.liquidIntensity;
 applyLiquidIntensity();
 loadData();
