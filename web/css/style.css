@@ -1421,12 +1421,10 @@ body.dark .digest-section-header {
 
 /* --- 全局背景：渐变流光（让折射效果可见） --- */
 body[data-theme="liquid"] {
-    background: linear-gradient(135deg, #f5f0e8 0%, #f0ece4 25%, #ece8e0 50%, #f0ece4 75%, #f5f0e8 100%);
-    background-attachment: fixed;
+    background: #000000;
 }
 body[data-theme="liquid"][data-color-scheme="dark"] {
-    background: linear-gradient(135deg, #1a1a1a 0%, #1e1e1e 25%, #222222 50%, #1e1e1e 75%, #1a1a1a 100%);
-    background-attachment: fixed;
+    background: #000000;
 }
 
 /* --- 顶栏：液态玻璃折射（完整覆盖） --- */
