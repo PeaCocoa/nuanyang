@@ -6,6 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
+const CODE_VERSION = "2026-08-02 16:40"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -1172,12 +1173,10 @@ async function loadData() {
         }
         lastVideoCount = newVideos.length;
 
-        // 记录更新时间到 localStorage
-        localStorage.setItem("nuanyang-updated", data.updated || "");
-        // 更新设置面板中的更新时间
+        // 更新时间显示代码版本时间（非视频数据时间）
         const updateEl = document.getElementById('updateTime');
-        if (updateEl && data.updated) {
-            updateEl.textContent = '最近更新：' + data.updated;
+        if (updateEl) {
+            updateEl.textContent = '最近更新：' + CODE_VERSION;
         }
 
         // 5分钟后自动检查更新
@@ -1266,11 +1265,10 @@ if (aboutRow && changelogWrap) {
     });
 }
 
-// 设置面板更新时间（从localStorage恢复）
-const savedUpdate = localStorage.getItem('nuanyang-updated');
-if (savedUpdate) {
+// 设置面板更新时间（使用代码版本时间）
+{
     const el = document.getElementById('updateTime');
-    if (el) el.textContent = '最近更新：' + savedUpdate;
+    if (el) el.textContent = '最近更新：' + CODE_VERSION;
 }
 
 // === 搜索功能 ===
