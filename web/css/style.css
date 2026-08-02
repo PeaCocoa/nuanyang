@@ -1385,6 +1385,35 @@ body.dark .digest-section-header {
 
 /* ============================================
    皮肤 5：液态玻璃 (Liquid Glass) v2
+
+/* --- 液态玻璃边缘发光（替代贴图高光） --- */
+[data-theme="liquid"] {
+    --liquid-glow: 0.5;
+    --liquid-glow-bottom: 0.125;
+}
+[data-theme="liquid"] .video-card,
+[data-theme="liquid"] .search-box,
+[data-theme="liquid"] .header,
+[data-theme="liquid"] .category-bar,
+[data-theme="liquid"] .settings-panel,
+[data-theme="liquid"] .settings-overlay,
+[data-theme="liquid"] .theme-picker,
+[data-theme="liquid"] .font-picker,
+[data-theme="liquid"] .video-player,
+[data-theme="liquid"] .player-overlay,
+[data-theme="liquid"] .range-slider,
+[data-theme="liquid"] .skin-option,
+[data-theme="liquid"] .batch-picker,
+[data-theme="liquid"] .digest-card,
+[data-theme="liquid"] .modal-content,
+[data-theme="liquid"] .toast,
+[data-theme="liquid"] .floating-settings {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, var(--liquid-glow)),
+                inset 0 -1px 0 rgba(255, 255, 255, var(--liquid-glow-bottom)),
+                inset 1px 0 0 rgba(255, 255, 255, calc(var(--liquid-glow) * 0.3)),
+                inset -1px 0 0 rgba(255, 255, 255, calc(var(--liquid-glow) * 0.3)) !important;
+}
+
    严格参考 https://liunian.js.org/posts/liquid-glass/ 源码
    核心：SVG feDisplacementMap + backdrop-filter: url(#filter-id)
    v2: 全面覆盖所有UI元素 + 修复错位高光

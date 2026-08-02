@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-02 20:20"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-02 21:00"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -253,21 +253,19 @@ function applyLiquidIntensity() {
     const v = settings.liquidIntensity; // 0-100
     const t = v / 100; // 0-1
 
-    // 0→0.5: 毛玻璃→液态玻璃 (blur: 4→原始, displace: 0→原始, flood: 0.3→原始)
-    // 0.5→1: 液态玻璃→清透 (blur: 原始→0, displace: 原始→0, flood: 原始→0)
-    let blurMult, displaceMult, floodMult;
+    // 0→0.5: 毛玻璃→液态玻璃 (blur: 4→原始, displace: 0→原始, glow: 0.2→原始)
+    // 0.5→1: 液态玻璃→清透 (blur: 原始→0, displace: 原始→0, glow: 原始→0)
+    let blurMult, displaceMult, glowMult;
     if (t <= 0.5) {
         const p = t / 0.5; // 0→1
-        blurMult = 4 + (1 - 4) * p; // 4→1 (相对于原始值的倍数)
+        blurMult = 4 + (1 - 4) * p; // 4→1
         displaceMult = p; // 0→1
-        floodMult = 0.3 + (1 - 0.3) * p; // 0.3→1... wait
-        // 实际上flood在毛玻璃时也应该有一定值
-        floodMult = 0.75 + 0.25 * p; // 0.75→1
+        glowMult = 0.4 + (1 - 0.4) * p; // 0.4→1
     } else {
         const p = (t - 0.5) / 0.5; // 0→1
         blurMult = 1 + (0 - 1) * p; // 1→0
         displaceMult = 1 + (0 - 1) * p; // 1→0
-        floodMult = 1 + (0 - 1) * p; // 1→0
+        glowMult = 1 + (0 - 1) * p; // 1→0
     }
 
     const setAttr = (id, attr, val) => {
@@ -278,12 +276,14 @@ function applyLiquidIntensity() {
     // thumb-filter
     setAttr("thumb-blur", "stdDeviation", (LIQUID_ORIGINAL.thumbBlur * blurMult).toFixed(3));
     setAttr("thumb-displace", "scale", (LIQUID_ORIGINAL.thumbDisplace * displaceMult).toFixed(3));
-    setAttr("thumb-flood", "slope", (LIQUID_ORIGINAL.thumbFlood * floodMult).toFixed(3));
 
     // searchbox-filter
     setAttr("search-blur", "stdDeviation", (LIQUID_ORIGINAL.searchBlur * blurMult).toFixed(3));
     setAttr("search-displace", "scale", (LIQUID_ORIGINAL.searchDisplace * displaceMult).toFixed(3));
-    setAttr("search-flood", "slope", (LIQUID_ORIGINAL.searchFlood * floodMult).toFixed(3));
+
+    // 边缘发光通过CSS变量控制（替代feFuncA slope）
+    document.body.style.setProperty("--liquid-glow", (LIQUID_ORIGINAL.thumbFlood * glowMult).toFixed(3));
+    document.body.style.setProperty("--liquid-glow-bottom", (LIQUID_ORIGINAL.thumbFlood * glowMult * 0.25).toFixed(3));
 }
 
 // 液态玻璃强度滑动条事件
