@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-02 21:15"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-02 21:20"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -1423,14 +1423,29 @@ document.addEventListener("visibilitychange", () => {
     });
 })();
 
-// 更新日志点击展开/收起
+// 更新日志弹窗
 const aboutRow = document.getElementById('aboutRow');
-const changelogWrap = document.getElementById('changelogWrap');
+const changelogModalOverlay = document.getElementById('changelogModalOverlay');
+const changelogModalClose = document.getElementById('changelogModalClose');
 const changelogArrow = document.getElementById('changelogArrow');
-if (aboutRow && changelogWrap) {
+if (aboutRow && changelogModalOverlay) {
     aboutRow.addEventListener('click', () => {
-        const isShow = changelogWrap.classList.toggle('show');
-        if (changelogArrow) changelogArrow.classList.toggle('rotated', isShow);
+        changelogModalOverlay.classList.add('show');
+        if (changelogArrow) changelogArrow.classList.add('rotated');
+    });
+}
+if (changelogModalClose) {
+    changelogModalClose.addEventListener('click', () => {
+        changelogModalOverlay.classList.remove('show');
+        if (changelogArrow) changelogArrow.classList.remove('rotated');
+    });
+}
+if (changelogModalOverlay) {
+    changelogModalOverlay.addEventListener('click', (e) => {
+        if (e.target === changelogModalOverlay) {
+            changelogModalOverlay.classList.remove('show');
+            if (changelogArrow) changelogArrow.classList.remove('rotated');
+        }
     });
 }
 

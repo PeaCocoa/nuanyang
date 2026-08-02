@@ -13,7 +13,7 @@
     <link rel="icon" href="favicon.png" type="image/png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <title>暖阳 - 精选好视频</title>
-    <link rel="stylesheet" href="css/style.css?v=18">
+    <link rel="stylesheet" href="css/style.css?v=19">
 </head>
 <body class="font-lg">
     <!-- 液态玻璃 SVG 滤镜（来源：liunian.js.org） -->
@@ -184,166 +184,11 @@
                 <div class="settings-row" id="aboutRow" style="cursor:pointer;">
                     <div class="settings-row-label">
                         <span class="settings-row-name">暖阳</span>
-                        <span class="settings-row-desc" id="updateTime">最近更新：2026-08-02 18:00</span>
+                        <span class="settings-row-desc" id="updateTime">最近更新：2026-08-02 21:20</span>
                     </div>
                     <svg id="changelogArrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--mute);transition:transform 0.3s;flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
-                <div class="changelog-wrap" id="changelogWrap">
-                    <div class="changelog" id="changelog">
-                        <div class="changelog-item">
-                            <span class="changelog-version">8月2日 20:10</span>
-                            <span class="changelog-text">【新增】液态玻璃无级调节滑动条：毛玻璃←液态玻璃→清透<br>【优化】毛玻璃整合到液态玻璃，统一为一种皮肤<br>【优化】液态玻璃回滚性能优化，恢复完整折射效果<br>【修复】每日摘要无法持久开启<br>【修复】移除液态玻璃错位高光<br>液态玻璃，由你掌控！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">8月2日 19:49</span>
-                            <span class="changelog-text">【新增】"经典回忆"拟物化主题：皮革纹理、纸张质感、立体按钮、缝线边框<br>【新增】液态玻璃全面覆盖：滑动条、开关、分类按钮、播放器等全部UI元素<br>【优化】字号选择改为滑动条，操作更直观<br>【优化】液态玻璃折射效果修复错位高光<br>暖阳的衣橱更丰富了！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">8月2日 18:00</span>
-                            <span class="changelog-text">【新增】外观设置功能，5种皮肤可选：直觉记忆·跟随系统/白日/黑夜、毛玻璃、液态玻璃<br>【新增】皮肤选择浮窗，带预览缩略图<br>【优化】深色模式升级为完整主题系统，支持跟随系统自动切换<br>暖阳换上新衣裳了！</span>
-                        </div>
-                        <div class="changelog-item">
-                        <div class="changelog-item">
-                            <span class="changelog-version">8月2日 17:00</span>
-                            <span class="changelog-text">【优化】搜索升级为模糊匹配，如"科普"能匹配到"科学普及"<br>【修复】搜索结果不再显示推荐标签<br>【修复】"已到底"提示独占一行居中，不再与视频卡片同行<br>搜索更聪明了！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">8月2日 16:40</span>
-                            <span class="changelog-text">【新增】播放器显示视频发布时间<br>【新增】多窗口设置同步，不同标签页设置实时同步<br>【优化】每日摘要独立页面，继承主页多列网格布局<br>【优化】今日推荐考虑分类偏好，不再只按播放量回退<br>【优化】展示页PPT图片压缩(27MB→4.2MB)，保留透明通道<br>【修复】后端P0-P2全部Bug：续爬数据重置、状态恢复读空、is_running僵死等<br>【修复】每日摘要无内容、反复刷新、header按钮未隐藏<br>【修复】不偏好分类的视频不再带推荐标<br>【修复】搜索时隐藏今日推荐、防止重复添加已到底提示<br>一下午修了十几个Bug，暖阳越来越稳了！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">8月2日 15:30</span>
-                            <span class="changelog-text">【新增】每日摘要功能：暖阳祝语、收藏UP主今日更新、今日推荐、央视推荐，在设置中手动开启<br>【修复】控制台日志超过300条后不再更新的严重Bug<br>【修复】视频展示完毕后重复渲染卡片、置顶推荐封面占位符转义错误、XSS安全防护、事件监听器累积、自动检查更新无限递归<br>今天修了一堆Bug，还加了每日摘要！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">8月2日 00:10</span>
-                            <span class="changelog-text">【新增】视频收藏功能，播放器中点击收藏喜欢的视频<br>【新增】“我的收藏”分类，一键查看所有收藏的视频<br>【优化】个性化推荐中收藏过的视频权重增加，被收藏视频的UP主与分类亦微量提升<br>收藏夹住的好视频，暖阳替你记着！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">8月1日 22:50</span>
-                            <span class="changelog-text">【新增】设置面板更新日志，点击展开查看<br>【优化】版本号改为显示最近更新时间<br>【修复】关于区域内容丢失<br>更新日志终于能看了，折腾了一圈！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">8月1日 22:40</span>
-                            <span class="changelog-text">【修复】部分视频封面显示不完全<br>封面终于完整了，强迫症舒服了！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">8月1日 22:34</span>
-                            <span class="changelog-text">【修复】未开启个性化推荐时视频数多的UP主刷屏<br>每个UP都有均等出场机会了！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">8月1日 22:33</span>
-                            <span class="changelog-text">【优化】推荐算法权重平衡，防止热门UP形成马太效应<br>小众UP也有春天了！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">8月1日 22:28</span>
-                            <span class="changelog-text">【优化】去掉视频卡片多余标签，UP主名完整显示<br>【修复】每日推荐卡片圆角、分类栏下滑显示不完整、刷新按钮只读缓存不重新获取、大屏设备只能显示一列、鼠标无法滑动分类栏<br>一口气修了七个Bug，今晚效率拉满！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">8月1日 22:10</span>
-                            <span class="changelog-text">【新增】展示页LOGO底图、左下角悬浮进入主站按钮、展示页字号和深色模式设置<br>【优化】机型名称修正、屏幕区域精确贴合<br>【修复】MatePad Mini和MatePad Edge名称标注错误<br>展示页越来越像样了！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">8月1日 21:58</span>
-                            <span class="changelog-text">【新增】暖阳展示页，6台华为设备模拟试玩，支持首页/播放页/搜索页切换<br>从设置-关于-展示页进入，来看看暖阳长什么样！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">7月31日 14:28</span>
-                            <span class="changelog-text">【修复】爬虫停止后无法重新启动的问题<br>停止信号改为时间戳机制，彻底告别残留文件！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">7月31日 14:10</span>
-                            <span class="changelog-text">【优化】普通模式设置面板与工作流参数对齐，新增总量上限、UP间隔、翻页间隔等设置<br>两边的设置终于统一了！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">7月31日 14:02</span>
-                            <span class="changelog-text">【优化】播放器更稳定，不会意外跳转走<br>安心看视频，不会被带跑了！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">7月31日 13:56</span>
-                            <span class="changelog-text">【修复】移动端缓存导致视频内容无法更新的严重问题<br>【新增】每5分钟自动检查视频更新<br>缓存问题彻底解决了，移动端也能看到最新视频！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">7月31日 12:39</span>
-                            <span class="changelog-text">【新增】爬虫控制台工作流功能，可视化拖拽节点编排爬取流程<br>流程图画起来真上头！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">7月31日 12:16</span>
-                            <span class="changelog-text">【优化】搜索框移到分类标签前面，更符合使用习惯<br>搜索优先，想看什么先搜！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">7月31日 12:13</span>
-                            <span class="changelog-text">【修复】缓存导致搜索框不显示<br>搜索框终于回来了！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">7月31日 12:00</span>
-                            <span class="changelog-text">【新增】视频搜索功能，可搜索视频标题和UP主<br>【新增】3秒观看门槛，防止误触<br>【新增】隐私提示弹窗<br>想看什么搜什么，隐私也护住了！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">7月31日 09:38</span>
-                            <span class="changelog-text">【新增】法律协议（免责声明、用户协议、隐私协议、MIT开源协议）<br>【新增】设置面板显示同意条款<br>守法好公民，协议先说清！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">7月31日 08:03</span>
-                            <span class="changelog-text">【新增】20个适老化UP主（共38个），10种新分类（共35种）<br>内容更丰富了，爷爷奶奶的选择更多了！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">7月30日 22:52</span>
-                            <span class="changelog-text">【新增】每天自动检测视频更新并通知<br>不用手动刷新了，有新视频自动告诉你！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">7月30日 22:20</span>
-                            <span class="changelog-text">【新增】每日推荐置顶、视频总数上限800条<br>每天有好视频等着你！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">7月30日 22:13</span>
-                            <span class="changelog-text">【新增】17个知识性UP主、25种板块分类、多分类支持<br>从零开始选内容，每一类都精心挑选！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">7月30日 21:38</span>
-                            <span class="changelog-text">【新增】PWA支持，可安装到手机桌面<br>【新增】多尺寸应用图标<br>装到桌面上，像App一样打开！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">7月30日 20:58</span>
-                            <span class="changelog-text">【修复】视频封面无法显示<br>【优化】自动部署到GitHub Pages<br>封面终于能看到了！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">7月30日 19:58</span>
-                            <span class="changelog-text">【新增】GitHub Actions自动部署<br>推代码就自动上线，省心省力！</span>
-                        </div>
-                        <div class="changelog-item">
-                            <span class="changelog-version">7月30日 18:31</span>
-                            <span class="changelog-text">【新增】暖阳主站上线<br>【新增】Airbnb风格适老化设计、随机展示与无限滚动、个性化推荐、深色模式、5档字号、设置中心<br>暖阳的第一缕阳光，照进来了！</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="settings-row">
-                    <div class="settings-row-label">
-                        <span class="settings-row-name">展示页</span>
-                        <span class="settings-row-desc">了解暖阳项目，体验多设备效果</span>
-                    </div>
-                    <a href="showcase.html" target="_blank" class="settings-action-btn" style="text-decoration:none;">查看</a>
-                </div>
-                <div class="settings-row">
-                    <div class="settings-row-label">
-                        <span class="settings-row-name">视频来源</span>
-                        <span class="settings-row-desc">精选B站优质UP主内容</span>
-                    </div>
-                </div>
-                <div class="settings-row settings-row-column">
-                    <div class="settings-row-label">
-                        <span class="settings-row-name">法律协议</span>
-                        <span class="settings-row-desc">使用本项目，即表示您同意以下全部协议</span>
-                    </div>
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
-                        <a href="legal.html" target="_blank" style="padding: 4px 12px; background: #f5f5f5; border-radius: 6px; font-size: 13px; color: #FF6B35; text-decoration: none;">免责声明</a>
-                        <a href="legal.html#user" target="_blank" style="padding: 4px 12px; background: #f5f5f5; border-radius: 6px; font-size: 13px; color: #FF6B35; text-decoration: none;">用户协议</a>
-                        <a href="legal.html#privacy" target="_blank" style="padding: 4px 12px; background: #f5f5f5; border-radius: 6px; font-size: 13px; color: #FF6B35; text-decoration: none;">隐私协议</a>
-                        <a href="legal.html#mit" target="_blank" style="padding: 4px 12px; background: #f5f5f5; border-radius: 6px; font-size: 13px; color: #FF6B35; text-decoration: none;">MIT开源协议</a>
-                    </div>
-                    <p class="settings-hint" style="margin-top: 8px;">使用本项目，即表示您同意《免责声明》《用户协议》《隐私协议》《MIT开源协议》</p>
-                </div>
-            </div>
+                
         </div>
     </aside>
 
@@ -443,13 +288,290 @@
     <!-- Toast 提示 -->
     <div class="toast" id="toast"></div>
 
-    <script src="js/app.js?v=18"></script>
+    <script src="js/app.js?v=19"></script>
     <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js?v=18').catch(function(){});
+            navigator.serviceWorker.register('/sw.js?v=19').catch(function(){});
         });
     }
     </script>
+
+<!-- 更新日志弹窗 -->
+<div class="changelog-modal-overlay" id="changelogModalOverlay">
+    <div class="changelog-modal">
+        <div class="changelog-modal-header">
+            <h3>更新日志</h3>
+            <button class="changelog-modal-close" id="changelogModalClose" aria-label="关闭">&times;</button>
+        </div>
+        <div class="changelog-modal-body">
+
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">8月2日 21:15</div>
+                <div class="changelog-entry-content">
+                    <p>【优化】液态玻璃高光改为控件边缘发光（CSS box-shadow inset），替代贴图方式</p>
+                    <p>【优化】SVG filter精简：移除specular贴图原语（10步→4步），性能提升</p>
+                    <p>【优化】液态玻璃背景改为纯黑，去除蓝色渐变背景</p>
+                    <p>【优化】更新日志改为独立弹窗，每条日志纵向排列</p>
+                    <p>【修复】液态玻璃卡片蓝色底图问题（原渐变背景透过半透明卡片）</p>
+                    <p class="changelog-entry-tail">液态玻璃，更加干净利落！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">8月2日 20:10</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】液态玻璃无级调节滑动条：毛玻璃←液态玻璃→清透</p>
+                    <p>【优化】毛玻璃整合到液态玻璃，统一为一种皮肤</p>
+                    <p>【优化】液态玻璃回滚性能优化，恢复完整折射效果</p>
+                    <p>【修复】每日摘要无法持久开启</p>
+                    <p>【修复】移除液态玻璃错位高光</p>
+                    <p>液态玻璃，由你掌控！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">8月2日 19:49</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】"经典回忆"拟物化主题：皮革纹理、纸张质感、立体按钮、缝线边框</p>
+                    <p>【新增】液态玻璃全面覆盖：滑动条、开关、分类按钮、播放器等全部UI元素</p>
+                    <p>【优化】字号选择改为滑动条，操作更直观</p>
+                    <p>【优化】液态玻璃折射效果修复错位高光</p>
+                    <p>暖阳的衣橱更丰富了！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">8月2日 18:00</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】外观设置功能，5种皮肤可选：直觉记忆·跟随系统/白日/黑夜、毛玻璃、液态玻璃</p>
+                    <p>【新增】皮肤选择浮窗，带预览缩略图</p>
+                    <p>【优化】深色模式升级为完整主题系统，支持跟随系统自动切换</p>
+                    <p>暖阳换上新衣裳了！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">8月2日 17:00</div>
+                <div class="changelog-entry-content">
+                    <p>【优化】搜索升级为模糊匹配，如"科普"能匹配到"科学普及"</p>
+                    <p>【修复】搜索结果不再显示推荐标签</p>
+                    <p>【修复】"已到底"提示独占一行居中，不再与视频卡片同行</p>
+                    <p>搜索更聪明了！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">8月2日 16:40</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】播放器显示视频发布时间</p>
+                    <p>【新增】多窗口设置同步，不同标签页设置实时同步</p>
+                    <p>【优化】每日摘要独立页面，继承主页多列网格布局</p>
+                    <p>【优化】今日推荐考虑分类偏好，不再只按播放量回退</p>
+                    <p>【优化】展示页PPT图片压缩(27MB→4.2MB)，保留透明通道</p>
+                    <p>【修复】后端P0-P2全部Bug：续爬数据重置、状态恢复读空、is_running僵死等</p>
+                    <p>【修复】每日摘要无内容、反复刷新、header按钮未隐藏</p>
+                    <p>【修复】不偏好分类的视频不再带推荐标</p>
+                    <p>【修复】搜索时隐藏今日推荐、防止重复添加已到底提示</p>
+                    <p>一下午修了十几个Bug，暖阳越来越稳了！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">8月2日 15:30</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】每日摘要功能：暖阳祝语、收藏UP主今日更新、今日推荐、央视推荐，在设置中手动开启</p>
+                    <p>【修复】控制台日志超过300条后不再更新的严重Bug</p>
+                    <p>【修复】视频展示完毕后重复渲染卡片、置顶推荐封面占位符转义错误、XSS安全防护、事件监听器累积、自动检查更新无限递归</p>
+                    <p>今天修了一堆Bug，还加了每日摘要！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">8月2日 00:10</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】视频收藏功能，播放器中点击收藏喜欢的视频</p>
+                    <p>【新增】“我的收藏”分类，一键查看所有收藏的视频</p>
+                    <p>【优化】个性化推荐中收藏过的视频权重增加，被收藏视频的UP主与分类亦微量提升</p>
+                    <p>收藏夹住的好视频，暖阳替你记着！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">8月1日 22:50</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】设置面板更新日志，点击展开查看</p>
+                    <p>【优化】版本号改为显示最近更新时间</p>
+                    <p>【修复】关于区域内容丢失</p>
+                    <p>更新日志终于能看了，折腾了一圈！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">8月1日 22:40</div>
+                <div class="changelog-entry-content">
+                    <p>【修复】部分视频封面显示不完全</p>
+                    <p>封面终于完整了，强迫症舒服了！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">8月1日 22:34</div>
+                <div class="changelog-entry-content">
+                    <p>【修复】未开启个性化推荐时视频数多的UP主刷屏</p>
+                    <p>每个UP都有均等出场机会了！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">8月1日 22:33</div>
+                <div class="changelog-entry-content">
+                    <p>【优化】推荐算法权重平衡，防止热门UP形成马太效应</p>
+                    <p>小众UP也有春天了！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">8月1日 22:28</div>
+                <div class="changelog-entry-content">
+                    <p>【优化】去掉视频卡片多余标签，UP主名完整显示</p>
+                    <p>【修复】每日推荐卡片圆角、分类栏下滑显示不完整、刷新按钮只读缓存不重新获取、大屏设备只能显示一列、鼠标无法滑动分类栏</p>
+                    <p>一口气修了七个Bug，今晚效率拉满！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">8月1日 22:10</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】展示页LOGO底图、左下角悬浮进入主站按钮、展示页字号和深色模式设置</p>
+                    <p>【优化】机型名称修正、屏幕区域精确贴合</p>
+                    <p>【修复】MatePad Mini和MatePad Edge名称标注错误</p>
+                    <p>展示页越来越像样了！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">8月1日 21:58</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】暖阳展示页，6台华为设备模拟试玩，支持首页/播放页/搜索页切换</p>
+                    <p>从设置-关于-展示页进入，来看看暖阳长什么样！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">7月31日 14:28</div>
+                <div class="changelog-entry-content">
+                    <p>【修复】爬虫停止后无法重新启动的问题</p>
+                    <p>停止信号改为时间戳机制，彻底告别残留文件！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">7月31日 14:10</div>
+                <div class="changelog-entry-content">
+                    <p>【优化】普通模式设置面板与工作流参数对齐，新增总量上限、UP间隔、翻页间隔等设置</p>
+                    <p>两边的设置终于统一了！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">7月31日 14:02</div>
+                <div class="changelog-entry-content">
+                    <p>【优化】播放器更稳定，不会意外跳转走</p>
+                    <p>安心看视频，不会被带跑了！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">7月31日 13:56</div>
+                <div class="changelog-entry-content">
+                    <p>【修复】移动端缓存导致视频内容无法更新的严重问题</p>
+                    <p>【新增】每5分钟自动检查视频更新</p>
+                    <p>缓存问题彻底解决了，移动端也能看到最新视频！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">7月31日 12:39</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】爬虫控制台工作流功能，可视化拖拽节点编排爬取流程</p>
+                    <p>流程图画起来真上头！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">7月31日 12:16</div>
+                <div class="changelog-entry-content">
+                    <p>【优化】搜索框移到分类标签前面，更符合使用习惯</p>
+                    <p>搜索优先，想看什么先搜！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">7月31日 12:13</div>
+                <div class="changelog-entry-content">
+                    <p>【修复】缓存导致搜索框不显示</p>
+                    <p>搜索框终于回来了！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">7月31日 12:00</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】视频搜索功能，可搜索视频标题和UP主</p>
+                    <p>【新增】3秒观看门槛，防止误触</p>
+                    <p>【新增】隐私提示弹窗</p>
+                    <p>想看什么搜什么，隐私也护住了！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">7月31日 09:38</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】法律协议（免责声明、用户协议、隐私协议、MIT开源协议）</p>
+                    <p>【新增】设置面板显示同意条款</p>
+                    <p>守法好公民，协议先说清！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">7月31日 08:03</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】20个适老化UP主（共38个），10种新分类（共35种）</p>
+                    <p>内容更丰富了，爷爷奶奶的选择更多了！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">7月30日 22:52</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】每天自动检测视频更新并通知</p>
+                    <p>不用手动刷新了，有新视频自动告诉你！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">7月30日 22:20</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】每日推荐置顶、视频总数上限800条</p>
+                    <p>每天有好视频等着你！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">7月30日 22:13</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】17个知识性UP主、25种板块分类、多分类支持</p>
+                    <p>从零开始选内容，每一类都精心挑选！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">7月30日 21:38</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】PWA支持，可安装到手机桌面</p>
+                    <p>【新增】多尺寸应用图标</p>
+                    <p>装到桌面上，像App一样打开！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">7月30日 20:58</div>
+                <div class="changelog-entry-content">
+                    <p>【修复】视频封面无法显示</p>
+                    <p>【优化】自动部署到GitHub Pages</p>
+                    <p>封面终于能看到了！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">7月30日 19:58</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】GitHub Actions自动部署</p>
+                    <p>推代码就自动上线，省心省力！</p>
+                </div>
+            </div>
+            <div class="changelog-entry">
+                <div class="changelog-entry-date">7月30日 18:31</div>
+                <div class="changelog-entry-content">
+                    <p>【新增】暖阳主站上线</p>
+                    <p>【新增】Airbnb风格适老化设计、随机展示与无限滚动、个性化推荐、深色模式、5档字号、设置中心</p>
+                    <p>暖阳的第一缕阳光，照进来了！</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

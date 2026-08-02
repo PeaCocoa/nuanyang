@@ -997,8 +997,7 @@ body[data-theme="liquid"][data-color-scheme="dark"] .range-slider::-webkit-slide
 }
 
 .changelog-item {
-    display: flex;
-    gap: var(--space-3);
+    display: block;
     padding: var(--space-2) 0;
     border-bottom: 1px solid var(--hairline);
     font-size: var(--font-small);
@@ -1010,30 +1009,21 @@ body[data-theme="liquid"][data-color-scheme="dark"] .range-slider::-webkit-slide
 }
 
 .changelog-version {
-    flex-shrink: 0;
+    display: block;
     color: var(--rausch);
     font-weight: 600;
-    width: 100px;
+    margin-bottom: var(--space-1);
 }
 
 .changelog-text {
+    display: block;
     color: var(--ash);
-    flex: 1;
 }
 
 body.dark .changelog-item {
     border-color: var(--hairline);
 }
 
-/* === 更新日志展开 === */
-.changelog-wrap {
-    overflow: hidden;
-    max-height: 0;
-    transition: max-height 0.3s ease;
-}
-.changelog-wrap.show {
-    max-height: 500px;
-}
 #changelogArrow.rotated {
     transform: rotate(90deg);
 }
@@ -2769,4 +2759,102 @@ body[data-theme="classic"] .settings-panel::-webkit-scrollbar-thumb {
     cursor: pointer;
     border: 1px solid rgba(255, 255, 255, 0.6);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* === 更新日志弹窗 === */
+.changelog-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 5vh 16px;
+    -webkit-overflow-scrolling: touch;
+}
+.changelog-modal-overlay.show { display: flex; }
+.changelog-modal {
+    background: var(--bg-elevated, #fff);
+    border-radius: var(--radius-lg, 16px);
+    max-width: 560px;
+    width: 100%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+.changelog-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-4, 16px);
+    border-bottom: 1px solid var(--hairline, rgba(0,0,0,0.06));
+    flex-shrink: 0;
+}
+.changelog-modal-header h3 {
+    margin: 0;
+    font-size: var(--font-lg, 18px);
+    font-weight: 700;
+    color: var(--text, #222);
+}
+.changelog-modal-close {
+    background: none; border: none;
+    font-size: 28px; line-height: 1;
+    color: var(--mute, #999);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+.changelog-modal-close:hover { background: rgba(0,0,0,0.06); }
+.changelog-modal-close:active { background: rgba(0,0,0,0.12); }
+.changelog-modal-body {
+    overflow-y: auto;
+    padding: var(--space-3, 12px) var(--space-4, 16px);
+    -webkit-overflow-scrolling: touch;
+}
+.changelog-entry {
+    padding: var(--space-3, 12px) 0;
+    border-bottom: 1px solid var(--hairline, rgba(0,0,0,0.06));
+}
+.changelog-entry:last-child { border-bottom: none; }
+.changelog-entry-date {
+    color: var(--rausch, #E07619);
+    font-weight: 600;
+    font-size: var(--font-small, 14px);
+    margin-bottom: var(--space-2, 8px);
+}
+.changelog-entry-content {
+    color: var(--ash, #6A6A6A);
+    font-size: var(--font-small, 14px);
+    line-height: 1.7;
+}
+.changelog-entry-content p { margin: 0 0 6px 0; }
+.changelog-entry-content p:last-child { margin-bottom: 0; }
+.changelog-entry-tail {
+    color: var(--rausch, #E07619) !important;
+    font-style: italic;
+    margin-top: 8px !important;
+}
+/* dark */
+body.dark .changelog-modal { background: var(--bg-elevated, #1c1c1e); }
+body.dark .changelog-modal-close:hover { background: rgba(255,255,255,0.1); }
+/* liquid */
+body[data-theme="liquid"] .changelog-modal {
+    backdrop-filter: blur(40px) saturate(120%);
+    -webkit-backdrop-filter: blur(40px) saturate(120%);
+    background: rgba(30, 30, 30, 0.85);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+body[data-theme="liquid"] .changelog-modal-header h3 { color: rgba(255,255,255,0.95); }
+body[data-theme="liquid"] .changelog-modal-close { color: rgba(255,255,255,0.5); }
+body[data-theme="liquid"] .changelog-modal-close:hover { background: rgba(255,255,255,0.08); }
+body[data-theme="liquid"] .changelog-entry-content { color: rgba(255,255,255,0.6); }
+body[data-theme="liquid"] .changelog-entry { border-bottom-color: rgba(255,255,255,0.06); }
+/* classic */
+body[data-theme="classic"] .changelog-modal {
+    background: var(--paper, #f5ecd9);
+    border: 2px solid var(--leather, #8B6914);
 }
