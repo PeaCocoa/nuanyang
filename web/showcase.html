@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="暖阳展示">
     <link rel="icon" href="favicon.png" type="image/png">
-    <title>关于暖阳</title>
+    <title>Hi，我是暖阳</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/showcase.css">
 </head>
@@ -16,7 +16,7 @@
 
     <!-- 顶栏 -->
     <header class="showcase-header">
-        <h1 class="showcase-title">关于暖阳</h1>
+        <h1 class="showcase-title">Hi，我是暖阳</h1>
         <button class="showcase-settings-btn" id="showcaseSettingsBtn" aria-label="显示设置">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3"/>
@@ -25,7 +25,7 @@
         </button>
     </header>
 
-    <!-- 介绍区 -->
+    <!-- 介绍区：封面 -->
     <section class="showcase-intro">
         <div class="intro-logo-bg">
             <img src="icons/icon-512.png" alt="暖阳LOGO">
@@ -34,16 +34,96 @@
             <h2 class="intro-name">暖阳</h2>
             <p class="intro-slogan">精选好视频，温暖每一天</p>
             <p class="intro-desc">
-                暖阳是一个公益开源项目，为老年人精选B站优质短视频内容。<br>
-                我们相信，科技的温度在于让每个人都能轻松获取有价值的信息与陪伴。
+                暖阳是一个公益开源的第三方 B 站，更适合中老年人的喜好。<br>
+                零成本、无服务器、无广告，简洁纯粹。
             </p>
             <div class="intro-tags">
                 <span class="intro-tag">零成本</span>
                 <span class="intro-tag">无服务器</span>
-                <span class="intro-tag">PWA</span>
                 <span class="intro-tag">开源 MIT</span>
                 <span class="intro-tag">适老化设计</span>
             </div>
+        </div>
+    </section>
+
+    <!-- 特性1：适老化设计 -->
+    <section class="feature-section feature-alt">
+        <div class="feature-content">
+            <h3 class="feature-title">大字号，看着安心</h3>
+            <p class="feature-desc">五档可调字号，适老化设计。界面简洁，无广告，零负担。让长辈用得舒心，看得清楚。</p>
+        </div>
+        <div class="feature-image">
+            <img src="assets/ppt_slides/slide2_img2.png" alt="大字号设计" loading="lazy">
+        </div>
+    </section>
+
+    <!-- 特性2：多设备适配 -->
+    <section class="feature-section">
+        <div class="feature-image">
+            <img src="assets/ppt_slides/slide4_img2.png" alt="多设备适配" loading="lazy">
+        </div>
+        <div class="feature-content">
+            <h3 class="feature-title">多设备适配</h3>
+            <p class="feature-desc">手机、平板、电脑、电视、折叠屏……你想看的，随时开始。自动适配屏幕，无需手动调整。</p>
+        </div>
+    </section>
+
+    <!-- 特性3：折叠屏 -->
+    <section class="feature-section feature-alt">
+        <div class="feature-content">
+            <h3 class="feature-title">大屏大能力</h3>
+            <p class="feature-desc">就算最难适配的折叠屏，对暖阳也是轻松化简。三折叠，怎么折，都有面。</p>
+        </div>
+        <div class="feature-image">
+            <img src="assets/ppt_slides/slide5_img2.png" alt="折叠屏适配" loading="lazy">
+        </div>
+    </section>
+
+    <!-- 特性4：多端如一 -->
+    <section class="feature-section">
+        <div class="feature-image">
+            <img src="assets/ppt_slides/slide8_img6.png" alt="多端如一" loading="lazy">
+        </div>
+        <div class="feature-content">
+            <h3 class="feature-title">多端如一，体验一致</h3>
+            <p class="feature-desc">无论是大视界，还是小有心，体验如一，操作方式一致。绝不因设备大小而尴尬。</p>
+        </div>
+    </section>
+
+    <!-- 特性5：视频内容 -->
+    <section class="feature-section feature-alt">
+        <div class="feature-content">
+            <h3 class="feature-title">超多优质视频</h3>
+            <p class="feature-desc">超 1000 条优质视频，超 30 个优质 UP 主，超 10 种精选分类，只为您的休闲时光。</p>
+            <div class="feature-stats">
+                <div class="stat-item">
+                    <span class="stat-num">1000+</span>
+                    <span class="stat-label">优质视频</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-num">30+</span>
+                    <span class="stat-label">优质UP主</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-num">10+</span>
+                    <span class="stat-label">精选分类</span>
+                </div>
+            </div>
+        </div>
+        <div class="feature-image">
+            <img src="assets/ppt_slides/slide11_img2.png" alt="视频内容展示" loading="lazy">
+        </div>
+    </section>
+
+    <!-- 特性6：个性化推荐 -->
+    <section class="feature-section">
+        <div class="feature-image">
+            <img src="assets/ppt_slides/slide11_img3.png" alt="个性化推荐" loading="lazy">
+        </div>
+        <div class="feature-content">
+            <h3 class="feature-title">个性化推荐，安全又容易</h3>
+            <p class="feature-desc">每日推荐、个性化推荐、你的收藏，还随机推荐其他风格视频，打破信息茧房。</p>
+            <p class="feature-desc feature-desc-sub">本地算法，本地储存，数据不上云，信息更安全。</p>
         </div>
     </section>
 
@@ -76,9 +156,18 @@
         <div class="device-info" id="deviceInfo"></div>
     </section>
 
+    <!-- 访问地址 -->
+    <section class="showcase-access">
+        <h3 class="access-heading">这就是暖阳</h3>
+        <p class="access-slogan">精选好视频，温暖每一天</p>
+        <a href="index.html" class="access-btn">立即体验</a>
+        <p class="access-url">peacocoa.github.io</p>
+    </section>
+
     <!-- 底部 -->
     <footer class="showcase-footer">
         <p>暖阳 · 公益开源项目 · MIT 协议</p>
+        <p class="footer-note">部分效果需打开特定设置，图片仅展示可能效果</p>
     </footer>
 
     <!-- 悬浮进入主站按钮 -->

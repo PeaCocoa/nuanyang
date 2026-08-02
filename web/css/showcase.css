@@ -115,6 +115,133 @@
     font-weight: 500;
 }
 
+/* === 特性区块 === */
+.feature-section {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8);
+    padding: var(--space-10) var(--space-6);
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.feature-section.feature-alt {
+    background: var(--cloud);
+    flex-direction: row;
+}
+
+.feature-section:not(.feature-alt) {
+    flex-direction: row-reverse;
+}
+
+.feature-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.feature-title {
+    font-size: var(--font-title);
+    font-weight: 800;
+    color: var(--ink);
+    margin: 0 0 var(--space-3);
+}
+
+.feature-desc {
+    font-size: var(--font-body);
+    color: var(--ash);
+    line-height: 1.7;
+    margin: 0 0 var(--space-2);
+}
+
+.feature-desc-sub {
+    color: var(--mute);
+    font-size: var(--font-small);
+}
+
+.feature-image {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+}
+
+.feature-image img {
+    max-width: 100%;
+    width: 100%;
+    max-height: 360px;
+    object-fit: contain;
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* 统计数据 */
+.feature-stats {
+    display: flex;
+    gap: var(--space-6);
+    margin-top: var(--space-5);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-num {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--rausch);
+}
+
+.stat-label {
+    font-size: var(--font-small);
+    color: var(--ash);
+    margin-top: var(--space-1);
+}
+
+/* === 访问地址区 === */
+.showcase-access {
+    background: var(--canvas);
+    padding: var(--space-12) var(--space-6);
+    text-align: center;
+}
+
+.access-heading {
+    font-size: var(--font-title);
+    font-weight: 800;
+    color: var(--ink);
+    margin: 0 0 var(--space-3);
+}
+
+.access-slogan {
+    font-size: var(--font-large);
+    color: var(--charcoal);
+    margin: 0 0 var(--space-6);
+}
+
+.access-btn {
+    display: inline-block;
+    padding: var(--space-3) var(--space-8);
+    background: var(--rausch);
+    color: #fff;
+    font-size: var(--font-large);
+    font-weight: 700;
+    border-radius: var(--radius-pill);
+    text-decoration: none;
+    transition: all 0.25s;
+    box-shadow: 0 4px 16px rgba(255, 56, 92, 0.3);
+}
+
+.access-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(255, 56, 92, 0.4);
+}
+
+.access-url {
+    font-size: var(--font-small);
+    color: var(--mute);
+    margin: var(--space-4) 0 0;
+}
+
 /* === 试玩区 === */
 .showcase-demo {
     background: var(--cloud);
@@ -317,6 +444,12 @@
     margin: 0;
 }
 
+.footer-note {
+    margin-top: var(--space-2) !important;
+    font-size: var(--font-micro) !important;
+    opacity: 0.7;
+}
+
 /* === 悬浮进入主站按钮 === */
 .floating-home-btn {
     position: fixed;
@@ -393,6 +526,33 @@
 
     .intro-name {
         font-size: 28px;
+    }
+
+    /* 特性区块在移动端改为纵向排列 */
+    .feature-section,
+    .feature-section.feature-alt,
+    .feature-section:not(.feature-alt) {
+        flex-direction: column;
+        gap: var(--space-5);
+        padding: var(--space-8) var(--space-4);
+    }
+
+    .feature-image {
+        order: -1;
+        width: 100%;
+    }
+
+    .feature-image img {
+        max-height: 280px;
+    }
+
+    .feature-stats {
+        justify-content: center;
+        gap: var(--space-4);
+    }
+
+    .stat-num {
+        font-size: 22px;
     }
 
     .device-thumb {

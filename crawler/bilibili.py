@@ -63,36 +63,50 @@ async (bvid) => {
 }
 """
 
-# JavaScript：通过UID获取UP主视频列表（不需要WBI签名）
-JS_SPACE_VIDEOS = """
-async (args) => {
-    const url = 'https://api.bilibili.com/x/space/arc/search?mid=' + args.mid +
-        '&pn=' + args.pn + '&ps=30&order=pubdate';
-    const resp = await fetch(url);
+# JavaScript：通过URL fetch获取视频列表（URL由Python端构建含wbi签名）
+JS_FETCH_VIDEOS = r"""
+async (url) => {
+    const resp = await fetch(url, {credentials: 'include'});
     const data = await resp.json();
     if (data.code === 0 && data.data && data.data.list && data.data.list.vlist) {
         return data.data.list.vlist.map(function(v) {
-            return {
-                bvid: v.bvid,
-                title: v.title,
-                author: v.author,
-                duration: v.length,
-                play: v.play,
-                pubdate: v.created,
-                pic: v.pic,
-            };
+            return {bvid: v.bvid, title: v.title, author: v.author, duration: v.length, play: v.play, pubdate: v.created, pic: v.pic};
         });
     }
     return [];
 }
 """
 
+# JavaScript：获取nav API返回的wbi密钥（从页面上下文）
+JS_GET_WBI_KEYS = r"""
+async () => {
+    try {
+        const resp = await fetch('https://api.bilibili.com/x/web-interface/nav', {credentials: 'include'});
+        const data = await resp.json();
+        if (data.code === 0 && data.data && data.data.wbi_img) {
+            return {
+                imgKey: data.data.wbi_img.img_url.split('/').pop().split('.')[0],
+                subKey: data.data.wbi_img.sub_url.split('/').pop().split('.')[0]
+            };
+        }
+    } catch(e) {}
+    return null;
+}
+"""
+
 # JavaScript：检查登录状态
+# B站nav API在非headless也可能返回-101，但Cookie实际有效
+# 通过尝试访问空间API判断：-799(频繁)和-352(风控)都说明Cookie被识别
 JS_CHECK_LOGIN = """
 async () => {
-    const resp = await fetch('https://api.bilibili.com/x/web-interface/nav');
-    const data = await resp.json();
-    return data.code === 0 && data.data && data.data.isLogin;
+    try {
+        const resp = await fetch('https://api.bilibili.com/x/space/arc/search?mid=254463269&pn=1&ps=1&order=pubdate');
+        const data = await resp.json();
+        // 0=成功, -799=请求频繁, -352=风控校验 → 都说明Cookie有效
+        return data.code === 0 || data.code === -799 || data.code === -352;
+    } catch(e) {
+        return false;
+    }
 }
 """
 
@@ -112,13 +126,14 @@ class BiliCrawler:
         self.page: Page = None
 
     def start(self):
-        """启动浏览器，加载已保存的登录状态"""
+        """启动浏览器，加载已保存的登录状态
+        
+        注意：B站在headless模式下会拒绝识别登录态（nav返回-101），
+        因此始终使用非headless模式运行。浏览器窗口会最小化以减少干扰。
+        """
         self.playwright = sync_playwright().start()
         os.makedirs(AUTH_DIR, exist_ok=True)
 
-        # 始终用持久化上下文启动（Cookie会自动保存）
-        # 使用 args 绕过 sandbox 权限问题
-        # --remote-debugging-port 替代默认的 pipe，避免子进程管道通信问题
         launch_args = [
             "--no-sandbox",
             "--disable-dev-shm-usage",
@@ -126,58 +141,27 @@ class BiliCrawler:
             "--disable-extensions",
             "--remote-debugging-port=0",
         ]
+        # 始终用非headless模式，B站headless模式不识别登录态
         self.context = self.playwright.chromium.launch_persistent_context(
             user_data_dir=AUTH_DIR,
-            headless=self.headless,
+            headless=False,
             viewport={"width": 1280, "height": 800},
             locale="zh-CN",
             args=launch_args,
         )
         self.page = self.context.pages[0] if self.context.pages else self.context.new_page()
 
-        # 先导航到B站，再检查登录状态
+        # 导航到B站，检查登录状态
         self.page.goto("https://www.bilibili.com", wait_until="domcontentloaded")
         time.sleep(2)
 
         if self.is_logged_in():
             print("[INFO] 登录状态有效")
-            if not self.headless:
-                # 已登录，切换到无头模式（关掉浏览器窗口）
-                self.context.close()
-                self.context = self.playwright.chromium.launch_persistent_context(
-                    user_data_dir=AUTH_DIR,
-                    headless=True,
-                    viewport={"width": 1280, "height": 800},
-                    locale="zh-CN",
-                    args=launch_args,
-                )
-                self.page = self.context.pages[0] if self.context.pages else self.context.new_page()
-                self.page.goto("https://www.bilibili.com", wait_until="domcontentloaded")
-                time.sleep(1)
         else:
-            # 未登录，需要弹出浏览器让用户扫码
+            # 未登录，需要扫码
             print("[INFO] 未登录，需要扫码登录B站...")
-            self.context.close()
-            self.context = self.playwright.chromium.launch_persistent_context(
-                user_data_dir=AUTH_DIR,
-                headless=False,
-                viewport={"width": 1280, "height": 800},
-                locale="zh-CN",
-                args=launch_args,
-            )
-            self.page = self.context.pages[0] if self.context.pages else self.context.new_page()
             self._login()
-            # 登录成功后，切换到无头模式（关掉浏览器窗口）
-            self.context.close()
-            self.context = self.playwright.chromium.launch_persistent_context(
-                user_data_dir=AUTH_DIR,
-                headless=True,
-                viewport={"width": 1280, "height": 800},
-                locale="zh-CN",
-                args=launch_args,
-            )
-            self.page = self.context.pages[0] if self.context.pages else self.context.new_page()
-            self.page.goto("https://www.bilibili.com", wait_until="domcontentloaded")
+            # 登录后保持非headless模式，不切换
             time.sleep(1)
 
     def _login(self):
@@ -267,11 +251,9 @@ class BiliCrawler:
 
     def get_up_videos(self, mid: str, page: int = 1) -> list:
         """
-        通过访问UP主空间页面，拦截页面自身的wbi API响应获取视频列表
-        页面浏览走正常wbi签名，不会触发API风控
-        
-        使用 domcontentloaded + 显式等待API响应，避免 networkidle 超时
-        含3次重试机制，覆盖页面加载慢/网络波动场景
+        通过导航到B站空间页，拦截页面自身的wbi签名API响应获取视频列表
+        页面浏览走完整wbi签名（包含所有必要参数），不会触发风控
+        含3次重试机制
         """
         max_retries = 3
         for attempt in range(max_retries):
@@ -280,7 +262,7 @@ class BiliCrawler:
 
             def _on_response(resp):
                 nonlocal api_received
-                if 'arc/search' in resp.url:
+                if 'arc/search' in resp.url and 'wbi' in resp.url:
                     try:
                         data = resp.json()
                         if data.get('code') == 0 and data.get('data', {}).get('list', {}).get('vlist'):
@@ -293,17 +275,12 @@ class BiliCrawler:
 
             try:
                 url = f"https://space.bilibili.com/{mid}/video?pn={page}&ps=30&order=pubdate"
-                # 用 domcontentloaded 代替 networkidle，避免B站页面持续网络活动导致超时
-                self.page.goto(url, wait_until='domcontentloaded', timeout=20000)
-                # 等待API响应到达（最多等15秒）
-                for _ in range(30):
-                    if api_received:
-                        break
-                    time.sleep(0.5)
+                self.page.goto(url, wait_until='networkidle', timeout=60000)
+                # 多等2秒确保response处理完成
+                time.sleep(2)
                 
                 if api_received and captured:
                     break
-                # 如果没收到数据，等2秒再重试
                 if attempt < max_retries - 1:
                     print(f"  [WARN] 第{page}页未捕获到数据，重试({attempt+1}/{max_retries})...")
                     time.sleep(3)
@@ -331,23 +308,6 @@ class BiliCrawler:
                 'pic': v.get('pic', ''),
             })
         return result
-
-    def get_video_info(self, bvid: str) -> dict:
-        """
-        获取单个视频详细信息（浏览器内fetch）
-
-        Args:
-            bvid: 视频 BV 号
-
-        Returns:
-            {bvid, title, pic, duration, pubdate, view, like, up_name}
-        """
-        try:
-            result = self.page.evaluate(JS_VIEW, bvid)
-            return result
-        except Exception as e:
-            print(f"  [ERROR] 获取视频详情失败 {bvid}: {e}")
-            return None
 
     def close(self):
         """关闭浏览器，保存登录状态"""
