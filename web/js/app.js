@@ -461,16 +461,19 @@ function selectVideos(pool, count) {
         const weighted = unviewed.map(v => {
             const cats = getVideoCategories(v);
             const catScore = cats.length > 0
-                ? Math.max(...cats.map(c => catAffinity[c] || 0.1))
-                : 0.1;
+                ? Math.max(...cats.map(c => catAffinity[c] || 0))
+                : 0;
             // sqrt 平滑：降低高亲和度UP的权重优势，让其他UP也有曝光机会
-            const upScore = Math.sqrt(upAffinity[v.up_name] || 0.01);
-            let weight = 0.4 * catScore + 0.3 * upScore + 0.3;
+            const upScore = Math.sqrt(upAffinity[v.up_name] || 0);
+            let weight = 0.5 * catScore + 0.3 * upScore + 0.05;
             // 收藏过的视频权重增加
             if (favorites[v.bvid]) weight *= 1.5;
+            // 记录是否匹配用户偏好（用于决定是否标推荐）
+            const matchesPreference = catScore > 0 || upScore > 0;
             return {
                 video: v,
                 weight: weight,
+                matchesPreference: matchesPreference,
             };
         });
         let totalWeight = weighted.reduce((s, w) => s + w.weight, 0);
@@ -480,7 +483,7 @@ function selectVideos(pool, count) {
             for (let j = 0; j < weighted.length; j++) {
                 r -= weighted[j].weight;
                 if (r <= 0) {
-                    result.push({ ...weighted[j].video, recommended: true });
+                    result.push({ ...weighted[j].video, recommended: weighted[j].matchesPreference });
                     totalWeight -= weighted[j].weight;
                     weighted.splice(j, 1);
                     break;
@@ -491,7 +494,15 @@ function selectVideos(pool, count) {
         // 不足部分从已看过的中补充，也标记为推荐
         const shuffled = viewed.sort(() => Math.random() - 0.5);
         for (let i = 0; i < revisitCount && i < shuffled.length; i++) {
-            result.push({ ...shuffled[i], recommended: true });
+            // 已看过的视频：只有匹配偏好才标推荐
+            const v = shuffled[i];
+            const cats = getVideoCategories(v);
+            const catScore = cats.length > 0
+                ? Math.max(...cats.map(c => catAffinity[c] || 0))
+                : 0;
+            const upScore = upAffinity[v.up_name] || 0;
+            const matchesPref = catScore > 0 || upScore > 0;
+            result.push({ ...v, recommended: matchesPref });
         }
 
         // 插入1个"发现"视频：从剩余池中随机选，不带推荐标签
