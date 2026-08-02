@@ -1344,12 +1344,15 @@ body[data-theme="frosted"][data-color-scheme="dark"] .skin-picker {
     background: rgba(26, 26, 26, 0.85);
 }
 
+
+
 /* ============================================
    皮肤 5：液态玻璃 (Liquid Glass)
-   UI 元素"浮"起来：通透、高光折射、漂浮投影
+   严格参考 https://liunian.js.org/posts/liquid-glass/ 源码
+   核心技术：SVG feDisplacementMap + backdrop-filter: url(#filter-id)
    ============================================ */
 
-/* --- 全局背景：渐变流光 --- */
+/* --- 全局背景：渐变流光（让折射效果可见） --- */
 body[data-theme="liquid"] {
     background: linear-gradient(135deg, #dce4f5 0%, #e8daf0 25%, #f0dce0 50%, #d8e8f0 75%, #dce4f5 100%);
     background-attachment: fixed;
@@ -1359,98 +1362,63 @@ body[data-theme="liquid"][data-color-scheme="dark"] {
     background-attachment: fixed;
 }
 
-/* --- 顶栏：浮动玻璃 --- */
+/* --- 顶栏：液态玻璃折射 --- */
 body[data-theme="liquid"] .header {
-    backdrop-filter: blur(40px) saturate(180%);
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
-    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: url("#searchbox-filter") blur(1px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(255, 255, 255, 0.5);
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 body[data-theme="liquid"][data-color-scheme="dark"] .header {
-    background: rgba(20, 20, 30, 0.45);
+    background: rgba(20, 20, 30, 0.5);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
 }
 
-/* 高光线条 */
-body[data-theme="liquid"] .header::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 10%;
-    right: 10%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-    pointer-events: none;
-}
-
-/* --- 分类栏：浮动玻璃 --- */
+/* --- 分类栏：液态玻璃折射 --- */
 body[data-theme="liquid"] .categories {
-    backdrop-filter: blur(36px) saturate(170%);
-    -webkit-backdrop-filter: blur(36px) saturate(170%);
-    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: url("#searchbox-filter") blur(1px) saturate(170%);
+    -webkit-backdrop-filter: blur(20px) saturate(170%);
+    background: rgba(255, 255, 255, 0.4);
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 body[data-theme="liquid"][data-color-scheme="dark"] .categories {
-    background: rgba(20, 20, 30, 0.35);
+    background: rgba(20, 20, 30, 0.4);
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* --- 视频卡片：浮动玻璃面板 --- */
+/* --- 视频卡片：液态玻璃折射（核心效果） --- */
 body[data-theme="liquid"] .video-card {
-    backdrop-filter: blur(20px) saturate(160%);
+    backdrop-filter: url("#thumb-filter") blur(0.2px) saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
-    background: rgba(255, 255, 255, 0.38);
+    background: rgba(255, 255, 255, 0.45);
     border-radius: var(--radius-lg);
     border: 1px solid rgba(255, 255, 255, 0.35);
     box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.06),
-        0 2px 8px rgba(0, 0, 0, 0.03),
-        inset 0 1px 1px rgba(255, 255, 255, 0.4);
+        0 4px 22px rgba(0, 0, 0, 0.1),
+        inset 0 2px 24px rgba(255, 255, 255, 0.2),
+        inset 0 -2px 24px rgba(0, 0, 0, 0.2);
     padding: var(--space-3);
     margin-bottom: var(--space-2);
     transition: transform 0.25s cubic-bezier(0.32, 0.72, 0, 1), box-shadow 0.25s ease;
+    position: relative;
 }
 body[data-theme="liquid"][data-color-scheme="dark"] .video-card {
-    background: rgba(30, 30, 40, 0.38);
+    background: rgba(30, 30, 40, 0.45);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow:
-        0 8px 32px rgba(0, 0, 0, 0.2),
-        0 2px 8px rgba(0, 0, 0, 0.1),
-        inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        0 4px 22px rgba(0, 0, 0, 0.2),
+        inset 0 2px 24px rgba(255, 255, 255, 0.05),
+        inset 0 -2px 24px rgba(0, 0, 0, 0.3);
 }
 
 body[data-theme="liquid"] .video-card:active {
     transform: scale(0.97);
-    box-shadow:
-        0 4px 16px rgba(0, 0, 0, 0.08),
-        0 1px 4px rgba(0, 0, 0, 0.04),
-        inset 0 1px 1px rgba(255, 255, 255, 0.3);
 }
 
-/* 卡片高光 */
-body[data-theme="liquid"] .video-card::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 15%;
-    right: 15%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-    pointer-events: none;
-    border-radius: var(--radius-lg);
-}
-
-/* --- 视频封面：玻璃边框 --- */
-body[data-theme="liquid"] .video-cover {
-    border-radius: var(--radius-md);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-}
-
-/* --- 设置面板：浮动玻璃 Sheet --- */
+/* --- 设置面板：液态玻璃折射 --- */
 body[data-theme="liquid"] .settings-panel {
-    backdrop-filter: blur(40px) saturate(180%);
+    backdrop-filter: url("#searchbox-filter") blur(1px) saturate(180%);
     -webkit-backdrop-filter: blur(40px) saturate(180%);
     background: rgba(255, 255, 255, 0.55);
     border-left: 1px solid rgba(255, 255, 255, 0.3);
@@ -1459,44 +1427,25 @@ body[data-theme="liquid"] .settings-panel {
 body[data-theme="liquid"][data-color-scheme="dark"] .settings-panel {
     background: rgba(20, 20, 30, 0.55);
     border-left: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: -8px 0 40px rgba(0, 0, 0, 0.25);
 }
 
-/* --- 设置行：玻璃分隔 --- */
-body[data-theme="liquid"] .settings-section + .settings-section {
-    border-top-color: rgba(255, 255, 255, 0.2);
-}
-body[data-theme="liquid"][data-color-scheme="dark"] .settings-section + .settings-section {
-    border-top-color: rgba(255, 255, 255, 0.06);
-}
-
-/* --- 按钮：玻璃药丸 --- */
+/* --- 按钮：液态玻璃药丸 --- */
 body[data-theme="liquid"] .header-btn {
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: url("#thumb-filter") saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
     background: rgba(255, 255, 255, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.35);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 body[data-theme="liquid"][data-color-scheme="dark"] .header-btn {
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-body[data-theme="liquid"] .font-option {
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    background: rgba(255, 255, 255, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-body[data-theme="liquid"][data-color-scheme="dark"] .font-option {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
+/* --- 搜索框：液态玻璃折射 --- */
 body[data-theme="liquid"] .search-box {
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: url("#searchbox-filter") saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
     background: rgba(255, 255, 255, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.35);
 }
@@ -1505,10 +1454,22 @@ body[data-theme="liquid"][data-color-scheme="dark"] .search-box {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* --- 底部：玻璃浮条 --- */
+/* --- 字号按钮：液态玻璃 --- */
+body[data-theme="liquid"] .font-option {
+    backdrop-filter: url("#thumb-filter") saturate(150%);
+    -webkit-backdrop-filter: blur(8px) saturate(150%);
+    background: rgba(255, 255, 255, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+body[data-theme="liquid"][data-color-scheme="dark"] .font-option {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* --- 底部：液态玻璃 --- */
 body[data-theme="liquid"] .footer {
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: url("#searchbox-filter") saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
     background: rgba(255, 255, 255, 0.35);
     border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -1517,9 +1478,9 @@ body[data-theme="liquid"][data-color-scheme="dark"] .footer {
     border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* --- 皮肤选择器：浮动玻璃 --- */
+/* --- 皮肤选择器：液态玻璃 --- */
 body[data-theme="liquid"] .skin-picker {
-    backdrop-filter: blur(40px) saturate(180%);
+    backdrop-filter: url("#searchbox-filter") blur(1px) saturate(180%);
     -webkit-backdrop-filter: blur(40px) saturate(180%);
     background: rgba(255, 255, 255, 0.55);
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -1530,46 +1491,43 @@ body[data-theme="liquid"][data-color-scheme="dark"] .skin-picker {
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* --- Toast：玻璃浮泡 --- */
+/* --- Toast：液态玻璃浮泡 --- */
 body[data-theme="liquid"] .toast {
-    backdrop-filter: blur(20px) saturate(160%);
+    backdrop-filter: url("#thumb-filter") saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
     background: rgba(40, 40, 50, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
-/* --- 加载更多：玻璃 --- */
-body[data-theme="liquid"] .load-more {
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-}
-
 /* --- 置顶推荐卡片：液态玻璃增强 --- */
 body[data-theme="liquid"] .top-recommend-card {
-    backdrop-filter: blur(20px) saturate(160%);
+    backdrop-filter: url("#thumb-filter") saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
     background: rgba(255, 255, 255, 0.3);
     border: 2px solid rgba(255, 107, 53, 0.4);
-    box-shadow: 0 8px 32px rgba(255, 107, 53, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 20px rgba(255, 107, 53, 0.1);
 }
 
 /* --- 每日摘要：液态玻璃 --- */
 body[data-theme="liquid"] .digest-greeting-card {
-    backdrop-filter: blur(20px) saturate(160%);
+    backdrop-filter: url("#thumb-filter") saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
     box-shadow: 0 8px 32px rgba(255, 56, 92, 0.15);
 }
 
 body[data-theme="liquid"] .digest-card {
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: url("#thumb-filter") saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
     background: rgba(255, 255, 255, 0.3);
     border: 2px solid rgba(255, 107, 53, 0.3);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
-/* --- 毛玻璃模式：视频卡片微浮 --- */
-body[data-theme="frosted"] .video-card {
-    border-radius: var(--radius-md);
+/* --- 设置区分隔：液态玻璃 --- */
+body[data-theme="liquid"] .settings-section + .settings-section {
+    border-top-color: rgba(255, 255, 255, 0.2);
+}
+body[data-theme="liquid"][data-color-scheme="dark"] .settings-section + .settings-section {
+    border-top-color: rgba(255, 255, 255, 0.06);
 }
