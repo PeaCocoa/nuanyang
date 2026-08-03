@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-02 23:45"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-03 00:30"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -1492,6 +1492,38 @@ window.debugFavorites = function() {
     }
     console.log("====================");
 };
+
+// === 图片懒加载兼容（老旧浏览器不支持 loading="lazy"）===
+if (!("loading" in HTMLImageElement.prototype)) {
+    console.log("[暖阳] 浏览器不支持原生loading=lazy，启用JS懒加载");
+    const lazyImgObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                if (img.dataset.src) {
+                    img.src = img.dataset.src;
+                    delete img.dataset.src;
+                }
+                lazyImgObserver.unobserve(img);
+            }
+        });
+    }, { rootMargin: "300px" });
+    // 监听 DOM 变化，对新插入的懒加载图片启动观察
+    document.addEventListener("DOMNodeInserted", (e) => {
+        if (e.target.nodeType === 1) {
+            const imgs = e.target.matches?.("img[loading=lazy]") 
+                ? [e.target] 
+                : Array.from(e.target.querySelectorAll?.("img[loading=lazy]") || []);
+            imgs.forEach(img => {
+                if (!img.src && img.getAttribute("src")) {
+                    img.dataset.src = img.getAttribute("src");
+                    img.removeAttribute("src");
+                    lazyImgObserver.observe(img);
+                }
+            });
+        }
+    });
+}
 
 // 更新日志弹窗
 const aboutRow = document.getElementById('aboutRow');
