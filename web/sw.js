@@ -1,6 +1,6 @@
 // 暖阳 Service Worker v5 — 彻底解决缓存问题
 // 策略：HTML/JS/CSS 网络优先，videos.json 永远走网络，图片缓存优先
-const CACHE_VERSION = 'nuanyang-v9';
+const CACHE_VERSION = 'nuanyang-v10';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
@@ -39,6 +39,12 @@ self.addEventListener('fetch', (event) => {
     if (event.request.method !== 'GET') return;
 
     const url = new URL(event.request.url);
+
+    // 跨域请求（B站图片等）不经过SW拦截，直接让浏览器处理
+    // 避免低端浏览器SW对跨域no-cors请求的兼容性问题
+    if (url.origin !== self.location.origin) {
+        return;
+    }
 
     // === videos.json：永远走网络，绝不缓存 ===
     if (url.pathname.includes('/data/videos.json')) {
