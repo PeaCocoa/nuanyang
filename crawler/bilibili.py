@@ -6,7 +6,33 @@ B站 API 封装 — Playwright 浏览器自动化版本
 
 import os
 import time
+import hashlib
+from urllib.parse import urlencode
 from playwright.sync_api import sync_playwright, Browser, BrowserContext, Page
+
+# WBI签名混淆表
+MIXIN_KEY_ENC_TAB = [
+    46, 47, 18, 2, 53, 8, 23, 32, 15, 50, 10, 31, 58, 3, 45, 35,
+    27, 43, 5, 49, 33, 9, 42, 19, 29, 28, 14, 39, 12, 38, 41, 13,
+    37, 48, 7, 16, 24, 55, 40, 61, 26, 17, 0, 1, 60, 51, 30, 4,
+    22, 25, 54, 21, 56, 59, 6, 63, 57, 62, 11, 36, 20, 34, 44, 52
+]
+
+def _get_mixin_key(img_key, sub_key):
+    raw = img_key + sub_key
+    mixin = []
+    for i in range(32):
+        mixin.append(raw[MIXIN_KEY_ENC_TAB[i]])
+    return ''.join(mixin)
+
+def _build_wbi_url(mid, pn, ps, img_key, sub_key):
+    mixin_key = _get_mixin_key(img_key, sub_key)
+    wts = int(time.time())
+    params = {'mid': mid, 'pn': pn, 'ps': ps, 'order': 'pubdate', 'wts': wts}
+    params_sorted = sorted(params.items())
+    query = urlencode(params_sorted)
+    w_rid = hashlib.md5((query + mixin_key).encode()).hexdigest()
+    return f"https://api.bilibili.com/x/space/wbi/arc/search?{query}&w_rid={w_rid}"
 
 # Cookie持久化路径
 AUTH_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "auth")
@@ -124,6 +150,7 @@ class BiliCrawler:
         self.browser: Browser = None
         self.context: BrowserContext = None
         self.page: Page = None
+        self._wbi_keys = None  # 缓存WBI密钥
 
     def start(self):
         """启动浏览器，加载已保存的登录状态
@@ -210,6 +237,20 @@ class BiliCrawler:
         except Exception:
             return False
 
+    def _ensure_wbi_keys(self):
+        """获取并缓存WBI密钥"""
+        if self._wbi_keys:
+            return self._wbi_keys
+        try:
+            result = self.page.evaluate(JS_GET_WBI_KEYS)
+            if result and result.get("imgKey") and result.get("subKey"):
+                self._wbi_keys = result
+                print("[INFO] WBI密钥获取成功")
+                return self._wbi_keys
+        except Exception as e:
+            print(f"[WARN] 获取WBI密钥失败: {e}")
+        return None
+
     def search_videos(self, keyword: str, page: int = 1, order: str = "pubdate") -> list:
         """
         搜索视频（浏览器内fetch，自动携带Cookie）
@@ -251,50 +292,66 @@ class BiliCrawler:
 
     def get_up_videos(self, mid: str, page: int = 1) -> list:
         """
-        通过导航到B站空间页，拦截页面自身的wbi签名API响应获取视频列表
-        页面浏览走完整wbi签名（包含所有必要参数），不会触发风控
-        含3次重试机制
+        通过WBI签名直接调用API获取视频列表（支持真正的翻页）
+        在页面上下文中fetch，自动携带Cookie
         """
         max_retries = 3
         for attempt in range(max_retries):
-            captured = []
-            api_received = False
-
-            def _on_response(resp):
-                nonlocal api_received
-                if 'arc/search' in resp.url and 'wbi' in resp.url:
-                    try:
-                        data = resp.json()
-                        if data.get('code') == 0 and data.get('data', {}).get('list', {}).get('vlist'):
-                            captured.extend(data['data']['list']['vlist'])
-                            api_received = True
-                    except:
-                        pass
-
-            self.page.on('response', _on_response)
-
             try:
-                url = f"https://space.bilibili.com/{mid}/video?pn={page}&ps=30&order=pubdate"
-                self.page.goto(url, wait_until='networkidle', timeout=60000)
-                # 多等2秒确保response处理完成
-                time.sleep(2)
-                
-                if api_received and captured:
-                    break
+                keys = self._ensure_wbi_keys()
+                if not keys:
+                    if page == 1:
+                        return self._get_up_videos_fallback(mid)
+                    else:
+                        print(f"  [WARN] 无WBI密钥，无法翻页到第{page}页")
+                        return []
+
+                url = _build_wbi_url(str(mid), page, 30, keys["imgKey"], keys["subKey"])
+                result = self.page.evaluate(JS_FETCH_VIDEOS, url)
+                if result:
+                    return result
+
                 if attempt < max_retries - 1:
-                    print(f"  [WARN] 第{page}页未捕获到数据，重试({attempt+1}/{max_retries})...")
+                    print(f"  [WARN] 第{page}页无数据，重试({attempt+1}/{max_retries})...")
+                    self._wbi_keys = None
                     time.sleep(3)
             except Exception as e:
                 if attempt < max_retries - 1:
-                    print(f"  [WARN] 页面加载失败: {e}，重试({attempt+1}/{max_retries})...")
+                    print(f"  [WARN] 第{page}页请求失败: {e}，重试({attempt+1}/{max_retries})...")
+                    self._wbi_keys = None
                     time.sleep(5)
                 else:
                     print(f"  [ERROR] 第{page}页获取失败(已重试{max_retries}次): {e}")
-            finally:
+        return []
+
+    def _get_up_videos_fallback(self, mid: str) -> list:
+        """回退方案：通过页面导航拦截API响应（仅第一页可靠）"""
+        captured = []
+        api_received = False
+
+        def _on_response(resp):
+            nonlocal api_received
+            if 'arc/search' in resp.url and 'wbi' in resp.url:
                 try:
-                    self.page.remove_listener('response', _on_response)
+                    data = resp.json()
+                    if data.get('code') == 0 and data.get('data', {}).get('list', {}).get('vlist'):
+                        captured.extend(data['data']['list']['vlist'])
+                        api_received = True
                 except:
                     pass
+
+        self.page.on('response', _on_response)
+        try:
+            url = f"https://space.bilibili.com/{mid}/video?pn=1&ps=30&order=pubdate"
+            self.page.goto(url, wait_until='networkidle', timeout=60000)
+            time.sleep(2)
+        except Exception as e:
+            print(f"  [ERROR] 回退方案失败: {e}")
+        finally:
+            try:
+                self.page.remove_listener('response', _on_response)
+            except:
+                pass
 
         result = []
         for v in captured:
