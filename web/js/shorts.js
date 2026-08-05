@@ -173,16 +173,18 @@
         item.dataset.loaded = "1";
     }
 
-    // === 暂停非可见卡片视频 ===
-    function pauseInvisibleVideos() {
+    // === 清理非当前卡片的iframe（停止后台播放）===
+    function cleanupInvisibleIframes() {
         renderedItems.forEach(entry => {
             if (!entry.el) return;
             if (entry.el.dataset.index !== String(currentIndex)) {
-                const iframe = entry.el.querySelector("iframe");
+                const wrap = entry.el.querySelector(".shorts-player-wrap");
+                const iframe = wrap && wrap.querySelector("iframe");
                 if (iframe) {
-                    // 通过重设src暂停（B站iframe没有postMessage暂停接口）
-                    // 不暂停，只是移除自动播放参数重新加载
-                    // 实际上scroll-snap会自然切换，用户看不到的视频影响不大
+                    iframe.remove();
+                    entry.el.dataset.loaded = "0";
+                    const cover = wrap.querySelector(".shorts-cover");
+                    if (cover) cover.style.display = "";
                 }
             }
         });
@@ -230,6 +232,9 @@
     // === 切换到新视频时 ===
     function onSlideChanged(index) {
         console.log("[暖阳短视频] 切换到第 " + (index + 1) + " 个视频");
+
+        // 清理非当前卡片的iframe，停止后台播放
+        cleanupInvisibleIframes();
 
         // 动态加载更多
         const needIndex = index + RENDER_AHEAD;
