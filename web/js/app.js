@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-05 20:10"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-05 20:20"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -543,6 +543,8 @@ function showShortsPage(show) {
         navShorts.classList.add("active");
         if (!shortsLoaded) {
             initShorts();
+        } else {
+            reshuffleShorts();
         }
     } else {
         videoListEl.style.display = "";
@@ -627,6 +629,51 @@ function interleaveByUp(videos) {
     }
     
     return result;
+}
+
+/**
+ * 重新洗牌已加载的短视频列表，让每次进入都有不同顺序。
+ * 保留推荐权重排序，但重新随机打散UP主+组内洗牌。
+ */
+function reshuffleShorts() {
+    if (!shortVideos || shortVideos.length <= 1) return;
+    // 重新按权重排序
+    const hasHistory = Object.keys(viewHistory).length > 0;
+    const hasFavorites = Object.keys(favorites).length > 0;
+    if (settings.recommend && (hasHistory || hasFavorites)) {
+        const catAffinity = getCategoryAffinity();
+        const upAffinity = getUpAffinity();
+        const viewedBvids = new Set(Object.keys(viewHistory));
+        const weighted = shortVideos.map(v => {
+            const cats = getVideoCategories(v);
+            const catScore = cats.length > 0
+                ? Math.max(...cats.map(c => catAffinity[c] || 0))
+                : 0;
+            const upScore = Math.sqrt(upAffinity[v.up_name] || 0);
+            let weight = 0.4 * catScore + 0.3 * upScore + 0.1;
+            if (favorites[v.bvid]) weight *= 3;
+            if (viewedBvids.has(v.bvid)) weight *= 0.5;
+            weight *= (0.7 + Math.random() * 0.6);
+            return { video: v, weight: weight };
+        });
+        weighted.sort((a, b) => b.weight - a.weight);
+        shortVideos = interleaveByUp(weighted.map(w => w.video));
+    } else {
+        // 纯随机
+        for (let i = shortVideos.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shortVideos[i], shortVideos[j]] = [shortVideos[j], shortVideos[i]];
+        }
+        shortVideos = interleaveByUp(shortVideos);
+    }
+    // 重新渲染
+    const container = document.querySelector('.shorts-container');
+    if (container) {
+        container.scrollTop = 0;
+        renderShortsInitial();
+        setupShortsObserver();
+    }
+    console.log("[\u6696\u9633\u77ed\u89c6\u9891] \u91cd\u65b0\u6d17\u724c");
 }
 
 async function initShorts() {
