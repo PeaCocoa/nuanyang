@@ -149,16 +149,9 @@
     pointer-events: none;
 }
 
-/* === 视频信息覆盖层 === */
+/* === 视频信息覆盖层（已隐藏） === */
 .shorts-info {
-    position: absolute;
-    bottom: 70px;
-    left: 0;
-    right: 60px;
-    padding: 12px 16px;
-    background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);
-    pointer-events: none;
-    z-index: 20;
+    display: none;
 }
 
 .shorts-title {
