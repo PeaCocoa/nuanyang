@@ -1184,6 +1184,7 @@ function openPlayer(video) {
         allowfullscreen="true"
         scrolling="no"
         sandbox="allow-scripts allow-same-origin"
+        referrerpolicy="no-referrer"
     ></iframe>`;
     // 拦截iframe内跳转
     blockIframeNavigation();

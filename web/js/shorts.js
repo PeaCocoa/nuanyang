@@ -157,33 +157,22 @@
     function loadVideoInItem(item, video) {
         const wrap = item.querySelector(".shorts-player-wrap");
         const existingIframe = wrap.querySelector("iframe");
-        if (existingIframe) return; // 已经加载过
+        if (existingIframe) return;
 
         const cover = wrap.querySelector(".shorts-cover");
         if (cover) cover.style.display = "none";
 
         const iframe = document.createElement("iframe");
-        iframe.src = video.iframe_url + "&autoplay=1";
-        iframe.allowFullscreen = true;
-        iframe.setAttribute("allow", "autoplay; fullscreen; encrypted-media");
+        // sandbox 不加 allow-popups（阻止window.open）
+        // 不加 allow-top-navigation（阻止跳转顶层窗口）
+        // 保留 allow-scripts allow-same-origin（播放器正常工作）
+        iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
+        iframe.setAttribute("allow", "autoplay; fullscreen; encrypted-media; picture-in-picture");
         iframe.setAttribute("scrolling", "no");
-        iframe.setAttribute("sandbox", "allow-scripts allow-same-origin allow-popups");
+        iframe.setAttribute("frameborder", "0");
+        iframe.setAttribute("referrerpolicy", "no-referrer");
+        iframe.src = video.iframe_url + "&autoplay=1";
         wrap.appendChild(iframe);
-
-        // 拦截iframe内跳转，防止跳到B站网页或App
-        iframe.addEventListener("load", function() {
-            try {
-                const doc = iframe.contentDocument || iframe.contentWindow.document;
-                doc.addEventListener("click", function(e) {
-                    const a = e.target.closest("a");
-                    if (a && a.href) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }
-                }, true);
-                iframe.contentWindow.open = function() { return null; };
-            } catch(e) {}
-        });
 
         item.dataset.loaded = "1";
     }
