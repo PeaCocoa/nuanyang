@@ -377,17 +377,12 @@ body[data-theme="daylight"] .shorts-cover {
 }
 
 .shorts-cover.paused::before {
-    border-width: 0;
-    border-left-width: 0;
-    width: 20px;
-    height: 28px;
-    border-style: solid;
-    border-color: transparent;
-    border-left: 6px solid #fff;
-    border-right: 6px solid #fff;
-    transform: translate(-50%, -50%);
-    left: 50%;
-    top: 50%;
+    /* 暂停时显示播放三角形，提示点击恢复播放 */
+    border-width: 18px 0 18px 28px;
+    border-color: transparent transparent transparent #fff;
+    width: 0;
+    height: 0;
+    transform: translate(-45%, -50%);
 }
 
 
