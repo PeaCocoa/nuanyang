@@ -236,6 +236,12 @@
         // 清理非当前卡片的iframe，停止后台播放
         cleanupInvisibleIframes();
 
+        // 自动播放当前视频
+        const curEntry = renderedItems.find(e => e.index === index);
+        if (curEntry && curEntry.el.dataset.loaded !== "1") {
+            loadVideoInItem(curEntry.el, curEntry.video);
+        }
+
         // 动态加载更多
         const needIndex = index + RENDER_AHEAD;
         if (needIndex < shortVideos.length && needIndex >= renderedItems.length) {
@@ -244,12 +250,6 @@
             container.appendChild(item);
             renderedItems.push({ el: item, video: video, index: needIndex });
             if (container._observer) container._observer.observe(item);
-        }
-
-        // 自动播放当前项（如果已加载过iframe）
-        const currentEntry = renderedItems.find(e => e.index === index);
-        if (currentEntry && currentEntry.el.dataset.loaded === "1") {
-            // iframe已经存在，B站播放器会自动继续
         }
 
         // 接近末尾时循环
@@ -287,6 +287,11 @@
         }
         renderInitial();
         setupScrollObserver();
+
+        // 自动播放第一个视频
+        if (renderedItems.length > 0) {
+            loadVideoInItem(renderedItems[0].el, renderedItems[0].video);
+        }
     }
 
     init();
