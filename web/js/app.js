@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-05 20:20"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-05 20:30"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -635,8 +635,38 @@ function interleaveByUp(videos) {
  * 重新洗牌已加载的短视频列表，让每次进入都有不同顺序。
  * 保留推荐权重排序，但重新随机打散UP主+组内洗牌。
  */
+function showShortsOverlay() {
+    var ov = document.getElementById('shortsOverlay');
+    if (!ov) {
+        ov = document.createElement('div');
+        ov.id = 'shortsOverlay';
+        ov.className = 'shorts-overlay-loading';
+        ov.innerHTML = '<div class="shorts-loading-spinner"></div>';
+        var sv = document.getElementById('shortsView');
+        if (sv) sv.appendChild(ov);
+    }
+    ov.style.display = 'flex';
+}
+
+function hideShortsOverlay() {
+    var ov = document.getElementById('shortsOverlay');
+    if (ov) ov.style.display = 'none';
+}
+
 function reshuffleShorts() {
     if (!shortVideos || shortVideos.length <= 1) return;
+    // 显示加载遮罩
+    showShortsOverlay();
+    // 延迟一帧让遮罩渲染，再执行重排
+    requestAnimationFrame(() => {
+        setTimeout(() => {
+            doReshuffle();
+            hideShortsOverlay();
+        }, 200);
+    });
+}
+
+function doReshuffle() {
     // 重新按权重排序
     const hasHistory = Object.keys(viewHistory).length > 0;
     const hasFavorites = Object.keys(favorites).length > 0;
@@ -677,6 +707,7 @@ function reshuffleShorts() {
 }
 
 async function initShorts() {
+    showShortsOverlay();
     try {
         const all = allVideos.length > 0 ? allVideos : (await fetch(DATA_URL).then(r=>r.json())).videos || [];
         if (allVideos.length === 0) allVideos = all;
@@ -726,6 +757,7 @@ async function initShorts() {
         renderShortsInitial();
         setupShortsObserver();
         shortsLoaded = true;
+        hideShortsOverlay();
     } catch (e) {
         console.error("[暖阳短视频] 加载失败:", e);
         if (document.getElementById("shortsLoading"))

@@ -472,6 +472,22 @@ body[data-theme="classic"][data-color-scheme="dark"] .shorts-action-btn {
 /* 黑夜模式（auto/dark 在暗色下使用默认黑色，无需额外规则） */
 
 
+
+/* === 加载遮罩 === */
+.shorts-overlay-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: inherit;
+}
+
+/* Insert before Toast section */
 /* === Toast === */
 .toast {
     position: fixed;
