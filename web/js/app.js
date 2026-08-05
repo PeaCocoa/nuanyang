@@ -544,6 +544,8 @@ function showShortsPage(show) {
         videoListEl.style.display = "";
         scrollSentinel.style.display = "";
         categoriesEl.style.display = "";
+        if (siteHeader) siteHeader.style.display = "";
+        if (siteFooter) siteFooter.style.display = "";
         if (refreshBtn) refreshBtn.style.display = "";
         if (digestBtn) digestBtn.style.display = settings.digest ? "" : "none";
         scrollObserver.observe(scrollSentinel);
