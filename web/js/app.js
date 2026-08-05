@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-05 12:00"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-05 18:00"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -505,6 +505,8 @@ function showDigestPage(show) {
         videoListEl.style.display = "";
         scrollSentinel.style.display = "";
         categoriesEl.style.display = "";
+        if (siteHeader) siteHeader.style.display = "";
+        if (siteFooter) siteFooter.style.display = "";
         // 恢复 header 按钮
         if (refreshBtn) refreshBtn.style.display = "";
         if (digestBtn) digestBtn.style.display = settings.digest ? "" : "none";
@@ -520,6 +522,8 @@ function showDigestPage(show) {
 
 function showShortsPage(show) {
     currentView = show ? "shorts" : "main";
+    var siteHeader = document.querySelector(".header");
+    var siteFooter = document.querySelector(".footer");
     if (show) {
         videoListEl.style.display = "none";
         loadMoreEl.style.display = "none";
@@ -527,6 +531,8 @@ function showShortsPage(show) {
         categoriesEl.style.display = "none";
         if (digestBtn) digestBtn.style.display = "none";
         if (refreshBtn) refreshBtn.style.display = "none";
+        if (siteHeader) siteHeader.style.display = "none";
+        if (siteFooter) siteFooter.style.display = "none";
         scrollObserver.disconnect();
         shortsViewEl.style.display = "block";
         navHome.classList.remove("active");
