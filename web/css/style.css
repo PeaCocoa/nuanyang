@@ -2899,6 +2899,10 @@ body[data-theme="liquid"] .changelog-modal-close {
     text-decoration: none;
     color: var(--ash);
     font-size: 11px;
+    font-family: inherit;
+    border: none;
+    background: none;
+    cursor: pointer;
     transition: color 0.2s ease;
 }
 

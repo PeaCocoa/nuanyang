@@ -240,95 +240,10 @@
     text-shadow: 0 1px 4px rgba(0,0,0,0.5);
 }
 
-/* === 底部导航栏 === */
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    background: rgba(20, 20, 20, 0.9);
-    backdrop-filter: blur(20px) saturate(120%);
-    -webkit-backdrop-filter: blur(20px) saturate(120%);
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    display: flex;
-    z-index: 100;
-    padding-bottom: env(safe-area-inset-bottom, 0);
-}
-
-.bottom-nav-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    text-decoration: none;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 11px;
-    transition: color 0.2s ease;
-}
-
-.bottom-nav-item.active {
-    color: var(--rausch, #FF385C);
-}
-
-.bottom-nav-item:active {
-    transform: scale(0.95);
-}
-
-/* === 大屏适配：底部导航变左侧 === */
-@media (min-width: 768px) {
-    .bottom-nav {
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: auto;
-        width: 80px;
-        height: 100vh;
-        flex-direction: column;
-        border-top: none;
-        border-right: 1px solid rgba(255, 255, 255, 0.06);
-        padding-bottom: 0;
-    }
-
-    .bottom-nav-item {
-        flex-direction: column;
-        padding: 16px 0;
-    }
-
-    .shorts-container {
-        margin-left: 80px;
-        width: calc(100% - 80px);
-    }
-
-    .shorts-topbar {
-        left: 80px;
-    }
-
-    /* 大屏居中显示，最大宽度 480px */
-    .shorts-item {
-        max-width: 480px;
-        margin: 0 auto;
-    }
-
-    .shorts-info {
-        bottom: 20px;
-    }
-
-    .shorts-actions {
-        bottom: 25px;
-    }
-}
-
 /* === 主题适配 === */
 
 /* 液态玻璃 */
-body[data-theme="liquid"] .bottom-nav {
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(24px) saturate(130%);
-    -webkit-backdrop-filter: blur(24px) saturate(130%);
-}
+
 
 body[data-theme="liquid"] .shorts-action-btn,
 body[data-theme="liquid"] .shorts-back-btn {
@@ -337,18 +252,11 @@ body[data-theme="liquid"] .shorts-back-btn {
 }
 
 /* 经典回忆 */
-body[data-theme="classic"] .bottom-nav {
-    background: rgba(245, 240, 232, 0.95);
-    border-top: 1px solid #D5CFC5;
-}
 
-body[data-theme="classic"] .bottom-nav-item {
-    color: #999;
-}
 
-body[data-theme="classic"] .bottom-nav-item.active {
-    color: var(--rausch, #FF385C);
-}
+
+
+
 
 body[data-theme="classic"] .shorts-back-btn {
     background: rgba(0, 0, 0, 0.06);
@@ -360,18 +268,11 @@ body[data-theme="classic"] .shorts-topbar-title {
 }
 
 /* 白日 */
-body[data-theme="daylight"] .bottom-nav {
-    background: rgba(255, 255, 255, 0.95);
-    border-top: 1px solid #E5E5E5;
-}
 
-body[data-theme="daylight"] .bottom-nav-item {
-    color: #999;
-}
 
-body[data-theme="daylight"] .bottom-nav-item.active {
-    color: var(--rausch, #FF385C);
-}
+
+
+
 
 body[data-theme="daylight"] .shorts-back-btn {
     background: rgba(0, 0, 0, 0.06);
@@ -395,9 +296,7 @@ body[data-theme="daylight"] .shorts-cover {
 }
 
 /* 黑夜 */
-body[data-theme="night"] .bottom-nav {
-    background: rgba(26, 26, 26, 0.95);
-}
+
 
 /* === Toast === */
 .toast {
