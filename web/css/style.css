@@ -2974,3 +2974,41 @@ body[data-theme="liquid"] .bottom-nav-item.active {
     background: rgba(255, 56, 92, 0.08);
     border-radius: 12px;
 }
+
+/* 经典回忆导航栏 */
+body[data-theme="classic"] .bottom-nav {
+    background: rgba(232, 213, 176, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-color: rgba(120, 80, 20, 0.15);
+    box-shadow: 0 -2px 12px rgba(120, 80, 20, 0.08);
+}
+
+body[data-theme="classic"][data-color-scheme="dark"] .bottom-nav {
+    background: rgba(42, 31, 14, 0.92);
+    border-color: rgba(180, 130, 40, 0.15);
+}
+
+body[data-theme="classic"] .bottom-nav-item {
+    color: #6B5A3A;
+}
+
+body[data-theme="classic"][data-color-scheme="dark"] .bottom-nav-item {
+    color: rgba(232, 213, 176, 0.4);
+}
+
+body[data-theme="classic"] .bottom-nav-item.active {
+    color: #8B6914;
+}
+
+body[data-theme="classic"][data-color-scheme="dark"] .bottom-nav-item.active {
+    color: #D4A843;
+}
+
+/* 黑暗模式导航栏 */
+body[data-color-scheme="dark"]:not([data-theme="liquid"]):not([data-theme="classic"]) .bottom-nav {
+    background: rgba(20, 20, 20, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-color: rgba(255, 255, 255, 0.06);
+}
