@@ -535,6 +535,10 @@ function showShortsPage(show) {
         if (siteFooter) siteFooter.style.display = "none";
         scrollObserver.disconnect();
         shortsViewEl.style.display = "block";
+        // 触发淡入
+        requestAnimationFrame(() => {
+            shortsViewEl.classList.add("visible");
+        });
         navHome.classList.remove("active");
         navShorts.classList.add("active");
         if (!shortsLoaded) {
@@ -549,7 +553,8 @@ function showShortsPage(show) {
         if (refreshBtn) refreshBtn.style.display = "";
         if (digestBtn) digestBtn.style.display = settings.digest ? "" : "none";
         scrollObserver.observe(scrollSentinel);
-        shortsViewEl.style.display = "none";
+        shortsViewEl.classList.remove("visible");
+        setTimeout(() => { shortsViewEl.style.display = "none"; }, 250);
         navHome.classList.add("active");
         navShorts.classList.remove("active");
         // 离开短视频时清理所有iframe
@@ -719,6 +724,11 @@ function loadShortsVideo(item, video) {
     iframe.setAttribute("frameborder", "0");
     iframe.setAttribute("referrerpolicy", "no-referrer");
     iframe.src = video.iframe_url + "&autoplay=1";
+    // 显示加载旋转动画
+    if (cover) {
+        cover.classList.add("loading");
+        cover.style.display = "";
+    }
     wrap.appendChild(iframe);
 
     iframe.addEventListener("load", function() {
@@ -730,6 +740,12 @@ function loadShortsVideo(item, video) {
             }, true);
             iframe.contentWindow.open = function() { return null; };
         } catch(e) {}
+        // iframe加载完成，隐藏封面和loading
+        if (cover) {
+            cover.style.display = "none";
+            cover.classList.remove("loading");
+            cover.classList.remove("paused");
+        }
     });
 
     if (_shortsPreventNav) window.removeEventListener("beforeunload", _shortsPreventNav);
