@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-05 19:30"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-05 20:00"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -583,6 +583,42 @@ function cleanupAllShortsIframes() {
     }
 }
 
+/**
+ * UP主打散：将按权重排好序的视频列表重新排列，确保相邻视频来自不同UP主。
+ * 策略：按UP主分组后轮询取出，高权重UP主先取，同UP主内保持权重顺序。
+ */
+function interleaveByUp(videos) {
+    if (videos.length <= 1) return videos;
+    // 按UP主分组，保持组内权重顺序
+    const groups = {};
+    const upOrder = [];
+    for (const v of videos) {
+        const up = v.up_name || '\u672a\u77e5';
+        if (!groups[up]) {
+            groups[up] = [];
+            upOrder.push(up);
+        }
+        groups[up].push(v);
+    }
+    // 按每组视频数量降序排列（多的先取）
+    upOrder.sort((a, b) => groups[b].length - groups[a].length);
+    
+    const result = [];
+    const maxLen = Math.max(...upOrder.map(u => groups[u].length));
+    
+    // 轮询：第i轮从每个UP主取第i个视频
+    for (let i = 0; i < maxLen; i++) {
+        // 每轮按UP主视频数排序，确保多的先出
+        const roundOrder = upOrder.filter(u => groups[u].length > i);
+        // 在每轮内部也按权重顺序（upOrder已经按数量排了，组内按原始顺序）
+        for (const up of roundOrder) {
+            result.push(groups[up][i]);
+        }
+    }
+    
+    return result;
+}
+
 async function initShorts() {
     try {
         const all = allVideos.length > 0 ? allVideos : (await fetch(DATA_URL).then(r=>r.json())).videos || [];
@@ -615,7 +651,9 @@ async function initShorts() {
             });
             // 按权重降序排，前半部分放入结果
             weighted.sort((a, b) => b.weight - a.weight);
-            shortVideos = weighted.map(w => w.video);
+            const sortedVideos = weighted.map(w => w.video);
+            // UP打散：确保相邻视频来自不同UP主，避免连续刷到同一人
+            shortVideos = interleaveByUp(sortedVideos);
             console.log("[暖阳短视频] 个性化推荐排序，收藏" + (hasFavorites ? "有" : "无") + " 历史" + (hasHistory ? "有" : "无"));
         } else {
             // 无推荐数据时纯随机
@@ -623,7 +661,9 @@ async function initShorts() {
                 const j = Math.floor(Math.random() * (i + 1));
                 [shortVideos[i], shortVideos[j]] = [shortVideos[j], shortVideos[i]];
             }
-            console.log("[暖阳短视频] 随机排序（未开启推荐或无历史数据）");
+            // 随机后也打散UP主
+            shortVideos = interleaveByUp(shortVideos);
+            console.log("[暖阳短视频] 随机排序+UP主打散（未开启推荐或无历史数据）");
         }
         console.log("[暖阳短视频] 加载 " + shortVideos.length + " 条");
         renderShortsInitial();
