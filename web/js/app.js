@@ -583,10 +583,42 @@ async function initShorts() {
         const all = allVideos.length > 0 ? allVideos : (await fetch(DATA_URL).then(r=>r.json())).videos || [];
         if (allVideos.length === 0) allVideos = all;
         shortVideos = all.filter(v => (v.duration || 0) <= SHORT_MAX_DURATION);
-        // 打乱
-        for (let i = shortVideos.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shortVideos[i], shortVideos[j]] = [shortVideos[j], shortVideos[i]];
+
+        // 个性化推荐排序
+        const hasHistory = Object.keys(viewHistory).length > 0;
+        const hasFavorites = Object.keys(favorites).length > 0;
+        if (settings.recommend && (hasHistory || hasFavorites)) {
+            const catAffinity = getCategoryAffinity();
+            const upAffinity = getUpAffinity();
+            const viewedBvids = new Set(Object.keys(viewHistory));
+
+            // 加权排序：收藏视频最优先，然后按偏好权重
+            const weighted = shortVideos.map(v => {
+                const cats = getVideoCategories(v);
+                const catScore = cats.length > 0
+                    ? Math.max(...cats.map(c => catAffinity[c] || 0))
+                    : 0;
+                const upScore = Math.sqrt(upAffinity[v.up_name] || 0);
+                let weight = 0.4 * catScore + 0.3 * upScore + 0.1;
+                // 收藏的视频大幅提权
+                if (favorites[v.bvid]) weight *= 3;
+                // 看过的视频降权（但不排除，短视频适合重复看）
+                if (viewedBvids.has(v.bvid)) weight *= 0.5;
+                // 随机扰动，避免每次完全一样
+                weight *= (0.7 + Math.random() * 0.6);
+                return { video: v, weight: weight };
+            });
+            // 按权重降序排，前半部分放入结果
+            weighted.sort((a, b) => b.weight - a.weight);
+            shortVideos = weighted.map(w => w.video);
+            console.log("[暖阳短视频] 个性化推荐排序，收藏" + (hasFavorites ? "有" : "无") + " 历史" + (hasHistory ? "有" : "无"));
+        } else {
+            // 无推荐数据时纯随机
+            for (let i = shortVideos.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shortVideos[i], shortVideos[j]] = [shortVideos[j], shortVideos[i]];
+            }
+            console.log("[暖阳短视频] 随机排序（未开启推荐或无历史数据）");
         }
         console.log("[暖阳短视频] 加载 " + shortVideos.length + " 条");
         renderShortsInitial();
@@ -790,10 +822,21 @@ function onShortsSlideChanged(index) {
         if (shortsObserver) shortsObserver.observe(item);
     }
     if (index >= shortVideos.length - 2) {
+        // 循环时重新洗牌，收藏和偏好优先
         const remaining = shortVideos.slice();
-        for (let i = remaining.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+        if (settings.recommend && (Object.keys(viewHistory).length > 0 || Object.keys(favorites).length > 0)) {
+            const catAffinity = getCategoryAffinity();
+            const upAffinity = getUpAffinity();
+            remaining.sort((a, b) => {
+                const wA = (favorites[a.bvid] ? 3 : 1) * (0.4 * Math.max(...(getVideoCategories(a).map(c => catAffinity[c] || 0)), 0) + 0.3 * Math.sqrt(upAffinity[a.up_name] || 0) + 0.1) * (0.7 + Math.random() * 0.6);
+                const wB = (favorites[b.bvid] ? 3 : 1) * (0.4 * Math.max(...(getVideoCategories(b).map(c => catAffinity[c] || 0)), 0) + 0.3 * Math.sqrt(upAffinity[b.up_name] || 0) + 0.1) * (0.7 + Math.random() * 0.6);
+                return wB - wA;
+            });
+        } else {
+            for (let i = remaining.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+            }
         }
         shortVideos = shortVideos.concat(remaining);
     }
