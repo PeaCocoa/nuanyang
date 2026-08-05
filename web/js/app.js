@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-05 20:00"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-05 20:10"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -585,11 +585,11 @@ function cleanupAllShortsIframes() {
 
 /**
  * UP主打散：将按权重排好序的视频列表重新排列，确保相邻视频来自不同UP主。
- * 策略：按UP主分组后轮询取出，高权重UP主先取，同UP主内保持权重顺序。
+ * 策略：按UP主分组后轮询取出，每轮UP主顺序随机打乱，避免每次固定排列。
  */
 function interleaveByUp(videos) {
     if (videos.length <= 1) return videos;
-    // 按UP主分组，保持组内权重顺序
+    // 按UP主分组，组内按权重顺序
     const groups = {};
     const upOrder = [];
     for (const v of videos) {
@@ -600,17 +600,27 @@ function interleaveByUp(videos) {
         }
         groups[up].push(v);
     }
-    // 按每组视频数量降序排列（多的先取）
-    upOrder.sort((a, b) => groups[b].length - groups[a].length);
+    // 组内随机打乱（保留推荐权重大致顺序但增加变化）
+    for (const up of upOrder) {
+        const g = groups[up];
+        for (let i = g.length - 1; i > 0; i--) {
+            // 局部洗牌：只交换邻近位置，保持大致权重顺序
+            const j = Math.max(0, i - 1 - Math.floor(Math.random() * 2));
+            [g[i], g[j]] = [g[j], g[i]];
+        }
+    }
     
     const result = [];
     const maxLen = Math.max(...upOrder.map(u => groups[u].length));
     
     // 轮询：第i轮从每个UP主取第i个视频
     for (let i = 0; i < maxLen; i++) {
-        // 每轮按UP主视频数排序，确保多的先出
+        // 每轮UP主顺序随机打乱
         const roundOrder = upOrder.filter(u => groups[u].length > i);
-        // 在每轮内部也按权重顺序（upOrder已经按数量排了，组内按原始顺序）
+        for (let r = roundOrder.length - 1; r > 0; r--) {
+            const s = Math.floor(Math.random() * (r + 1));
+            [roundOrder[r], roundOrder[s]] = [roundOrder[s], roundOrder[r]];
+        }
         for (const up of roundOrder) {
             result.push(groups[up][i]);
         }
