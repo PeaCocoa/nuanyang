@@ -153,6 +153,14 @@
         return item;
     }
 
+    // === 拦截顶层导航 ===
+    let _preventNavRef = null;
+    function preventNav(e) {
+        e.preventDefault();
+        e.returnValue = "";
+        return "";
+    }
+
     // === 在卡片中加载视频 ===
     function loadVideoInItem(item, video) {
         const wrap = item.querySelector(".shorts-player-wrap");
@@ -174,11 +182,34 @@
         iframe.src = video.iframe_url + "&autoplay=1";
         wrap.appendChild(iframe);
 
+        // 拦截iframe内点击导航（跨域会静默失败，不影响）
+        iframe.addEventListener("load", function() {
+            try {
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                doc.addEventListener("click", function(e) {
+                    const a = e.target.closest("a");
+                    if (a && a.href) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                }, true);
+                iframe.contentWindow.open = function() { return null; };
+            } catch(e) {}
+        });
+
+        // 拦截顶层窗口跳转（B站播放器可能尝试 window.top.location）
+        if (_preventNavRef) {
+            window.removeEventListener("beforeunload", _preventNavRef);
+        }
+        _preventNavRef = preventNav;
+        window.addEventListener("beforeunload", preventNav, { once: true });
+
         item.dataset.loaded = "1";
     }
 
     // === 清理非当前卡片的iframe（停止后台播放）===
     function cleanupInvisibleIframes() {
+        let anyRemoved = false;
         renderedItems.forEach(entry => {
             if (!entry.el) return;
             if (entry.el.dataset.index !== String(currentIndex)) {
@@ -189,9 +220,15 @@
                     entry.el.dataset.loaded = "0";
                     const cover = wrap.querySelector(".shorts-cover");
                     if (cover) cover.style.display = "";
+                    anyRemoved = true;
                 }
             }
         });
+        // 清理 beforeunload 监听（新视频加载时会重新注册）
+        if (anyRemoved && _preventNavRef) {
+            window.removeEventListener("beforeunload", _preventNavRef);
+            _preventNavRef = null;
+        }
     }
 
     // === 渲染 ===
