@@ -350,3 +350,47 @@ body[data-theme="daylight"] .shorts-cover {
     left: 50%;
     top: 50%;
 }
+
+
+/* === 大屏适配：左侧导航栏留空 + 限制视频宽度 === */
+@media (min-width: 768px) {
+    .shorts-view {
+        left: 80px;
+    }
+
+    .shorts-item {
+        align-items: center;
+        justify-content: center;
+    }
+
+    .shorts-player-wrap {
+        max-width: 420px;
+        margin: 0 auto;
+    }
+
+    .shorts-cover {
+        max-width: 420px;
+        margin: 0 auto;
+    }
+
+    .shorts-cover img {
+        max-width: 420px;
+        margin: 0 auto;
+    }
+
+    .shorts-info {
+        max-width: 420px;
+        left: 50%;
+        transform: translateX(-50%);
+        right: auto;
+        width: 100%;
+    }
+
+    .shorts-actions {
+        right: calc(50% - 210px + 10px);
+    }
+
+    .shorts-topbar {
+        left: 80px;
+    }
+}

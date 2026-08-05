@@ -1,6 +1,6 @@
 // 暖阳 Service Worker v5 — 彻底解决缓存问题
 // 策略：HTML/JS/CSS 网络优先，videos.json 永远走网络，图片缓存优先
-const CACHE_VERSION = 'nuanyang-v17';
+const CACHE_VERSION = 'nuanyang-v18';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
