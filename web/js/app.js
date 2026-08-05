@@ -733,27 +733,104 @@ function loadShortsVideo(item, video) {
     _shortsPreventNav = function(e) { e.preventDefault(); e.returnValue = ""; return ""; };
     window.addEventListener("beforeunload", _shortsPreventNav, { once: true });
 
+    // 暂停/播放遮罩：点击切换，不删除iframe
     const pauseOverlay = document.createElement("div");
     pauseOverlay.className = "shorts-pause-overlay";
+    
+    // 单击切换暂停/播放，双击收藏
+    let clickTimer = null;
     pauseOverlay.addEventListener("click", (e) => {
         e.stopPropagation();
-        pauseShortsVideo(item);
+        if (clickTimer) {
+            // 双击 - 收藏
+            clearTimeout(clickTimer);
+            clickTimer = null;
+            // 触发收藏
+            const favBtn = item.querySelector('[data-action="fav"]');
+            if (favBtn) favBtn.click();
+            // 显示爱心动画
+            showShortsHeart(item);
+        } else {
+            clickTimer = setTimeout(() => {
+                clickTimer = null;
+                // 单击 - 暂停
+                pauseShortsVideo(item);
+            }, 250);
+        }
     });
     wrap.appendChild(pauseOverlay);
 
     item.dataset.loaded = "1";
 }
 
+function showShortsHeart(item) {
+    const heart = document.createElement("div");
+    heart.className = "shorts-heart-animation";
+    heart.innerHTML = '<svg width="80" height="80" viewBox="0 0 24 24" fill="#FF385C" stroke="#FF385C" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+    item.appendChild(heart);
+    setTimeout(() => heart.remove(), 800);
+}
+
 function pauseShortsVideo(item) {
     const wrap = item.querySelector(".shorts-player-wrap");
     const iframe = wrap.querySelector("iframe");
     const overlay = wrap.querySelector(".shorts-pause-overlay");
-    if (overlay) overlay.remove();
-    if (iframe) iframe.remove();
-    if (_shortsPreventNav) { window.removeEventListener("beforeunload", _shortsPreventNav); _shortsPreventNav = null; }
     const cover = wrap.querySelector(".shorts-cover");
-    if (cover) { cover.style.display = ""; cover.classList.add("paused"); }
+    
+    if (!iframe) return; // 未加载直接返回
+    
+    // 隐藏iframe但不删除，显示暂停封面叠层
+    iframe.style.visibility = "hidden";
+    if (cover) {
+        cover.style.display = "";
+        cover.classList.add("paused");
+    }
+    // 遮罩变为恢复播放按钮
+    if (overlay) {
+        overlay.classList.add("paused");
+        // 替换点击事件：点击恢复播放
+        overlay.onclick = (e) => {
+            e.stopPropagation();
+            resumeShortsVideo(item);
+        };
+    }
     item.dataset.loaded = "0";
+}
+
+function resumeShortsVideo(item) {
+    const wrap = item.querySelector(".shorts-player-wrap");
+    const iframe = wrap.querySelector("iframe");
+    const overlay = wrap.querySelector(".shorts-pause-overlay");
+    const cover = wrap.querySelector(".shorts-cover");
+    
+    if (!iframe) return;
+    
+    iframe.style.visibility = "visible";
+    if (cover) {
+        cover.style.display = "none";
+        cover.classList.remove("paused");
+    }
+    if (overlay) {
+        overlay.classList.remove("paused");
+        // 恢复点击暂停 + 双击收藏
+        let clickTimer = null;
+        overlay.onclick = (e) => {
+            e.stopPropagation();
+            if (clickTimer) {
+                clearTimeout(clickTimer);
+                clickTimer = null;
+                const favBtn = item.querySelector('[data-action="fav"]');
+                if (favBtn) favBtn.click();
+                showShortsHeart(item);
+            } else {
+                clickTimer = setTimeout(() => {
+                    clickTimer = null;
+                    pauseShortsVideo(item);
+                }, 250);
+            }
+        };
+    }
+    item.dataset.loaded = "1";
 }
 
 function cleanupShortsInvisible() {
@@ -763,11 +840,13 @@ function cleanupShortsInvisible() {
         if (entry.el.dataset.index !== String(shortsCurrentIndex)) {
             const wrap = entry.el.querySelector(".shorts-player-wrap");
             const iframe = wrap && wrap.querySelector("iframe");
+            const overlay = wrap && wrap.querySelector(".shorts-pause-overlay");
             if (iframe) {
                 iframe.remove();
                 entry.el.dataset.loaded = "0";
                 const cover = wrap.querySelector(".shorts-cover");
-                if (cover) cover.style.display = "";
+                if (cover) { cover.style.display = ""; cover.classList.remove("paused"); }
+                if (overlay) overlay.remove();
                 anyRemoved = true;
             }
         }
