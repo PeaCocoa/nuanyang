@@ -2,65 +2,9 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#000000">
-    <meta name="referrer" content="no-referrer">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>暖阳短视频</title>
-    <link rel="dns-prefetch" href="//i0.hdslb.com">
-    <link rel="dns-prefetch" href="//i1.hdslb.com">
-    <link rel="dns-prefetch" href="//i2.hdslb.com">
-    <link rel="preconnect" href="//i0.hdslb.com" crossorigin>
-    <link rel="preconnect" href="//i1.hdslb.com" crossorigin>
-    <link rel="preconnect" href="//i2.hdslb.com" crossorigin>
-    <link rel="stylesheet" href="css/style.css?v=29">
-    <link rel="stylesheet" href="css/shorts.css?v=29">
+    <script>location.replace("index.html#shorts");</script>
 </head>
-<body class="shorts-body">
-
-    <!-- 短视频容器 -->
-    <div class="shorts-container" id="shortsContainer">
-        <div class="shorts-loading" id="shortsLoading">
-            <div class="shorts-loading-text">正在加载好视频...</div>
-        </div>
-    </div>
-
-    <!-- 顶部返回栏 -->
-    <div class="shorts-topbar" id="shortsTopbar">
-        <button class="shorts-back-btn" id="shortsBackBtn" aria-label="返回">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
-            </svg>
-        </button>
-        <span class="shorts-topbar-title">短视频</span>
-    </div>
-
-    <!-- 底部导航栏 -->
-    <nav class="bottom-nav" id="bottomNav">
-        <a class="bottom-nav-item" href="index.html">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-            <span>首页</span>
-        </a>
-        <a class="bottom-nav-item active" href="shorts.html">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="5 3 19 12 5 21 5 3"/>
-            </svg>
-            <span>短视频</span>
-        </a>
-    </nav>
-
-    <!-- Toast -->
-    <div class="toast" id="toast"></div>
-
-    <script src="js/shorts.js?v=29"></script>
-    <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js?v=29').catch(function(){});
-        });
-    }
-    </script>
-</body>
+<body></body>
 </html>

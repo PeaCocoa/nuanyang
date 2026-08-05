@@ -1,6 +1,6 @@
 /* === 短视频刷流页面 === */
 
-.shorts-body {
+.shorts-view {
     margin: 0;
     padding: 0;
     background: #000;
@@ -8,10 +8,15 @@
     height: 100vh;
     height: 100dvh;
     position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    position: relative;
     width: 100%;
 }
 
-.shorts-container {
+.shorts-view .shorts-container {
     height: 100vh;
     height: 100dvh;
     width: 100%;
@@ -377,7 +382,7 @@ body[data-theme="daylight"] .shorts-topbar-title {
     color: #333;
 }
 
-body[data-theme="daylight"] .shorts-body {
+body[data-theme="daylight"] .shorts-view {
     background: #fff;
 }
 

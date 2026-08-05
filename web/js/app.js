@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-05 10:30"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-05 12:00"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -75,6 +75,21 @@ const searchClear = document.getElementById("searchClear");
 let searchKeyword = "";
 let currentView = "main"; // main / digest
 let allLoaded = false; // 是否已加载完所有视频
+
+// === 短视频状态 ===
+const shortsViewEl = document.getElementById("shortsView");
+const shortsContainer = document.getElementById("shortsContainer");
+const shortsBackBtn = document.getElementById("shortsBackBtn");
+const navHome = document.getElementById("navHome");
+const navShorts = document.getElementById("navShorts");
+let shortVideos = [];
+let shortsRendered = [];
+let shortsCurrentIndex = 0;
+let shortsLoaded = false;
+let shortsObserver = null;
+let _shortsPreventNav = null;
+const SHORT_MAX_DURATION = 300; // 5分钟
+const SHORTS_RENDER_AHEAD = 2;
 
 // =====================
 // 工具函数：获取视频分类（兼容数组/字符串）
@@ -498,6 +513,288 @@ function showDigestPage(show) {
         digestViewEl.style.display = "none";
     }
 }
+
+// =====================
+// 短视频刷流
+// =====================
+
+function showShortsPage(show) {
+    currentView = show ? "shorts" : "main";
+    if (show) {
+        videoListEl.style.display = "none";
+        loadMoreEl.style.display = "none";
+        scrollSentinel.style.display = "none";
+        categoriesEl.style.display = "none";
+        if (digestBtn) digestBtn.style.display = "none";
+        if (refreshBtn) refreshBtn.style.display = "none";
+        scrollObserver.disconnect();
+        shortsViewEl.style.display = "block";
+        navHome.classList.remove("active");
+        navShorts.classList.add("active");
+        if (!shortsLoaded) {
+            initShorts();
+        }
+    } else {
+        videoListEl.style.display = "";
+        scrollSentinel.style.display = "";
+        categoriesEl.style.display = "";
+        if (refreshBtn) refreshBtn.style.display = "";
+        if (digestBtn) digestBtn.style.display = settings.digest ? "" : "none";
+        scrollObserver.observe(scrollSentinel);
+        shortsViewEl.style.display = "none";
+        navHome.classList.add("active");
+        navShorts.classList.remove("active");
+        // 离开短视频时清理所有iframe
+        cleanupAllShortsIframes();
+    }
+}
+
+function cleanupAllShortsIframes() {
+    shortsRendered.forEach(entry => {
+        if (!entry.el) return;
+        const wrap = entry.el.querySelector(".shorts-player-wrap");
+        const iframe = wrap && wrap.querySelector("iframe");
+        const overlay = wrap && wrap.querySelector(".shorts-pause-overlay");
+        if (overlay) overlay.remove();
+        if (iframe) iframe.remove();
+        entry.el.dataset.loaded = "0";
+        const cover = wrap && wrap.querySelector(".shorts-cover");
+        if (cover) {
+            cover.style.display = "";
+            cover.classList.remove("paused");
+        }
+    });
+    if (_shortsPreventNav) {
+        window.removeEventListener("beforeunload", _shortsPreventNav);
+        _shortsPreventNav = null;
+    }
+}
+
+async function initShorts() {
+    try {
+        const all = allVideos.length > 0 ? allVideos : (await fetch(DATA_URL).then(r=>r.json())).videos || [];
+        if (allVideos.length === 0) allVideos = all;
+        shortVideos = all.filter(v => (v.duration || 0) <= SHORT_MAX_DURATION);
+        // 打乱
+        for (let i = shortVideos.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shortVideos[i], shortVideos[j]] = [shortVideos[j], shortVideos[i]];
+        }
+        console.log("[暖阳短视频] 加载 " + shortVideos.length + " 条");
+        renderShortsInitial();
+        setupShortsObserver();
+        shortsLoaded = true;
+    } catch (e) {
+        console.error("[暖阳短视频] 加载失败:", e);
+        if (document.getElementById("shortsLoading"))
+            document.getElementById("shortsLoading").innerHTML = '<div class="shorts-loading-text">加载失败，请稍后重试</div>';
+    }
+}
+
+function createShortsItem(video, index) {
+    const item = document.createElement("div");
+    item.className = "shorts-item";
+    item.dataset.index = index;
+    const isFav = !!favorites[video.bvid];
+
+    item.innerHTML = `
+        <div class="shorts-player-wrap">
+            <div class="shorts-cover" data-bvid="${video.bvid}">
+                <img src="${video.cover}" alt="${escapeHtml(video.title)}" loading="eager" referrerpolicy="no-referrer">
+            </div>
+        </div>
+        <div class="shorts-info">
+            <div class="shorts-title">${escapeHtml(video.title)}</div>
+            <div class="shorts-meta">
+                <span class="shorts-up">${escapeHtml(video.up_name)}</span>
+                <span> · ${formatDurationShort(video.duration)} · ${formatPubdate(video.pubdate)}</span>
+            </div>
+        </div>
+        <div class="shorts-actions">
+            <button class="shorts-action-btn ${isFav ? 'favorited' : ''}" data-action="fav" aria-label="收藏">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+            </button>
+        </div>
+    `;
+
+    const cover = item.querySelector(".shorts-cover");
+    cover.addEventListener("click", () => loadShortsVideo(item, video));
+
+    const favBtn = item.querySelector('[data-action="fav"]');
+    favBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const nowFav = toggleShortsFavorite(video.bvid);
+        favBtn.classList.toggle("favorited", nowFav);
+        const svg = favBtn.querySelector("svg");
+        if (svg) svg.setAttribute("fill", nowFav ? "currentColor" : "none");
+        showToast(nowFav ? "已收藏" : "已取消收藏");
+    });
+
+    return item;
+}
+
+function toggleShortsFavorite(bvid) {
+    // 复用主站收藏逻辑
+    const video = shortVideos.find(v => v.bvid === bvid);
+    if (!video) return false;
+    if (favorites[bvid]) {
+        delete favorites[bvid];
+        saveSettings();
+        return false;
+    } else {
+        favorites[bvid] = {
+            title: video.title,
+            up_name: video.up_name,
+            cover: video.cover || "",
+            categories: getVideoCategories(video),
+            favoritedAt: Date.now(),
+        };
+        saveSettings();
+        return true;
+    }
+}
+
+function formatDurationShort(sec) {
+    sec = parseInt(sec) || 0;
+    if (sec < 3600) return Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0");
+    return Math.floor(sec / 3600) + ":" + String(Math.floor((sec % 3600) / 60)).padStart(2, "0") + ":" + String(sec % 60).padStart(2, "0");
+}
+
+function loadShortsVideo(item, video) {
+    const wrap = item.querySelector(".shorts-player-wrap");
+    if (wrap.querySelector("iframe")) return;
+
+    const cover = wrap.querySelector(".shorts-cover");
+    if (cover) { cover.style.display = "none"; cover.classList.remove("paused"); }
+
+    const iframe = document.createElement("iframe");
+    iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
+    iframe.setAttribute("allow", "autoplay; fullscreen; encrypted-media; picture-in-picture");
+    iframe.setAttribute("scrolling", "no");
+    iframe.setAttribute("frameborder", "0");
+    iframe.setAttribute("referrerpolicy", "no-referrer");
+    iframe.src = video.iframe_url + "&autoplay=1";
+    wrap.appendChild(iframe);
+
+    iframe.addEventListener("load", function() {
+        try {
+            const doc = iframe.contentDocument || iframe.contentWindow.document;
+            doc.addEventListener("click", function(e) {
+                const a = e.target.closest("a");
+                if (a && a.href) { e.preventDefault(); e.stopPropagation(); }
+            }, true);
+            iframe.contentWindow.open = function() { return null; };
+        } catch(e) {}
+    });
+
+    if (_shortsPreventNav) window.removeEventListener("beforeunload", _shortsPreventNav);
+    _shortsPreventNav = function(e) { e.preventDefault(); e.returnValue = ""; return ""; };
+    window.addEventListener("beforeunload", _shortsPreventNav, { once: true });
+
+    const pauseOverlay = document.createElement("div");
+    pauseOverlay.className = "shorts-pause-overlay";
+    pauseOverlay.addEventListener("click", (e) => {
+        e.stopPropagation();
+        pauseShortsVideo(item);
+    });
+    wrap.appendChild(pauseOverlay);
+
+    item.dataset.loaded = "1";
+}
+
+function pauseShortsVideo(item) {
+    const wrap = item.querySelector(".shorts-player-wrap");
+    const iframe = wrap.querySelector("iframe");
+    const overlay = wrap.querySelector(".shorts-pause-overlay");
+    if (overlay) overlay.remove();
+    if (iframe) iframe.remove();
+    if (_shortsPreventNav) { window.removeEventListener("beforeunload", _shortsPreventNav); _shortsPreventNav = null; }
+    const cover = wrap.querySelector(".shorts-cover");
+    if (cover) { cover.style.display = ""; cover.classList.add("paused"); }
+    item.dataset.loaded = "0";
+}
+
+function cleanupShortsInvisible() {
+    let anyRemoved = false;
+    shortsRendered.forEach(entry => {
+        if (!entry.el) return;
+        if (entry.el.dataset.index !== String(shortsCurrentIndex)) {
+            const wrap = entry.el.querySelector(".shorts-player-wrap");
+            const iframe = wrap && wrap.querySelector("iframe");
+            if (iframe) {
+                iframe.remove();
+                entry.el.dataset.loaded = "0";
+                const cover = wrap.querySelector(".shorts-cover");
+                if (cover) cover.style.display = "";
+                anyRemoved = true;
+            }
+        }
+    });
+    if (anyRemoved && _shortsPreventNav) {
+        window.removeEventListener("beforeunload", _shortsPreventNav);
+        _shortsPreventNav = null;
+    }
+}
+
+function renderShortsInitial() {
+    const loadingEl = document.getElementById("shortsLoading");
+    if (loadingEl) loadingEl.remove();
+    shortsContainer.innerHTML = "";
+    shortsRendered = [];
+    const count = Math.min(3, shortVideos.length);
+    for (let i = 0; i < count; i++) {
+        const item = createShortsItem(shortVideos[i], i);
+        shortsContainer.appendChild(item);
+        shortsRendered.push({ el: item, video: shortVideos[i], index: i });
+    }
+}
+
+function setupShortsObserver() {
+    if (shortsObserver) shortsObserver.disconnect();
+    shortsObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && entry.intersectionRatio > 0.6) {
+                const idx = parseInt(entry.target.dataset.index, 10);
+                if (idx !== shortsCurrentIndex) {
+                    shortsCurrentIndex = idx;
+                    onShortsSlideChanged(idx);
+                }
+            }
+        });
+    }, { root: shortsContainer, threshold: [0.6] });
+    shortsRendered.forEach(entry => shortsObserver.observe(entry.el));
+}
+
+function onShortsSlideChanged(index) {
+    cleanupShortsInvisible();
+    const curEntry = shortsRendered.find(e => e.index === index);
+    if (curEntry && curEntry.el.dataset.loaded !== "1") {
+        loadShortsVideo(curEntry.el, curEntry.video);
+    }
+    const needIndex = index + SHORTS_RENDER_AHEAD;
+    if (needIndex < shortVideos.length && needIndex >= shortsRendered.length) {
+        const video = shortVideos[needIndex];
+        const item = createShortsItem(video, needIndex);
+        shortsContainer.appendChild(item);
+        shortsRendered.push({ el: item, video: video, index: needIndex });
+        if (shortsObserver) shortsObserver.observe(item);
+    }
+    if (index >= shortVideos.length - 2) {
+        const remaining = shortVideos.slice();
+        for (let i = remaining.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+        }
+        shortVideos = shortVideos.concat(remaining);
+    }
+}
+
+// 导航栏和返回按钮事件
+if (navHome) navHome.addEventListener("click", () => showShortsPage(false));
+if (navShorts) navShorts.addEventListener("click", () => showShortsPage(true));
+if (shortsBackBtn) shortsBackBtn.addEventListener("click", () => showShortsPage(false));
 
 function renderDigestPage() {
     if (!digestContentEl) return;
