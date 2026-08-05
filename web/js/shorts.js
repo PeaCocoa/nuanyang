@@ -170,6 +170,21 @@
         iframe.setAttribute("sandbox", "allow-scripts allow-same-origin allow-popups");
         wrap.appendChild(iframe);
 
+        // 拦截iframe内跳转，防止跳到B站网页或App
+        iframe.addEventListener("load", function() {
+            try {
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                doc.addEventListener("click", function(e) {
+                    const a = e.target.closest("a");
+                    if (a && a.href) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                }, true);
+                iframe.contentWindow.open = function() { return null; };
+            } catch(e) {}
+        });
+
         item.dataset.loaded = "1";
     }
 
