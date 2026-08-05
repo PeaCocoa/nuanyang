@@ -1,11 +1,14 @@
 // 暖阳 Service Worker v5 — 彻底解决缓存问题
 // 策略：HTML/JS/CSS 网络优先，videos.json 永远走网络，图片缓存优先
-const CACHE_VERSION = 'nuanyang-v11';
+const CACHE_VERSION = 'nuanyang-v12';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
+    '/shorts.html',
     '/css/style.css',
+    '/css/shorts.css',
     '/js/app.js',
+    '/js/shorts.js',
     '/manifest.json',
     '/favicon.png',
     '/icons/icon-192.png',
@@ -109,7 +112,8 @@ self.addEventListener('fetch', (event) => {
                     })
                     .catch(() => {
                         if (event.request.mode === 'navigate') {
-                            return caches.match('/index.html');
+                            return caches.match('/index.html',
+    '/shorts.html',);
                         }
                     });
             })

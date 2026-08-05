@@ -2871,3 +2871,96 @@ body[data-theme="liquid"] .digest-back-btn,
 body[data-theme="liquid"] .changelog-modal-close {
     border-radius: 999px !important;
 }
+
+
+/* === 底部导航栏 === */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--canvas);
+    backdrop-filter: blur(20px) saturate(120%);
+    -webkit-backdrop-filter: blur(20px) saturate(120%);
+    border-top: 1px solid var(--hairline);
+    display: flex;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    text-decoration: none;
+    color: var(--ash);
+    font-size: 11px;
+    transition: color 0.2s ease;
+}
+
+.bottom-nav-item.active {
+    color: var(--rausch);
+}
+
+.bottom-nav-item:active {
+    transform: scale(0.95);
+}
+
+/* 主站底部留出导航栏空间 */
+.video-list {
+    padding-bottom: 70px !important;
+}
+
+/* 大屏：底部导航变左侧 */
+@media (min-width: 768px) {
+    .bottom-nav {
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: auto;
+        width: 80px;
+        height: 100vh;
+        flex-direction: column;
+        border-top: none;
+        border-right: 1px solid var(--hairline);
+        padding-bottom: 0;
+    }
+
+    .bottom-nav-item {
+        flex-direction: column;
+        padding: 16px 0;
+    }
+
+    /* 大屏主站内容右移 */
+    .header,
+    .categories,
+    .video-list,
+    .digest-view,
+    #changelogModalOverlay {
+        margin-left: 80px;
+    }
+
+    .video-list {
+        padding-bottom: 20px !important;
+    }
+}
+
+/* 液态玻璃主题导航栏 */
+body[data-theme="liquid"] .bottom-nav {
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(24px) saturate(130%);
+    -webkit-backdrop-filter: blur(24px) saturate(130%);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+body[data-theme="liquid"] .bottom-nav-item {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+body[data-theme="liquid"] .bottom-nav-item.active {
+    color: var(--rausch);
+}
