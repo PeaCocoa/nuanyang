@@ -2885,7 +2885,7 @@ body[data-theme="liquid"] .changelog-modal-close {
     -webkit-backdrop-filter: blur(20px) saturate(120%);
     border-top: 1px solid var(--hairline);
     display: flex;
-    z-index: 100;
+    z-index: 300;
     padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
