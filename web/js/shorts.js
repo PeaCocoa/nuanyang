@@ -133,7 +133,7 @@
             </div>
         `;
 
-        // 点击封面播放
+        // 点击封面播放（封面也用于暂停后恢复）
         const cover = item.querySelector(".shorts-cover");
         cover.addEventListener("click", () => {
             loadVideoInItem(item, video);
@@ -168,7 +168,10 @@
         if (existingIframe) return;
 
         const cover = wrap.querySelector(".shorts-cover");
-        if (cover) cover.style.display = "none";
+        if (cover) {
+            cover.style.display = "none";
+            cover.classList.remove("paused");
+        }
 
         const iframe = document.createElement("iframe");
         // sandbox 不加 allow-popups（阻止window.open）
@@ -204,7 +207,38 @@
         _preventNavRef = preventNav;
         window.addEventListener("beforeunload", preventNav, { once: true });
 
+        // 添加点击遮罩用于暂停（覆盖在iframe上方，透明，捕获点击）
+        const pauseOverlay = document.createElement("div");
+        pauseOverlay.className = "shorts-pause-overlay";
+        pauseOverlay.addEventListener("click", (e) => {
+            e.stopPropagation();
+            pauseVideo(item, video);
+        });
+        wrap.appendChild(pauseOverlay);
+
         item.dataset.loaded = "1";
+    }
+
+    // === 暂停视频：删除iframe，显示封面+暂停图标 ===
+    function pauseVideo(item, video) {
+        const wrap = item.querySelector(".shorts-player-wrap");
+        const iframe = wrap.querySelector("iframe");
+        const overlay = wrap.querySelector(".shorts-pause-overlay");
+        if (overlay) overlay.remove();
+        if (iframe) iframe.remove();
+
+        // 移除 beforeunload 监听
+        if (_preventNavRef) {
+            window.removeEventListener("beforeunload", _preventNavRef);
+            _preventNavRef = null;
+        }
+
+        const cover = wrap.querySelector(".shorts-cover");
+        if (cover) {
+            cover.style.display = "";
+            cover.classList.add("paused");
+        }
+        item.dataset.loaded = "0";
     }
 
     // === 清理非当前卡片的iframe（停止后台播放）===

@@ -415,3 +415,35 @@ body[data-theme="night"] .bottom-nav {
 .toast.show {
     opacity: 1;
 }
+
+
+/* === 暂停遮罩 === */
+.shorts-pause-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* 暂停状态封面图标（显示暂停而非播放） */
+.shorts-cover.paused::after {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.shorts-cover.paused::before {
+    border-width: 0;
+    border-left-width: 0;
+    width: 20px;
+    height: 28px;
+    border-style: solid;
+    border-color: transparent;
+    border-left: 6px solid #fff;
+    border-right: 6px solid #fff;
+    transform: translate(-50%, -50%);
+    left: 50%;
+    top: 50%;
+}
