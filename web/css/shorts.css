@@ -319,51 +319,164 @@ body[data-theme="liquid"] .shorts-loading-text {
     color: rgba(255, 255, 255, 0.4);
 }
 
-/* 经典回忆 */
+/* === 浅色模式通用（auto/light/classic 在浅色下生效，排除 liquid） === */
 
-
-
-
-
-
-body[data-theme="classic"] .shorts-back-btn {
-    background: rgba(0, 0, 0, 0.06);
-    color: #333;
-}
-
-body[data-theme="classic"] .shorts-topbar-title {
-    color: #333;
-}
-
-/* 白日 */
-
-
-
-
-
-
-body[data-theme="daylight"] .shorts-back-btn {
-    background: rgba(0, 0, 0, 0.06);
-    color: #333;
-}
-
-body[data-theme="daylight"] .shorts-topbar-title {
-    color: #333;
-}
-
-body[data-theme="daylight"] .shorts-view {
+body[data-color-scheme="light"]:not([data-theme="liquid"]) .shorts-view {
     background: #fff;
 }
 
-body[data-theme="daylight"] .shorts-item {
+body[data-color-scheme="light"]:not([data-theme="liquid"]) .shorts-item {
     background: #fff;
 }
 
-body[data-theme="daylight"] .shorts-cover {
+body[data-color-scheme="light"]:not([data-theme="liquid"]) .shorts-cover {
     background: #f5f5f5;
 }
 
-/* 黑夜 */
+body[data-color-scheme="light"]:not([data-theme="liquid"]) .shorts-topbar {
+    background: linear-gradient(to bottom, rgba(255,255,255,0.7) 0%, transparent 100%);
+}
+
+body[data-color-scheme="light"]:not([data-theme="liquid"]) .shorts-back-btn {
+    background: rgba(0, 0, 0, 0.06);
+    color: #333;
+}
+
+body[data-color-scheme="light"]:not([data-theme="liquid"]) .shorts-topbar-title {
+    color: #333;
+    text-shadow: none;
+}
+
+body[data-color-scheme="light"]:not([data-theme="liquid"]) .shorts-title {
+    color: #222;
+    text-shadow: none;
+}
+
+body[data-color-scheme="light"]:not([data-theme="liquid"]) .shorts-meta {
+    color: rgba(0, 0, 0, 0.5);
+    text-shadow: none;
+}
+
+body[data-color-scheme="light"]:not([data-theme="liquid"]) .shorts-info {
+    background: linear-gradient(to top, rgba(255,255,255,0.6) 0%, transparent 100%);
+}
+
+body[data-color-scheme="light"]:not([data-theme="liquid"]) .shorts-action-btn {
+    background: rgba(0, 0, 0, 0.06);
+    color: #333;
+}
+
+body[data-color-scheme="light"]:not([data-theme="liquid"]) .shorts-loading {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+body[data-color-scheme="light"]:not([data-theme="liquid"]) .shorts-loading-spinner {
+    border-color: rgba(0, 0, 0, 0.1);
+    border-top-color: rgba(255, 56, 92, 0.9);
+}
+
+body[data-color-scheme="light"]:not([data-theme="liquid"]) .shorts-pause-overlay.paused {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+body[data-color-scheme="light"]:not([data-theme="liquid"]) .shorts-cover.paused {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+body[data-color-scheme="light"]:not([data-theme="liquid"]) .shorts-cover::after {
+    background: rgba(255, 56, 92, 0.85);
+}
+
+body[data-color-scheme="light"]:not([data-theme="liquid"]) .shorts-cover::before {
+    border-color: transparent transparent transparent #fff;
+}
+
+body[data-color-scheme="light"]:not([data-theme="liquid"]) .toast {
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+}
+
+/* === 经典回忆 专属覆盖 === */
+
+body[data-theme="classic"][data-color-scheme="light"] .shorts-view {
+    background: linear-gradient(180deg, #E8D5B0 0%, #DCC8A0 50%, #D0BC90 100%);
+}
+
+body[data-theme="classic"][data-color-scheme="light"] .shorts-item {
+    background: linear-gradient(180deg, #E8D5B0 0%, #DCC8A0 50%, #D0BC90 100%);
+}
+
+body[data-theme="classic"][data-color-scheme="light"] .shorts-cover {
+    background: #D0BC90;
+}
+
+body[data-theme="classic"][data-color-scheme="light"] .shorts-topbar {
+    background: linear-gradient(to bottom, rgba(139, 105, 20, 0.15) 0%, transparent 100%);
+}
+
+body[data-theme="classic"][data-color-scheme="light"] .shorts-back-btn {
+    background: rgba(139, 105, 20, 0.15);
+    color: #5A3F0A;
+}
+
+body[data-theme="classic"][data-color-scheme="light"] .shorts-topbar-title {
+    color: #5A3F0A;
+}
+
+body[data-theme="classic"][data-color-scheme="light"] .shorts-title {
+    color: #3A2806;
+}
+
+body[data-theme="classic"][data-color-scheme="light"] .shorts-meta {
+    color: rgba(90, 63, 10, 0.6);
+}
+
+body[data-theme="classic"][data-color-scheme="light"] .shorts-info {
+    background: linear-gradient(to top, rgba(232, 213, 176, 0.6) 0%, transparent 100%);
+}
+
+body[data-theme="classic"][data-color-scheme="light"] .shorts-action-btn {
+    background: rgba(139, 105, 20, 0.12);
+    color: #5A3F0A;
+}
+
+/* 经典回忆 暗色模式 */
+
+body[data-theme="classic"][data-color-scheme="dark"] .shorts-view {
+    background: linear-gradient(180deg, #2A1F0E 0%, #221800 50%, #1A1208 100%);
+}
+
+body[data-theme="classic"][data-color-scheme="dark"] .shorts-item {
+    background: linear-gradient(180deg, #2A1F0E 0%, #221800 50%, #1A1208 100%);
+}
+
+body[data-theme="classic"][data-color-scheme="dark"] .shorts-cover {
+    background: #1A1208;
+}
+
+body[data-theme="classic"][data-color-scheme="dark"] .shorts-back-btn {
+    background: rgba(200, 150, 50, 0.1);
+    color: #C0A060;
+}
+
+body[data-theme="classic"][data-color-scheme="dark"] .shorts-topbar-title {
+    color: #C0A060;
+}
+
+body[data-theme="classic"][data-color-scheme="dark"] .shorts-title {
+    color: #E8D5B0;
+}
+
+body[data-theme="classic"][data-color-scheme="dark"] .shorts-meta {
+    color: rgba(192, 160, 96, 0.6);
+}
+
+body[data-theme="classic"][data-color-scheme="dark"] .shorts-action-btn {
+    background: rgba(200, 150, 50, 0.08);
+    color: #C0A060;
+}
+
+/* 黑夜模式（auto/dark 在暗色下使用默认黑色，无需额外规则） */
 
 
 /* === Toast === */
