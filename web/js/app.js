@@ -660,7 +660,10 @@ function createShortsItem(video, index) {
     `;
 
     const cover = item.querySelector(".shorts-cover");
-    cover.addEventListener("click", () => loadShortsVideo(item, video));
+    cover.addEventListener("click", () => {
+        if (item.dataset.loaded === "1") return; // 已在播放，不处理(遮罩负责)
+        resumeShortsVideo(item);
+    });
 
     const favBtn = item.querySelector('[data-action="fav"]');
     favBtn.addEventListener("click", (e) => {
@@ -733,27 +736,22 @@ function loadShortsVideo(item, video) {
     _shortsPreventNav = function(e) { e.preventDefault(); e.returnValue = ""; return ""; };
     window.addEventListener("beforeunload", _shortsPreventNav, { once: true });
 
-    // 暂停/播放遮罩：点击切换，不删除iframe
+    // 暂停遮罩：单击暂停，双击收藏
     const pauseOverlay = document.createElement("div");
     pauseOverlay.className = "shorts-pause-overlay";
     
-    // 单击切换暂停/播放，双击收藏
     let clickTimer = null;
     pauseOverlay.addEventListener("click", (e) => {
         e.stopPropagation();
         if (clickTimer) {
-            // 双击 - 收藏
             clearTimeout(clickTimer);
             clickTimer = null;
-            // 触发收藏
             const favBtn = item.querySelector('[data-action="fav"]');
             if (favBtn) favBtn.click();
-            // 显示爱心动画
             showShortsHeart(item);
         } else {
             clickTimer = setTimeout(() => {
                 clickTimer = null;
-                // 单击 - 暂停
                 pauseShortsVideo(item);
             }, 250);
         }
@@ -777,60 +775,26 @@ function pauseShortsVideo(item) {
     const overlay = wrap.querySelector(".shorts-pause-overlay");
     const cover = wrap.querySelector(".shorts-cover");
     
-    if (!iframe) return; // 未加载直接返回
+    if (!iframe) return;
     
-    // 隐藏iframe但不删除，显示暂停封面叠层
-    iframe.style.visibility = "hidden";
+    // 删除iframe真正停止播放（B站iframe跨域无法postMessage暂停）
+    iframe.remove();
+    if (overlay) overlay.remove();
+    if (_shortsPreventNav) { window.removeEventListener("beforeunload", _shortsPreventNav); _shortsPreventNav = null; }
+    
+    // 显示封面作为暂停画面
     if (cover) {
         cover.style.display = "";
         cover.classList.add("paused");
-    }
-    // 遮罩变为恢复播放按钮
-    if (overlay) {
-        overlay.classList.add("paused");
-        // 替换点击事件：点击恢复播放
-        overlay.onclick = (e) => {
-            e.stopPropagation();
-            resumeShortsVideo(item);
-        };
     }
     item.dataset.loaded = "0";
 }
 
 function resumeShortsVideo(item) {
-    const wrap = item.querySelector(".shorts-player-wrap");
-    const iframe = wrap.querySelector("iframe");
-    const overlay = wrap.querySelector(".shorts-pause-overlay");
-    const cover = wrap.querySelector(".shorts-cover");
-    
-    if (!iframe) return;
-    
-    iframe.style.visibility = "visible";
-    if (cover) {
-        cover.style.display = "none";
-        cover.classList.remove("paused");
-    }
-    if (overlay) {
-        overlay.classList.remove("paused");
-        // 恢复点击暂停 + 双击收藏
-        let clickTimer = null;
-        overlay.onclick = (e) => {
-            e.stopPropagation();
-            if (clickTimer) {
-                clearTimeout(clickTimer);
-                clickTimer = null;
-                const favBtn = item.querySelector('[data-action="fav"]');
-                if (favBtn) favBtn.click();
-                showShortsHeart(item);
-            } else {
-                clickTimer = setTimeout(() => {
-                    clickTimer = null;
-                    pauseShortsVideo(item);
-                }, 250);
-            }
-        };
-    }
-    item.dataset.loaded = "1";
+    // 重新加载iframe（B站iframe跨域无法控制播放，只能重建）
+    const video = shortVideos[parseInt(item.dataset.index, 10)];
+    if (!video) return;
+    loadShortsVideo(item, video);
 }
 
 function cleanupShortsInvisible() {
