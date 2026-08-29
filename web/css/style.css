@@ -3012,3 +3012,137 @@ body[data-color-scheme="dark"]:not([data-theme="liquid"]):not([data-theme="class
     -webkit-backdrop-filter: blur(20px);
     border-color: rgba(255, 255, 255, 0.06);
 }
+
+/* === 公告 / 调试 弹窗 === */
+.announce-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 11000;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+}
+.announce-modal-overlay.show { display: flex; }
+.announce-modal {
+    background: var(--bg-elevated, #fff);
+    border-radius: var(--radius-lg, 16px);
+    max-width: 420px;
+    width: 100%;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: announcePop 0.25s ease;
+}
+@keyframes announcePop {
+    from { transform: scale(0.92); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+.announce-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--hairline, rgba(0,0,0,0.06));
+    flex-shrink: 0;
+}
+.announce-modal-header h3 {
+    margin: 0;
+    font-size: var(--font-lg, 17px);
+    font-weight: 700;
+}
+.announce-modal-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--mute, #999);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+.announce-modal-close:hover { color: var(--text, #333); }
+.announce-modal-body {
+    padding: 16px;
+    overflow-y: auto;
+    font-size: var(--font-md, 15px);
+    line-height: 1.6;
+    color: var(--text, #333);
+    word-break: break-word;
+}
+.announce-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--hairline, rgba(0,0,0,0.06));
+    flex-shrink: 0;
+}
+.announce-modal-btn {
+    background: var(--accent, #ff3b57);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-size: 14px;
+    cursor: pointer;
+}
+.announce-modal-btn:hover { opacity: 0.9; }
+
+/* 调试密码弹窗 */
+.debug-modal { max-width: 340px; }
+.debug-pwd-body {
+    padding: 20px 16px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.debug-pwd-body input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    border: 1px solid var(--hairline, rgba(0,0,0,0.15));
+    border-radius: 8px;
+    font-size: 15px;
+    background: var(--bg, #fff);
+    color: var(--text, #333);
+    outline: none;
+}
+.debug-pwd-body input:focus { border-color: var(--accent, #ff3b57); }
+.debug-pwd-error { color: #e74c3c; font-size: 13px; min-height: 18px; }
+
+/* 调试面板 */
+.debug-panel-body {
+    padding: 16px;
+    overflow-y: auto;
+    max-height: 55vh;
+}
+.debug-panel-body .settings-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--hairline, rgba(0,0,0,0.06));
+}
+
+/* 深色模式适配 */
+body.dark .announce-modal,
+body[data-theme="dark"] .announce-modal,
+body[data-theme="auto"][data-color-scheme="dark"] .announce-modal {
+    background: #1c1c1e;
+}
+body.dark .announce-modal-body,
+body[data-theme="dark"] .announce-modal-body,
+body[data-theme="auto"][data-color-scheme="dark"] .announce-modal-body {
+    color: #eee;
+}
+body.dark .debug-pwd-body input,
+body[data-theme="dark"] .debug-pwd-body input,
+body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
+    background: #2c2c2e;
+    color: #eee;
+    border-color: rgba(255,255,255,0.15);
+}

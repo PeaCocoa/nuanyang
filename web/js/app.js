@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-05 20:30"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-18 20:30"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -219,9 +219,8 @@ window.addEventListener("storage", (e) => {
         refreshList();
     } else if (e.key === STORAGE_KEYS.digest) {
         digestToggle.checked = settings.digest;
-        const dBtn = document.getElementById("digestBtn");
-        if (dBtn) dBtn.style.display = settings.digest ? "" : "none";
         if (!settings.digest && currentView === "digest") showDigestPage(false);
+        if (typeof applyCloudConfig === "function") applyCloudConfig();
     } else if (e.key === STORAGE_KEYS.history || e.key === STORAGE_KEYS.favorites) {
         // 观看记录或收藏变化，刷新当前视图
         if (currentView === "digest") {
@@ -2080,3 +2079,289 @@ searchClear.addEventListener("click", () => {
     refreshList();
     searchInput.focus();
 });
+
+
+// =====================
+// 云控系统（功能开关 / 灰度 / 公告 / 调试模式）
+// =====================
+const CLOUD_CACHE_KEY = 'nuanyang_cloud_cache';
+const GRAY_PREFIX = 'nuanyang_gray_';
+const DEBUG_FLAG_KEY = 'nuanyang_debug_mode';
+const DEBUG_SETTINGS_KEY = 'nuanyang_debug_settings';
+const ANNOUNCE_SEEN_KEY = 'nuanyang_announce_seen';
+
+let cloudConfig = null;
+let debugEnabled = false;
+let debugSettings = null;
+
+// 从本地缓存加载（立即应用避免闪烁）
+try {
+    const cached = localStorage.getItem(CLOUD_CACHE_KEY);
+    if (cached) cloudConfig = JSON.parse(cached);
+} catch (e) {}
+try {
+    debugEnabled = localStorage.getItem(DEBUG_FLAG_KEY) === '1';
+    const ds = localStorage.getItem(DEBUG_SETTINGS_KEY);
+    if (ds) debugSettings = JSON.parse(ds);
+} catch (e) {}
+
+if (cloudConfig) applyCloudConfig();
+
+// fetch 云端最新配置
+fetch('data/cloud_config.json?t=' + Date.now())
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(cfg => {
+        cloudConfig = cfg;
+        try { localStorage.setItem(CLOUD_CACHE_KEY, JSON.stringify(cfg)); } catch (e) {}
+        applyCloudConfig();
+    })
+    .catch(() => {});
+
+function getEffectiveConfig() {
+    if (!cloudConfig) return { features: {}, announcement: { enabled: false, title: '', content: '' }, debug: {} };
+    return cloudConfig;
+}
+
+function getDebugOverride() {
+    return (debugEnabled && debugSettings) ? debugSettings : null;
+}
+
+// 灰度抽签：本地保存结果，抽过不再重抽
+function grayResult(key, prob) {
+    const k = GRAY_PREFIX + key;
+    let v = null;
+    try { v = localStorage.getItem(k); } catch (e) {}
+    if (v === null) {
+        v = (Math.random() < prob) ? '1' : '0';
+        try { localStorage.setItem(k, v); } catch (e) {}
+    }
+    return v === '1';
+}
+
+// 判断功能是否可见（调试本机设置优先于云控）
+function isFeatureVisible(key) {
+    const dbg = getDebugOverride();
+    if (dbg && dbg.features && dbg.features[key]) {
+        const f = dbg.features[key];
+        if (!f.enabled) return false;
+        if (f.gray) return grayResult(key, f.gray_probability || 0);
+        return true;
+    }
+    const cfg = getEffectiveConfig();
+    const feat = (cfg.features || {})[key];
+    if (!feat) return true;
+    if (!feat.enabled) return false;
+    if (feat.gray) return grayResult(key, feat.gray_probability || 0);
+    return true;
+}
+
+// 应用功能开关
+function applyCloudConfig() {
+    // 短视频
+    if (navShorts) navShorts.style.display = isFeatureVisible('shorts') ? '' : 'none';
+    // 液态玻璃
+    const showLiquid = isFeatureVisible('liquid');
+    document.querySelectorAll('.skin-option[data-theme="liquid"]').forEach(el => {
+        el.style.display = showLiquid ? '' : 'none';
+    });
+    if (liquidIntensityRow) {
+        liquidIntensityRow.style.display = (showLiquid && settings.theme === 'liquid') ? '' : 'none';
+    }
+    // 每日摘要
+    const showDigest = isFeatureVisible('daily_digest');
+    if (digestToggle) {
+        const row = digestToggle.closest('.settings-row');
+        if (row) row.style.display = showDigest ? '' : 'none';
+    }
+    if (digestBtn) digestBtn.style.display = (showDigest && settings.digest) ? '' : 'none';
+    // 公告
+    setupAnnounceBtn();
+    applyAnnouncement();
+    // 调试入口
+    setupDebugMode();
+}
+
+// === 公告 ===
+function setupAnnounceBtn() {
+    const btn = document.getElementById('announceBtn');
+    if (!btn) return;
+    const cfg = getEffectiveConfig();
+    const ann = cfg.announcement || {};
+    btn.style.display = (ann.enabled && ann.title) ? '' : 'none';
+    btn.onclick = () => {
+        const a = getEffectiveConfig().announcement || {};
+        if (a.title) showAnnounceModal(a.title, a.content || '');
+    };
+}
+
+function applyAnnouncement() {
+    const cfg = getEffectiveConfig();
+    const ann = cfg.announcement || {};
+    if (!ann.enabled || !ann.title) return;
+    const today = new Date().toDateString();
+    let seen = null;
+    try { seen = localStorage.getItem(ANNOUNCE_SEEN_KEY); } catch (e) {}
+    if (seen !== today) {
+        try { localStorage.setItem(ANNOUNCE_SEEN_KEY, today); } catch (e) {}
+        showAnnounceModal(ann.title, ann.content || '');
+    }
+}
+
+function showAnnounceModal(title, content) {
+    const overlay = document.getElementById('announceModal');
+    if (!overlay) return;
+    const titleEl = document.getElementById('announceModalTitle');
+    const contentEl = document.getElementById('announceModalContent');
+    if (titleEl) titleEl.textContent = title;
+    if (contentEl) contentEl.innerHTML = String(content || '').replace(/\n/g, '<br>');
+    overlay.classList.add('show');
+}
+
+function closeAnnounceModal() {
+    const overlay = document.getElementById('announceModal');
+    if (overlay) overlay.classList.remove('show');
+}
+
+// === 调试模式（点击标题9次 + 密码） ===
+function setupDebugMode() {
+    const headerTitle = document.querySelector('.header-title');
+    if (!headerTitle || headerTitle.dataset.cloudBound) return;
+    headerTitle.dataset.cloudBound = '1';
+    let clicks = 0;
+    let timer = null;
+    headerTitle.addEventListener('click', () => {
+        clicks++;
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => { clicks = 0; }, 3000);
+        if (clicks >= 9) {
+            clicks = 0;
+            showDebugPwdModal();
+        }
+    });
+}
+
+async function sha256Hex(str) {
+    try {
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) { return ''; }
+}
+
+function showDebugPwdModal() {
+    const overlay = document.getElementById('debugPwdModal');
+    if (!overlay) return;
+    overlay.classList.add('show');
+    const input = document.getElementById('debugPwdInput');
+    if (input) { input.value = ''; input.focus(); }
+    const err = document.getElementById('debugPwdError');
+    if (err) err.textContent = '';
+}
+
+function closeDebugPwdModal() {
+    const overlay = document.getElementById('debugPwdModal');
+    if (overlay) overlay.classList.remove('show');
+}
+
+async function verifyDebugPwd() {
+    const input = document.getElementById('debugPwdInput');
+    const hash = (getEffectiveConfig().debug && getEffectiveConfig().debug.password_hash) || '';
+    if (!input || !hash) { closeDebugPwdModal(); return; }
+    const pwdHash = await sha256Hex(input.value);
+    if (pwdHash === hash) {
+        debugEnabled = true;
+        try { localStorage.setItem(DEBUG_FLAG_KEY, '1'); } catch (e) {}
+        if (!debugSettings) {
+            debugSettings = {
+                features: {
+                    shorts: { enabled: true, gray: false, gray_probability: 0 },
+                    liquid: { enabled: true, gray: false, gray_probability: 0 },
+                    daily_digest: { enabled: true, gray: false, gray_probability: 0 }
+                },
+                announcement: { enabled: false, title: '', content: '' }
+            };
+            try { localStorage.setItem(DEBUG_SETTINGS_KEY, JSON.stringify(debugSettings)); } catch (e) {}
+        }
+        closeDebugPwdModal();
+        showDebugPanel();
+        applyCloudConfig();
+    } else {
+        const err = document.getElementById('debugPwdError');
+        if (err) err.textContent = '密码错误';
+    }
+}
+
+// === 调试面板（本机设置，和云控相同项） ===
+function showDebugPanel() {
+    const panel = document.getElementById('debugPanel');
+    if (!panel) return;
+    renderDebugPanel();
+    panel.classList.add('show');
+}
+
+function closeDebugPanel() {
+    const panel = document.getElementById('debugPanel');
+    if (panel) panel.classList.remove('show');
+}
+
+function renderDebugPanel() {
+    const list = document.getElementById('debugFeatureList');
+    if (!list) return;
+    const FEATURES = [
+        { key: 'shorts', label: '短视频', desc: '底部导航短视频刷流' },
+        { key: 'liquid', label: '液态玻璃', desc: '液态玻璃主题外观' },
+        { key: 'daily_digest', label: '每日摘要', desc: '每日摘要/祝语/今日推荐' },
+    ];
+    list.innerHTML = FEATURES.map(f => {
+        const feat = debugSettings.features[f.key] || { enabled: true, gray: false, gray_probability: 0 };
+        const pct = Math.round((feat.gray_probability || 0) * 100);
+        return `
+        <div class="settings-row">
+            <div class="settings-row-label">
+                <span class="settings-row-name">${f.label}</span>
+                <span class="settings-row-desc">${f.desc}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:12px;color:var(--mute);">灰度</span>
+                <label class="toggle" style="margin:0;">
+                    <input type="checkbox" ${feat.gray ? 'checked' : ''} onchange="setDebugGray('${f.key}',this.checked)">
+                    <span class="toggle-slider"></span>
+                </label>
+                <input type="range" min="0" max="100" value="${pct}" style="width:70px;" oninput="setDebugProb('${f.key}',this.value)">
+                <span id="debugPct_${f.key}" style="font-size:12px;color:var(--mute);width:36px;">${pct}%</span>
+                <label class="toggle" style="margin:0;">
+                    <input type="checkbox" ${feat.enabled ? 'checked' : ''} onchange="setDebugEnabled('${f.key}',this.checked)">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function setDebugEnabled(key, val) {
+    debugSettings.features[key].enabled = val;
+    saveDebugSettings();
+    applyCloudConfig();
+}
+function setDebugGray(key, val) {
+    debugSettings.features[key].gray = val;
+    saveDebugSettings();
+}
+function setDebugProb(key, val) {
+    debugSettings.features[key].gray_probability = parseInt(val) / 100;
+    document.getElementById('debugPct_' + key).textContent = val + '%';
+    saveDebugSettings();
+}
+
+function saveDebugSettings() {
+    try { localStorage.setItem(DEBUG_SETTINGS_KEY, JSON.stringify(debugSettings)); } catch (e) {}
+}
+
+function exitDebugMode() {
+    debugEnabled = false;
+    try { localStorage.removeItem(DEBUG_FLAG_KEY); } catch (e) {}
+    try { localStorage.removeItem(DEBUG_SETTINGS_KEY); } catch (e) {}
+    debugSettings = null;
+    closeDebugPanel();
+    applyCloudConfig();
+}
+

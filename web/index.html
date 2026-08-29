@@ -16,9 +16,9 @@
     <link rel="icon" href="favicon.png" type="image/png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <title>暖阳 - 精选好视频</title>
-    <link rel="stylesheet" href="css/style.css?v=50">
+    <link rel="stylesheet" href="css/style.css?v=51">
 
-    <link rel="stylesheet" href="css/shorts.css?v=50">
+    <link rel="stylesheet" href="css/shorts.css?v=51">
     <link rel="dns-prefetch" href="//i0.hdslb.com">
     <link rel="dns-prefetch" href="//i1.hdslb.com">
     <link rel="dns-prefetch" href="//i2.hdslb.com">
@@ -38,6 +38,11 @@
             <p class="header-subtitle">精选好视频，温暖每一天</p>
         </div>
         <div class="header-right">
+            <button class="header-btn" id="announceBtn" aria-label="公告" style="display:none;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+            </button>
             <button class="header-btn" id="digestBtn" aria-label="每日摘要" style="display:none;">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
@@ -619,6 +624,59 @@
     </div>
 </div>
 
+
+    <!-- 公告弹窗 -->
+    <div class="announce-modal-overlay" id="announceModal">
+        <div class="announce-modal">
+            <div class="announce-modal-header">
+                <h3 id="announceModalTitle">公告</h3>
+                <button class="announce-modal-close" onclick="closeAnnounceModal()" aria-label="关闭">&times;</button>
+            </div>
+            <div class="announce-modal-body" id="announceModalContent"></div>
+            <div class="announce-modal-footer">
+                <button class="announce-modal-btn" onclick="closeAnnounceModal()">知道了</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 调试密码弹窗 -->
+    <div class="announce-modal-overlay" id="debugPwdModal">
+        <div class="announce-modal debug-modal">
+            <div class="announce-modal-header">
+                <h3>调试模式</h3>
+                <button class="announce-modal-close" onclick="closeDebugPwdModal()" aria-label="关闭">&times;</button>
+            </div>
+            <div class="debug-pwd-body">
+                <input type="password" id="debugPwdInput" placeholder="输入调试密码" autocomplete="off"
+                       onkeydown="if(event.key==='Enter')verifyDebugPwd()">
+                <div class="debug-pwd-error" id="debugPwdError"></div>
+            </div>
+            <div class="announce-modal-footer">
+                <button class="announce-modal-btn" onclick="verifyDebugPwd()">进入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 调试面板 -->
+    <div class="announce-modal-overlay" id="debugPanel">
+        <div class="announce-modal debug-modal" style="max-width:600px;">
+            <div class="announce-modal-header">
+                <h3>调试模式 · 本机设置</h3>
+                <button class="announce-modal-close" onclick="closeDebugPanel()" aria-label="关闭">&times;</button>
+            </div>
+            <div class="debug-panel-body">
+                <div class="settings-section">
+                    <h3 class="settings-section-title">功能开关（本机覆盖云控，仅当前设备生效）</h3>
+                    <div id="debugFeatureList"></div>
+                </div>
+            </div>
+            <div class="announce-modal-footer" style="justify-content:space-between;">
+                <button class="announce-modal-btn" style="background:transparent;color:#e74c3c;border:1px solid #e74c3c;" onclick="exitDebugMode()">退出调试模式</button>
+                <button class="announce-modal-btn" onclick="closeDebugPanel()">关闭</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 底部导航栏 -->
     <nav class="bottom-nav" id="bottomNav">
         <button class="bottom-nav-item active" id="navHome">
@@ -635,11 +693,11 @@
         </button>
     </nav>
 
-    <script src="js/app.js?v=50"></script>
+    <script src="js/app.js?v=51"></script>
     <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js?v=50').catch(function(){});
+            navigator.serviceWorker.register('/sw.js?v=51').catch(function(){});
         });
     }
     </script>

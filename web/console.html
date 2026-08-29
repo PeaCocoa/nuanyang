@@ -645,6 +645,7 @@
         <div class="tab active" data-tab="monitor" onclick="switchTab('monitor')">监控</div>
         <div class="tab" data-tab="workflow" onclick="switchTab('workflow')">工作流</div>
         <div class="tab" data-tab="settings" onclick="switchTab('settings')">设置</div>
+        <div class="tab" data-tab="cloud" onclick="switchTab('cloud')">云控</div>
     </div>
 
     <!-- 监控面板 -->
@@ -882,6 +883,57 @@
         </div>
     </div>
 
+
+    <!-- 云控面板 -->
+    <div class="main" id="tab-cloud" style="display:none;">
+        <div class="right-panel">
+            <div class="settings-panel">
+                <!-- 功能开关 -->
+                <div class="settings-group">
+                    <div class="settings-group-title">功能开关</div>
+                    <div class="settings-desc" style="margin-bottom:10px;">未启用的功能在主站不显示入口；开启灰度后按概率抽中才显示，抽签在用户设备本地进行</div>
+                    <div id="cloudFeatureList"></div>
+                </div>
+                <!-- 公告 -->
+                <div class="settings-group">
+                    <div class="settings-group-title">公告推送</div>
+                    <div class="settings-row">
+                        <div>
+                            <div class="settings-label">启用公告</div>
+                            <div class="settings-desc">开启后主站首次进入弹出公告，之后可从顶部铃铛按钮查看</div>
+                        </div>
+                        <div class="toggle" id="cloudAnnounceToggle" onclick="this.classList.toggle('on');"></div>
+                    </div>
+                    <div class="settings-row">
+                        <div>
+                            <div class="settings-label">公告标题</div>
+                        </div>
+                        <input type="text" class="settings-input" id="cloudAnnounceTitle" placeholder="公告标题" value="">
+                    </div>
+                    <div class="settings-row">
+                        <div>
+                            <div class="settings-label">公告内容</div>
+                        </div>
+                        <textarea class="settings-input" id="cloudAnnounceContent" rows="4" placeholder="公告正文内容" style="height:80px;resize:vertical;"></textarea>
+                    </div>
+                </div>
+                <!-- 调试密码 -->
+                <div class="settings-group">
+                    <div class="settings-group-title">调试模式密码</div>
+                    <div class="settings-desc" style="margin-bottom:10px;">主站点击顶部标题9次后输入此密码进入调试模式。以SHA-256哈希存储。留空则不修改。</div>
+                    <input type="password" class="settings-input" id="cloudDebugPwd" placeholder="输入新密码（留空保持不变）" autocomplete="new-password">
+                    <div class="settings-desc" style="margin-top:8px;">当前密码哈希：<code id="cloudDebugHash" style="word-break:break-all;">-</code></div>
+                </div>
+                <!-- 保存 -->
+                <div style="display:flex;gap:12px;margin-top:20px;">
+                    <button class="btn btn-green" onclick="saveCloudConfig()">保存并推送</button>
+                    <button class="btn btn-outline" onclick="loadCloudConfig()">重置</button>
+                </div>
+                <div class="settings-desc" style="margin-top:16px;">保存后会自动写入仓库 web/data/cloud_config.json 并推送，GitHub Pages 部署后主站生效（约1-2分钟）。</div>
+            </div>
+        </div>
+    </div>
+
     <div class="toast" id="toast"></div>
 
     <script>
@@ -903,8 +955,10 @@
             document.getElementById('tab-monitor').style.display = tab === 'monitor' ? 'flex' : 'none';
             document.getElementById('tab-settings').style.display = tab === 'settings' ? 'flex' : 'none';
             document.getElementById('tab-workflow').style.display = tab === 'workflow' ? 'flex' : 'none';
+            document.getElementById('tab-cloud').style.display = tab === 'cloud' ? 'flex' : 'none';
             if (tab === 'settings') loadSettings();
             if (tab === 'workflow') { if (!flowEditor) { initDrawflow(); setupCanvasDrop(); } loadFlowWorkflows(); }
+            if (tab === 'cloud') loadCloudConfig();
         }
 
         // === 主题 ===
@@ -1555,6 +1609,92 @@
             loadUpmasters().catch(function(){});
             loadFlowWorkflows().catch(function(){});
             loadSettings().catch(function(){});
+        }
+
+
+        // === 云控 ===
+        let cloudData = { features: {}, announcement: { enabled: false, title: '', content: '' }, debug: { password_hash: '' } };
+        const CLOUD_FEATURES = [
+            { key: 'shorts', label: '短视频', desc: '底部导航短视频刷流' },
+            { key: 'liquid', label: '液态玻璃', desc: '液态玻璃主题外观' },
+            { key: 'daily_digest', label: '每日摘要', desc: '每日摘要/祝语/今日推荐' },
+        ];
+
+        async function loadCloudConfig() {
+            try {
+                const resp = await fetch('/api/cloud');
+                cloudData = await resp.json();
+                renderCloudConfig();
+            } catch (e) { showToast('加载云控失败'); }
+        }
+
+        function renderCloudConfig() {
+            cloudData.features = cloudData.features || {};
+            const list = document.getElementById('cloudFeatureList');
+            list.innerHTML = CLOUD_FEATURES.map(f => {
+                if (!cloudData.features[f.key]) cloudData.features[f.key] = { enabled: true, gray: false, gray_probability: 0 };
+                const feat = cloudData.features[f.key];
+                const pct = Math.round((feat.gray_probability || 0) * 100);
+                return `
+                <div class="settings-row">
+                    <div>
+                        <div class="settings-label">${f.label}</div>
+                        <div class="settings-desc">${f.desc}</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:12px;color:var(--mute);">灰度</span>
+                        <div class="toggle ${feat.gray ? 'on' : ''}" onclick="toggleCloudGray('${f.key}',this)"></div>
+                        <input type="range" min="0" max="100" value="${pct}" style="width:80px;" oninput="cloudGraySlider('${f.key}',this.value)">
+                        <span id="cloudGrayPct_${f.key}" style="font-size:12px;color:var(--mute);width:36px;">${pct}%</span>
+                        <div class="toggle ${feat.enabled ? 'on' : ''}" onclick="toggleCloudFeature('${f.key}',this)"></div>
+                    </div>
+                </div>`;
+            }).join('');
+            document.getElementById('cloudAnnounceToggle').classList.toggle('on', !!cloudData.announcement.enabled);
+            document.getElementById('cloudAnnounceTitle').value = cloudData.announcement.title || '';
+            document.getElementById('cloudAnnounceContent').value = cloudData.announcement.content || '';
+            const hash = cloudData.debug.password_hash;
+            document.getElementById('cloudDebugHash').textContent = hash ? hash.slice(0, 24) + '...' : '未设置';
+        }
+
+        function toggleCloudFeature(key, el) {
+            cloudData.features[key].enabled = !cloudData.features[key].enabled;
+            el.classList.toggle('on', cloudData.features[key].enabled);
+        }
+        function toggleCloudGray(key, el) {
+            cloudData.features[key].gray = !cloudData.features[key].gray;
+            el.classList.toggle('on', cloudData.features[key].gray);
+        }
+        function cloudGraySlider(key, val) {
+            cloudData.features[key].gray_probability = parseInt(val) / 100;
+            document.getElementById('cloudGrayPct_' + key).textContent = val + '%';
+        }
+
+        async function sha256(str) {
+            const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function saveCloudConfig() {
+            cloudData.announcement.enabled = document.getElementById('cloudAnnounceToggle').classList.contains('on');
+            cloudData.announcement.title = document.getElementById('cloudAnnounceTitle').value.trim();
+            cloudData.announcement.content = document.getElementById('cloudAnnounceContent').value.trim();
+            const pwd = document.getElementById('cloudDebugPwd').value;
+            if (pwd) cloudData.debug.password_hash = await sha256(pwd);
+            try {
+                const resp = await fetch('/api/cloud/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(cloudData),
+                });
+                const data = await resp.json();
+                if (data.ok) {
+                    cloudData = data.cloud;
+                    document.getElementById('cloudDebugPwd').value = '';
+                    renderCloudConfig();
+                    showToast(data.msg || '已保存并推送');
+                } else showToast(data.msg || '保存失败');
+            } catch (e) { showToast('无法连接服务器'); }
         }
 
         init();

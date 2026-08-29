@@ -28,6 +28,14 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 CONSOLE_PORT = 8899
 WORKFLOWS_FILE = os.path.join(DATA_DIR, "workflows.json")
 CURRENT_WF_FILE = os.path.join(DATA_DIR, "current_workflow.json")
+CLOUD_FILE = os.path.join(WEB_DIR, "data", "cloud_config.json")
+DEFAULT_CLOUD = {
+    "config_version": 1,
+    "updated_at": "",
+    "features": {},
+    "announcement": {"enabled": False, "title": "", "content": ""},
+    "debug": {"password_hash": ""}
+}
 
 # =====================
 # 工作流存储
@@ -51,6 +59,62 @@ def _save_upmasters(ups_list):
     data = {"upmasters": ups_list}
     with open(UPMASTERS_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+
+# =====================
+# 云控配置存储
+# =====================
+
+def _load_cloud_config():
+    """读取云控配置 web/data/cloud_config.json"""
+    try:
+        if os.path.isfile(CLOUD_FILE):
+            with open(CLOUD_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            merged = dict(DEFAULT_CLOUD)
+            merged.update(data)
+            merged.setdefault("features", {})
+            merged.setdefault("announcement", DEFAULT_CLOUD["announcement"])
+            merged.setdefault("debug", DEFAULT_CLOUD["debug"])
+            return merged
+    except Exception:
+        pass
+    return dict(DEFAULT_CLOUD)
+
+def _save_cloud_config(data):
+    """保存云控配置到 web/data/cloud_config.json"""
+    merged = dict(DEFAULT_CLOUD)
+    merged.update(data)
+    merged["updated_at"] = time.strftime("%Y-%m-%d %H:%M")
+    os.makedirs(os.path.dirname(CLOUD_FILE), exist_ok=True)
+    with open(CLOUD_FILE, "w", encoding="utf-8") as f:
+        json.dump(merged, f, ensure_ascii=False, indent=2)
+    return merged
+
+def _cloud_git_push():
+    """仅提交并推送云控配置到GitHub（最多重试3次，间隔20秒）"""
+    try:
+        for attempt in range(3):
+            try:
+                subprocess.run(["git", "add", os.path.relpath(CLOUD_FILE, BASE_DIR)],
+                               cwd=BASE_DIR, capture_output=True, text=True, timeout=30)
+                result = subprocess.run(
+                    ["git", "commit", "-m", f"云控配置更新 {time.strftime('%Y-%m-%d %H:%M')}"],
+                    cwd=BASE_DIR, capture_output=True, text=True, timeout=30)
+                result = subprocess.run(
+                    ["git", "push", "origin", "main"],
+                    cwd=BASE_DIR, capture_output=True, text=True, timeout=60)
+                if result.returncode == 0:
+                    print("[云控] 推送成功")
+                    return True
+                else:
+                    print(f"[云控] 推送失败: {result.stderr[:150]}", )
+            except Exception as e:
+                print(f"[云控] 推送异常: {e}")
+            if attempt < 2:
+                time.sleep(20)
+    except Exception:
+        pass
+    return False
 
 # 爬虫子进程引用
 _crawl_process = None
@@ -82,6 +146,9 @@ class ConsoleHandler(http.server.SimpleHTTPRequestHandler):
             return
         if path == "/api/workflows":
             self._serve_json(_load_workflows())
+            return
+        if path == "/api/cloud":
+            self._serve_json(_load_cloud_config())
             return
         if path.startswith("/data/"):
             self._serve_data_file()
@@ -120,6 +187,9 @@ class ConsoleHandler(http.server.SimpleHTTPRequestHandler):
             return
         if self.path == "/api/upmasters/delete":
             self._handle_delete_upmaster()
+            return
+        if self.path == "/api/cloud/save":
+            self._handle_save_cloud()
             return
         self.send_error(404)
 
@@ -376,6 +446,17 @@ class ConsoleHandler(http.server.SimpleHTTPRequestHandler):
             settings_data = self._read_json_body()
             saved = status.save_settings(settings_data)
             self._serve_json({"ok": True, "settings": saved})
+        except Exception as e:
+            self._serve_json({"ok": False, "msg": str(e)})
+
+    def _handle_save_cloud(self):
+        """保存云控配置并推送到GitHub"""
+        try:
+            data = self._read_json_body()
+            saved = _save_cloud_config(data)
+            pushed = _cloud_git_push()
+            self._serve_json({"ok": True, "cloud": saved, "pushed": pushed,
+                              "msg": "已保存" + ("并推送" if pushed else "，推送失败请检查网络")})
         except Exception as e:
             self._serve_json({"ok": False, "msg": str(e)})
 

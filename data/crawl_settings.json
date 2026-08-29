@@ -39,15 +39,15 @@
     "哔哩哔哩纪录片",
     "纪录片之家字幕组"
   ],
+  "up_priority": "science_last",
   "max_videos_per_up": 50,
-  "pubdate_days": 0,
-  "duration_min": 30,
-  "duration_max": 3600,
+  "pubdate_days": 180,
+  "duration_min": 15,
+  "duration_max": 1800,
   "test_mode": false,
-  "total_limit": 1300,
+  "total_limit": 1450,
   "delay_between_ups": 1,
   "delay_between_pages": 1,
   "batch_size": 0,
-  "batch_delay": 60,
-  "up_priority": "science_last"
+  "batch_delay": 60
 }
