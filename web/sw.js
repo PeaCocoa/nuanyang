@@ -1,6 +1,6 @@
 // 暖阳 Service Worker v5 — 彻底解决缓存问题
 // 策略：HTML/JS/CSS 网络优先，videos.json 永远走网络，图片缓存优先
-const CACHE_VERSION = 'nuanyang-v37';
+const CACHE_VERSION = 'nuanyang-v38';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
@@ -50,7 +50,7 @@ self.addEventListener('fetch', (event) => {
     }
 
     // === videos.json / cloud_config.json / changelog.json：永远走网络，绝不缓存 ===
-    if (url.pathname.includes('/data/videos.json') || url.pathname.includes('/data/cloud_config.json') || url.pathname.includes('/data/changelog.json')) {
+    if (url.pathname.includes('/data/videos.json') || url.pathname.includes('/data/cloud_config.json') || url.pathname.includes('/data/changelog.json') || url.pathname.includes('/data/version_changelog.json')) {
         event.respondWith(
             fetch(event.request.url + '?t=' + Date.now(), {
                 cache: 'no-store',
