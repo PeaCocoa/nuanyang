@@ -16,9 +16,9 @@
     <link rel="icon" href="favicon.png" type="image/png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <title>暖阳 - 精选好视频</title>
-    <link rel="stylesheet" href="css/style.css?v=52">
+    <link rel="stylesheet" href="css/style.css?v=53">
 
-    <link rel="stylesheet" href="css/shorts.css?v=52">
+    <link rel="stylesheet" href="css/shorts.css?v=53">
     <link rel="dns-prefetch" href="//i0.hdslb.com">
     <link rel="dns-prefetch" href="//i1.hdslb.com">
     <link rel="dns-prefetch" href="//i2.hdslb.com">
@@ -177,6 +177,7 @@
 
                 <p class="settings-hint">该算法运行在本地，我们不上传您的观看数据。</p>
 
+                <div id="digestSettingsGroup">
                 <div class="settings-row">
                     <div class="settings-row-label">
                         <span class="settings-row-name">每日摘要</span>
@@ -200,6 +201,7 @@
                         <input type="range" class="range-slider" id="batchRange" min="4" max="10" step="2" value="6">
                         <span class="slider-label">10条</span>
                     </div>
+                </div>
                 </div>
 
                 <div class="settings-row" id="clearHistoryRow">
@@ -693,11 +695,11 @@
         </button>
     </nav>
 
-    <script src="js/app.js?v=52"></script>
+    <script src="js/app.js?v=53"></script>
     <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js?v=52').catch(function(){});
+            navigator.serviceWorker.register('/sw.js?v=53').catch(function(){});
         });
     }
     </script>

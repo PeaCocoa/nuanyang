@@ -2169,10 +2169,8 @@ function applyCloudConfig() {
     }
     // 每日摘要
     const showDigest = isFeatureVisible('daily_digest');
-    if (digestToggle) {
-        const row = digestToggle.closest('.settings-row');
-        if (row) row.style.display = showDigest ? '' : 'none';
-    }
+    const digestGroup = document.getElementById('digestSettingsGroup');
+    if (digestGroup) digestGroup.style.display = showDigest ? '' : 'none';
     if (digestBtn) digestBtn.style.display = (showDigest && settings.digest) ? '' : 'none';
     // 公告
     setupAnnounceBtn();
