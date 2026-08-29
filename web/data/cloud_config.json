@@ -1,27 +1,21 @@
 {
   "config_version": 1,
-  "updated_at": "2026-08-18 20:00",
+  "updated_at": "2026-08-29 11:51",
   "features": {
     "shorts": {
       "enabled": true,
       "gray": false,
-      "gray_probability": 0,
-      "label": "短视频",
-      "desc": "底部导航短视频刷流"
+      "gray_probability": 0
     },
     "liquid": {
       "enabled": true,
       "gray": false,
-      "gray_probability": 0,
-      "label": "液态玻璃",
-      "desc": "液态玻璃主题外观"
+      "gray_probability": 0
     },
     "daily_digest": {
       "enabled": true,
       "gray": false,
-      "gray_probability": 0,
-      "label": "每日摘要",
-      "desc": "每日摘要/祝语/今日推荐"
+      "gray_probability": 0
     }
   },
   "announcement": {
