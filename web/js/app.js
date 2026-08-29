@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-18 20:30"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-29 13:35"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -2029,13 +2029,37 @@ window.debugFavorites = function() {
     console.log("====================");
 };
 
-// 更新日志弹窗
+// 更新日志弹窗（内容从 data/changelog.json 动态加载，主站与外部智能客服共用同一数据源）
 const aboutRow = document.getElementById('aboutRow');
 const changelogModalOverlay = document.getElementById('changelogModalOverlay');
 const changelogModalClose = document.getElementById('changelogModalClose');
 const changelogArrow = document.getElementById('changelogArrow');
+const changelogBody = document.querySelector('.changelog-modal-body');
+let changelogLoaded = false;
+async function loadChangelog() {
+    if (!changelogBody || changelogLoaded) return;
+    try {
+        const resp = await fetch('data/changelog.json', { cache: 'no-store' });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
+        if (!data || !Array.isArray(data.entries)) throw new Error('数据格式错误');
+        changelogBody.innerHTML = data.entries.map(entry => {
+            const items = (entry.content || []).map(c => '<p>' + escapeHtml(c) + '</p>').join('');
+            return '<div class="changelog-entry">' +
+                '<div class="changelog-entry-date">' + escapeHtml(entry.date) + '</div>' +
+                '<div class="changelog-entry-content">' + items + '</div>' +
+                '</div>';
+        }).join('');
+        changelogLoaded = true;
+    } catch (err) {
+        console.error('更新日志加载失败:', err);
+        const loading = document.getElementById('changelogLoading');
+        if (loading) loading.textContent = '更新日志加载失败，请稍后再试';
+    }
+}
 if (aboutRow && changelogModalOverlay) {
     aboutRow.addEventListener('click', () => {
+        loadChangelog();
         changelogModalOverlay.classList.add('show');
         if (changelogArrow) changelogArrow.classList.add('rotated');
     });

@@ -24,3 +24,4 @@ auth.json
 
 # Playwright 浏览器缓存
 playwright/.cache/
+*.bak
