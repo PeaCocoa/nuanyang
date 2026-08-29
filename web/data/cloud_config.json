@@ -1,29 +1,29 @@
 {
   "config_version": 1,
-  "updated_at": "2026-08-29 11:51",
+  "updated_at": "2026-08-29 12:01",
   "features": {
     "shorts": {
-      "enabled": true,
+      "enabled": false,
       "gray": false,
       "gray_probability": 0
     },
     "liquid": {
-      "enabled": true,
+      "enabled": false,
       "gray": false,
       "gray_probability": 0
     },
     "daily_digest": {
-      "enabled": true,
+      "enabled": false,
       "gray": false,
       "gray_probability": 0
     }
   },
   "announcement": {
-    "enabled": false,
-    "title": "",
-    "content": ""
+    "enabled": true,
+    "title": "欢迎来到暖阳",
+    "content": "8月底大更新即将推送，更新规划如下：\n全新短视频模式即将上线\n液态玻璃主题全面升级，更通透，更灵动\n每日摘要全面更新，定期推送更智能\n修复超多Bug"
   },
   "debug": {
-    "password_hash": ""
+    "password_hash": "53d7adac0e09fd4ae13ce3b50cc0b031ed0fd9636810825348f8b34748e8ee00"
   }
 }
