@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-30 16:30"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-30 16:45"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -1262,7 +1262,44 @@ if (navMine) navMine.addEventListener('click', function() { showMinePage(true); 
 
 // 云控：我的板块开关（在 applyCloudConfig 中同步显隐 navMine）
 function applyMineVisibility() {
-    if (navMine) navMine.style.display = isFeatureVisible('mine') ? '' : 'none';
+    const mineVisible = isFeatureVisible('mine');
+    if (navMine) navMine.style.display = mineVisible ? '' : 'none';
+    // 我的板块被云控关闭或灰度未抽中（不可见）时：设置入口在"我的"板块内，用户无法再修改设置，故还原为默认
+    if (!mineVisible) {
+        resetSettingsToDefault();
+    }
+}
+
+// 还原个性化设置为默认值（我的板块不可见时调用）
+function resetSettingsToDefault() {
+    settings.fontSize = 'font-lg';
+    settings.theme = 'auto';
+    settings.recommend = false;
+    settings.digest = false;
+    settings.liquidIntensity = 50;
+    settings.batch = BATCH_DEFAULT;
+    // 清除本地存储中的个性化设置（保留观看记录/收藏数据）
+    try { localStorage.removeItem(STORAGE_KEYS.font); } catch (e) {}
+    try { localStorage.removeItem(STORAGE_KEYS.dark); } catch (e) {}
+    try { localStorage.removeItem(STORAGE_KEYS.theme); } catch (e) {}
+    try { localStorage.removeItem(STORAGE_KEYS.recommend); } catch (e) {}
+    try { localStorage.removeItem(STORAGE_KEYS.digest); } catch (e) {}
+    try { localStorage.removeItem(STORAGE_KEYS.liquidIntensity); } catch (e) {}
+    try { localStorage.removeItem(STORAGE_KEYS.batch); } catch (e) {}
+    // 重新应用默认界面
+    applyFontSize();
+    applyTheme();
+    applyBatch();
+    applyLiquidIntensity();
+    // 同步设置面板 UI
+    const fontRange = document.getElementById('fontRange');
+    if (fontRange) fontRange.value = FONT_SIZES.indexOf(settings.fontSize);
+    if (recommendToggle) recommendToggle.checked = settings.recommend;
+    if (digestToggle) digestToggle.checked = settings.digest;
+    if (liquidIntensitySlider) liquidIntensitySlider.value = settings.liquidIntensity;
+    if (digestBtn) digestBtn.style.display = settings.digest ? '' : 'none';
+    // 若当前处于每日摘要视图则返回首页
+    if (currentView === 'digest') showDigestPage(false);
 }
 
 function renderDigestPage() {
