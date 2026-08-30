@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-30 10:40"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-30 12:05"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -1062,6 +1062,37 @@ const TODAY_CITIES = ['北京','上海','广州','深圳','成都','重庆','杭
 
 function wmoText(code) { const c = WMO_COND[code] || ['未知', '❓']; return c; }
 
+// 简洁天气 SVG 图标（替代 emoji，减少AI味）
+const WMO_ICON = {
+    sun: '<svg class="today-wicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>',
+    partly: '<svg class="today-wicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 12a4.5 4.5 0 0 0-8.9-1.2A3.5 3.5 0 0 0 8 18h9a3.5 3.5 0 0 0 .5-6.97z"/><circle cx="7" cy="8" r="2"/></svg>',
+    cloud: '<svg class="today-wicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>',
+    fog: '<svg class="today-wicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+    drizzle: '<svg class="today-wicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/></svg>',
+    rain: '<svg class="today-wicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M7 18l-1.5 3M12 18l-1.5 3M17 18l-1.5 3"/></svg>',
+    snow: '<svg class="today-wicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M8 18l.01.01M12 18l.01.01M16 18l.01.01"/></svg>',
+    thunder: '<svg class="today-wicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M12 16l-2 4h3l-1.5 4"/></svg>'
+};
+function wmoIcon(code) {
+    if (code === 0 || code === 1) return WMO_ICON.sun;
+    if (code === 2) return WMO_ICON.partly;
+    if (code === 3) return WMO_ICON.cloud;
+    if (code === 45 || code === 48) return WMO_ICON.fog;
+    if (code >= 51 && code <= 55) return WMO_ICON.drizzle;
+    if (code >= 61 && code <= 67 || code >= 80 && code <= 82) return WMO_ICON.rain;
+    if (code >= 71 && code <= 77 || code >= 85 && code <= 86) return WMO_ICON.snow;
+    if (code >= 95) return WMO_ICON.thunder;
+    return WMO_ICON.cloud;
+}
+
+// 卡片图标（简洁 SVG，替代 emoji）
+const CARD_ICON = {
+    weather: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>',
+    recommend: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 18.8 6.2 21l1.1-6.5L2.6 9.8l6.5-.9z"/></svg>',
+    up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    fav: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
+};
+
 // 进入/退出今天板块
 function showTodayPage(show) {
     currentView = show ? 'today' : 'main';
@@ -1231,12 +1262,12 @@ function renderTodayPage() {
     if (w) {
         const wc = wmoText(w.code);
         const days = (w.daily || []).slice(0, 3).map(function(d, i) {
-            return '<div class="today-weather-day"><span>' + (i === 0 ? '今天' : d.date.slice(5)) + '</span><span>' + wmoText(d.code)[1] + '</span><span>' + d.min + '°/' + d.max + '°</span></div>';
+            return '<div class="today-weather-day"><span>' + (i === 0 ? '今天' : d.date.slice(5)) + '</span><span class="today-weather-day-ico">' + wmoIcon(d.code) + '</span><span>' + d.min + '°/' + d.max + '°</span></div>';
         }).join('');
         const cityOptions = TODAY_CITIES.map(function(c) { return '<option value="' + c + '"' + (c === todayCity ? ' selected' : '') + '>' + c + '</option>'; }).join('');
         weatherBody = '<div class="today-weather-main">'
             + '<span class="today-weather-temp">' + w.temp + '°C</span>'
-            + '<div class="today-weather-info"><div class="today-weather-cond">' + wc[1] + ' ' + wc[0] + '</div>'
+            + '<div class="today-weather-info"><div class="today-weather-cond">' + wmoIcon(w.code) + '<span>' + wc[0] + '</span>' + '</div>'
             + '<div class="today-weather-city">' + escapeHtml(w.city) + ' · 湿度' + w.humidity + '% · 风' + w.wind + 'km/h</div></div>'
             + '<button class="today-weather-citybtn" onclick="showCityPicker()">切换城市 ▾</button>'
             + '<select id="todayCitySelect" style="display:none" class="today-city-select" onchange="changeTodayCity(this)">' + cityOptions + '</select>'
@@ -1283,15 +1314,15 @@ function renderTodayPage() {
                 + '</div>';
         }).join('') + '</div>';
     } else {
-        favBody = '<div class="today-empty">还没有收藏，点视频播放页的♥收藏</div>';
+        favBody = '<div class="today-empty">还没有收藏，在视频播放页点击收藏即可</div>';
     }
 
     // ---- 组装卡片（天气置顶，其余按活跃度排序；低活跃自动折叠） ----
     const cards = [
-        { key: 'weather', title: '今天天气', icon: '🌤️', active: act.weather, body: weatherBody, alwaysTop: true },
-        { key: 'recommend', title: '今日推荐', icon: '⭐', active: act.recommend, body: recBody },
-        { key: 'up', title: '常看UP', icon: '👴', active: act.up, body: upBody },
-        { key: 'fav', title: '我的收藏', icon: '❤️', active: act.fav, body: favBody }
+        { key: 'weather', title: '今天天气', icon: CARD_ICON.weather, active: act.weather, body: weatherBody, alwaysTop: true },
+        { key: 'recommend', title: '今日推荐', icon: CARD_ICON.recommend, active: act.recommend, body: recBody },
+        { key: 'up', title: '常看UP', icon: CARD_ICON.up, active: act.up, body: upBody },
+        { key: 'fav', title: '我的收藏', icon: CARD_ICON.fav, active: act.fav, body: favBody }
     ];
     cards.sort(function(a, b) { return (b.alwaysTop ? 1 : 0) - (a.alwaysTop ? 1 : 0) || (b.active - a.active); });
 
