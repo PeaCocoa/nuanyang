@@ -16,6 +16,11 @@
       "enabled": false,
       "gray": false,
       "gray_probability": 0
+    },
+    "today": {
+      "enabled": true,
+      "gray": false,
+      "gray_probability": 0
     }
   },
   "announcement": {

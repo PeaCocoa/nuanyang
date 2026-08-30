@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-29 13:35"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-30 10:07"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -1033,6 +1033,289 @@ function onShortsSlideChanged(index) {
 if (navHome) navHome.addEventListener("click", () => showShortsPage(false));
 if (navShorts) navShorts.addEventListener("click", () => showShortsPage(true));
 if (shortsBackBtn) shortsBackBtn.addEventListener("click", () => showShortsPage(false));
+// =====================
+// 今天板块（天气 / 推荐 / 常看UP / 我的收藏）
+// =====================
+const navToday = document.getElementById("navToday");
+const todayViewEl = document.getElementById("todayView");
+const todayBackBtn = document.getElementById("todayBackBtn");
+const todayContentEl = document.getElementById("todayContent");
+
+const TODAY_CITY_KEY = 'nuanyang_today_city';
+const TODAY_FOLD_KEY = 'nuanyang_today_card_fold';
+let todayCity = '北京';
+try { todayCity = localStorage.getItem(TODAY_CITY_KEY) || '北京'; } catch (e) {}
+let todayWeather = null; // { city, temp, code, humidity, wind, daily:[{date,max,min,code}], updatedAt }
+
+// WMO 天气码 -> [中文, emoji]
+const WMO_COND = {
+  0: ['晴', '☀️'], 1: ['基本晴', '🌤️'], 2: ['多云', '⛅'], 3: ['阴', '☁️'],
+  45: ['雾', '🌫️'], 48: ['雾凇', '🌫️'],
+  51: ['毛毛雨', '🌦️'], 53: ['毛毛雨', '🌦️'], 55: ['毛毛雨', '🌦️'],
+  61: ['小雨', '🌧️'], 63: ['中雨', '🌧️'], 65: ['大雨', '🌧️'], 66: ['冻雨', '🌧️'], 67: ['冻雨', '🌧️'],
+  71: ['小雪', '🌨️'], 73: ['中雪', '🌨️'], 75: ['大雪', '❄️'], 77: ['雪粒', '🌨️'],
+  80: ['阵雨', '🌦️'], 81: ['阵雨', '🌦️'], 82: ['强阵雨', '⛈️'],
+  85: ['阵雪', '🌨️'], 86: ['阵雪', '❄️'],
+  95: ['雷阵雨', '⛈️'], 96: ['雷阵雨', '⛈️'], 99: ['雷阵雨', '⛈️']
+};
+const TODAY_CITIES = ['北京','上海','广州','深圳','成都','重庆','杭州','武汉','西安','南京','天津','苏州','长沙','郑州','青岛','沈阳','昆明','哈尔滨','乌鲁木齐','兰州'];
+
+function wmoText(code) { const c = WMO_COND[code] || ['未知', '❓']; return c; }
+
+// 进入/退出今天板块
+function showTodayPage(show) {
+    currentView = show ? 'today' : 'main';
+    var siteHeader = document.querySelector('.header');
+    var siteFooter = document.querySelector('.footer');
+    if (show) {
+        videoListEl.style.display = 'none';
+        loadMoreEl.style.display = 'none';
+        scrollSentinel.style.display = 'none';
+        categoriesEl.style.display = 'none';
+        if (digestBtn) digestBtn.style.display = 'none';
+        if (refreshBtn) refreshBtn.style.display = 'none';
+        if (siteHeader) siteHeader.style.display = 'none';
+        if (siteFooter) siteFooter.style.display = 'none';
+        scrollObserver.disconnect();
+        todayViewEl.style.display = 'block';
+        navHome.classList.remove('active');
+        navShorts.classList.remove('active');
+        navToday.classList.add('active');
+        renderTodayPage();
+        if (!todayWeather) fetchTodayWeather();
+    } else {
+        videoListEl.style.display = '';
+        scrollSentinel.style.display = '';
+        categoriesEl.style.display = '';
+        if (siteHeader) siteHeader.style.display = '';
+        if (siteFooter) siteFooter.style.display = '';
+        if (refreshBtn) refreshBtn.style.display = '';
+        if (digestBtn) digestBtn.style.display = settings.digest ? '' : 'none';
+        scrollObserver.observe(scrollSentinel);
+        todayViewEl.style.display = 'none';
+        navHome.classList.add('active');
+        navShorts.classList.remove('active');
+        navToday.classList.remove('active');
+    }
+}
+
+// 拉取天气（Open-Meteo，无需Key）
+async function fetchTodayWeather() {
+    try {
+        const geo = await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(todayCity) + '&count=1&language=zh');
+        const gd = await geo.json();
+        const loc = gd.results && gd.results[0];
+        if (!loc) throw new Error('未找到城市');
+        const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + loc.latitude + '&longitude=' + loc.longitude +
+            '&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m' +
+            '&daily=temperature_2m_max,temperature_2m_min,weather_code' +
+            '&forecast_days=3&timezone=Asia%2FShanghai';
+        const fc = await fetch(url);
+        const d = await fc.json();
+        todayWeather = {
+            city: loc.name || todayCity,
+            temp: Math.round(d.current.temperature_2m),
+            code: d.current.weather_code,
+            humidity: d.current.relative_humidity_2m,
+            wind: d.current.wind_speed_10m,
+            daily: (d.daily.time || []).map(function(t, i) { return {
+                date: t, max: Math.round(d.daily.temperature_2m_max[i]), min: Math.round(d.daily.temperature_2m_min[i]), code: d.daily.weather_code[i]
+            }; }),
+            updatedAt: Date.now()
+        };
+        renderTodayPage();
+    } catch (e) {
+        console.error('天气拉取失败:', e);
+        todayWeather = null;
+    }
+}
+
+// 计算卡片活跃度（0-100），决定排序与是否折叠
+function computeCardActivity() {
+    const now = Date.now();
+    const day = 86400000;
+    const upSet = {};
+    let recentViews = 0;
+    for (const bvid in viewHistory) {
+        const h = viewHistory[bvid];
+        if (h.upName) upSet[h.upName] = (upSet[h.upName] || 0) + (h.count || 1);
+        if (h.lastView && h.lastView > now - 3 * day) recentViews++;
+    }
+    const upCount = Object.keys(upSet).length;
+    let recentFavs = 0;
+    for (const bvid in favorites) {
+        if (favorites[bvid].favoritedAt && favorites[bvid].favoritedAt > now - 3 * day) recentFavs++;
+    }
+    const upActive = (recentViews > 0 || upCount > 0) ? Math.min(100, 55 + recentViews * 3 + upCount * 2) : 25;
+    const favActive = Object.keys(favorites).length > 0 ? Math.min(100, 50 + recentFavs * 8) : 20;
+    return { weather: 100, recommend: 95, up: upActive, fav: favActive };
+}
+
+// 读取/写入卡片折叠状态
+function getFoldedCards() {
+    try { const v = JSON.parse(localStorage.getItem(TODAY_FOLD_KEY) || '{}'); return v; } catch (e) { return {}; }
+}
+function setFoldedCard(key, folded) {
+    const f = getFoldedCards();
+    f[key] = folded ? 1 : 0;
+    try { localStorage.setItem(TODAY_FOLD_KEY, JSON.stringify(f)); } catch (e) {}
+}
+
+// 常看UP统计
+function upSetHelper() {
+    const up = {};
+    for (const bvid in viewHistory) {
+        const h = viewHistory[bvid];
+        if (h.upName) up[h.upName] = (up[h.upName] || 0) + (h.count || 1);
+    }
+    return up;
+}
+
+// 收藏中按bvid找视频对象（用于打开播放器）
+function favVideoByBvid(bvid) {
+    const f = favorites[bvid];
+    if (!f) return null;
+    return { bvid: bvid, title: f.title, cover: f.cover, up_name: f.up_name, categories: f.categories, url: f.url, iframe_url: f.iframe_url, duration_text: f.duration_text };
+}
+
+// 按UP搜索并回到主站
+function filterByUp(name) {
+    searchInput.value = name;
+    searchKeyword = name;
+    searchClear.style.display = 'block';
+    currentCategory = '全部';
+    document.querySelectorAll('.category-btn').forEach(function(b) { b.classList.toggle('active', b.dataset.category === '全部'); });
+    refreshList();
+    showTodayPage(false);
+    window.scrollTo(0, 0);
+}
+
+// 折叠/展开卡片
+function toggleTodayCard(key) {
+    const card = document.getElementById('card-' + key);
+    if (!card) return;
+    const body = card.querySelector('.today-card-body');
+    const arrow = card.querySelector('.today-card-arrow');
+    const foldedNow = body.style.display === 'none';
+    body.style.display = foldedNow ? '' : 'none';
+    card.classList.toggle('collapsed', !foldedNow);
+    arrow.textContent = foldedNow ? '▾' : '▸';
+    setFoldedCard(key, !foldedNow);
+}
+
+// 城市选择器
+function showCityPicker() {
+    const citySel = document.getElementById('todayCitySelect');
+    if (!citySel) return;
+    citySel.value = todayCity;
+    citySel.style.display = (citySel.style.display === 'none' || !citySel.style.display) ? 'block' : 'none';
+}
+function changeTodayCity(sel) {
+    const val = sel.value.trim();
+    if (!val) return;
+    todayCity = val;
+    try { localStorage.setItem(TODAY_CITY_KEY, val); } catch (e) {}
+    todayWeather = null;
+    fetchTodayWeather();
+}
+
+// 渲染今天板块
+function renderTodayPage() {
+    if (!todayContentEl) return;
+    const act = computeCardActivity();
+    const folded = getFoldedCards();
+
+    // ---- 天气卡片 ----
+    const w = todayWeather;
+    let weatherBody;
+    if (w) {
+        const wc = wmoText(w.code);
+        const days = (w.daily || []).slice(0, 3).map(function(d, i) {
+            return '<div class="today-weather-day"><span>' + (i === 0 ? '今天' : d.date.slice(5)) + '</span><span>' + wmoText(d.code)[1] + '</span><span>' + d.min + '°/' + d.max + '°</span></div>';
+        }).join('');
+        const cityOptions = TODAY_CITIES.map(function(c) { return '<option value="' + c + '"' + (c === todayCity ? ' selected' : '') + '>' + c + '</option>'; }).join('');
+        weatherBody = '<div class="today-weather-main">'
+            + '<span class="today-weather-temp">' + w.temp + '°C</span>'
+            + '<div class="today-weather-info"><div class="today-weather-cond">' + wc[1] + ' ' + wc[0] + '</div>'
+            + '<div class="today-weather-city">' + escapeHtml(w.city) + ' · 湿度' + w.humidity + '% · 风' + w.wind + 'km/h</div></div>'
+            + '<button class="today-weather-citybtn" onclick="showCityPicker()">切换城市 ▾</button>'
+            + '<select id="todayCitySelect" style="display:none" class="today-city-select" onchange="changeTodayCity(this)">' + cityOptions + '</select>'
+            + '</div>'
+            + '<div class="today-weather-days">' + days + '</div>';
+    } else {
+        weatherBody = '<div class="today-weather-loading">天气加载中… <button class="today-weather-retry" onclick="fetchTodayWeather()">重试</button></div>';
+    }
+
+    // ---- 推荐视频 ----
+    const recs = getTopRecommendations(true);
+    let recBody;
+    if (recs.length > 0) {
+        recBody = '<div class="today-rec-list">' + recs.slice(0, 3).map(function(v) {
+            return '<div class="today-rec-item" onclick="openPlayer(allVideos.find(function(x){return x.bvid===\'' + v.bvid + '\';}))">'
+                + '<div class="today-rec-cover"><img src="' + escapeHtml(v.cover || '') + '" referrerpolicy="no-referrer" loading="lazy"></div>'
+                + '<div class="today-rec-meta"><div class="today-rec-title">' + escapeHtml(v.title) + '</div><div class="today-rec-up">' + escapeHtml(v.up_name) + '</div></div>'
+                + '</div>';
+        }).join('') + '</div>';
+    } else {
+        recBody = '<div class="today-empty">暂无推荐，多看几个视频就能获得专属推荐</div>';
+    }
+
+    // ---- 常看UP ----
+    const upSorted = Object.entries(upSetHelper()).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 4);
+    let upBody;
+    if (upSorted.length > 0) {
+        upBody = '<div class="today-up-list">' + upSorted.map(function(u) {
+            const uname = String(u[0]).replace(/'/g, '');
+            return '<div class="today-up-item" onclick="filterByUp(\'' + uname + '\')">' + escapeHtml(u[0]) + ' <span class="today-up-count">看过' + u[1] + '次</span></div>';
+        }).join('') + '</div>';
+    } else {
+        upBody = '<div class="today-empty">还没有常看的UP主，多逛逛吧</div>';
+    }
+
+    // ---- 我的收藏 ----
+    const favList = Object.values(favorites).sort(function(a, b) { return (b.favoritedAt || 0) - (a.favoritedAt || 0); }).slice(0, 4);
+    let favBody;
+    if (favList.length > 0) {
+        favBody = '<div class="today-fav-list">' + favList.map(function(v) {
+            const bvid = String(v.bvid || '').replace(/'/g, '');
+            return '<div class="today-fav-item" onclick="openPlayer(favVideoByBvid(\'' + bvid + '\'))">'
+                + '<span class="today-fav-title">' + escapeHtml(v.title || '') + '</span><span class="today-fav-up">' + escapeHtml(v.up_name || '') + '</span>'
+                + '</div>';
+        }).join('') + '</div>';
+    } else {
+        favBody = '<div class="today-empty">还没有收藏，点视频播放页的♥收藏</div>';
+    }
+
+    // ---- 组装卡片（天气置顶，其余按活跃度排序；低活跃自动折叠） ----
+    const cards = [
+        { key: 'weather', title: '今天天气', icon: '🌤️', active: act.weather, body: weatherBody, alwaysTop: true },
+        { key: 'recommend', title: '今日推荐', icon: '⭐', active: act.recommend, body: recBody },
+        { key: 'up', title: '常看UP', icon: '👴', active: act.up, body: upBody },
+        { key: 'fav', title: '我的收藏', icon: '❤️', active: act.fav, body: favBody }
+    ];
+    cards.sort(function(a, b) { return (b.alwaysTop ? 1 : 0) - (a.alwaysTop ? 1 : 0) || (b.active - a.active); });
+
+    todayContentEl.innerHTML = cards.map(function(c) {
+        const isFolded = folded[c.key] === 1;
+        const collapsed = (folded[c.key] !== undefined) ? isFolded : (c.active <= 35);
+        return '<div class="today-card' + (collapsed ? ' collapsed' : '') + '" id="card-' + c.key + '">'
+            + '<div class="today-card-header" onclick="toggleTodayCard(\'' + c.key + '\')">'
+            + '<span class="today-card-icon">' + c.icon + '</span><span class="today-card-title">' + c.title + '</span>'
+            + '<span class="today-card-arrow">' + (collapsed ? '▸' : '▾') + '</span>'
+            + '</div>'
+            + '<div class="today-card-body"' + (collapsed ? ' style="display:none"' : '') + '>' + c.body + '</div>'
+            + '</div>';
+    }).join('');
+}
+
+// 导航事件
+if (navToday) navToday.addEventListener('click', function() { showTodayPage(true); });
+if (todayBackBtn) todayBackBtn.addEventListener('click', function() { showTodayPage(false); });
+
+// 云控：今天板块开关（在 applyCloudConfig 中同步显隐 navToday）
+function applyTodayVisibility() {
+    if (navToday) navToday.style.display = isFeatureVisible('today') ? '' : 'none';
+}
 
 function renderDigestPage() {
     if (!digestContentEl) return;
@@ -2181,6 +2464,7 @@ function isFeatureVisible(key) {
 
 // 应用功能开关
 function applyCloudConfig() {
+    applyTodayVisibility();
     // 短视频
     if (navShorts) navShorts.style.display = isFeatureVisible('shorts') ? '' : 'none';
     // 液态玻璃
