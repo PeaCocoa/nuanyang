@@ -3151,7 +3151,7 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
  * 今天板块（天气 / 推荐 / 常看UP / 我的收藏）
  * ============================================================
 .today-view {
-    padding: var(--space-5) var(--space-6) var(--space-10);
+    padding: 28px 24px 56px;
     max-width: 760px;
     margin: 0 auto;
     min-height: 100vh;
@@ -3163,7 +3163,7 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     gap: var(--space-3);
     padding: var(--space-4) 0 var(--space-5);
     border-bottom: 2px solid var(--rausch);
-    margin-bottom: var(--space-6);
+    margin-bottom: 32px;
 }
 
 .today-back-btn {
@@ -3188,7 +3188,7 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
 .today-content {
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 40px;
 }
 
 /* 卡片通用：大圆角 + 柔和阴影 */
