@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-30 15:30"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-30 16:00"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -1034,70 +1034,16 @@ if (navHome) navHome.addEventListener("click", () => showShortsPage(false));
 if (navShorts) navShorts.addEventListener("click", () => showShortsPage(true));
 if (shortsBackBtn) shortsBackBtn.addEventListener("click", () => showShortsPage(false));
 // =====================
-// 今天板块（天气 / 推荐 / 常看UP / 我的收藏）
+// 我的板块（观看数据 / 设置）
 // =====================
-const navToday = document.getElementById("navToday");
-const todayViewEl = document.getElementById("todayView");
-const todayBackBtn = document.getElementById("todayBackBtn");
-const todayContentEl = document.getElementById("todayContent");
+const navMine = document.getElementById("navMine");
+const mineViewEl = document.getElementById("mineView");
+const mineBackBtn = document.getElementById("mineBackBtn");
+const mineContentEl = document.getElementById("mineContent");
 
-const TODAY_CITY_KEY = 'nuanyang_today_city';
-const TODAY_FOLD_KEY = 'nuanyang_today_card_fold';
-let todayCity = '北京';
-try { todayCity = localStorage.getItem(TODAY_CITY_KEY) || '北京'; } catch (e) {}
-let todayWeather = null; // { city, temp, code, humidity, wind, daily:[{date,max,min,code}], updatedAt }
-
-// WMO 天气码 -> [中文, emoji]
-const WMO_COND = {
-  0: ['晴', '☀️'], 1: ['基本晴', '🌤️'], 2: ['多云', '⛅'], 3: ['阴', '☁️'],
-  45: ['雾', '🌫️'], 48: ['雾凇', '🌫️'],
-  51: ['毛毛雨', '🌦️'], 53: ['毛毛雨', '🌦️'], 55: ['毛毛雨', '🌦️'],
-  61: ['小雨', '🌧️'], 63: ['中雨', '🌧️'], 65: ['大雨', '🌧️'], 66: ['冻雨', '🌧️'], 67: ['冻雨', '🌧️'],
-  71: ['小雪', '🌨️'], 73: ['中雪', '🌨️'], 75: ['大雪', '❄️'], 77: ['雪粒', '🌨️'],
-  80: ['阵雨', '🌦️'], 81: ['阵雨', '🌦️'], 82: ['强阵雨', '⛈️'],
-  85: ['阵雪', '🌨️'], 86: ['阵雪', '❄️'],
-  95: ['雷阵雨', '⛈️'], 96: ['雷阵雨', '⛈️'], 99: ['雷阵雨', '⛈️']
-};
-const TODAY_CITIES = ['北京','上海','广州','深圳','成都','重庆','杭州','武汉','西安','南京','天津','苏州','长沙','郑州','青岛','沈阳','昆明','哈尔滨','乌鲁木齐','兰州'];
-
-function wmoText(code) { const c = WMO_COND[code] || ['未知', '❓']; return c; }
-
-// 简洁天气 SVG 图标（替代 emoji，减少AI味）
-const WMO_ICON = {
-    sun: '<svg class="today-wicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>',
-    partly: '<svg class="today-wicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 12a4.5 4.5 0 0 0-8.9-1.2A3.5 3.5 0 0 0 8 18h9a3.5 3.5 0 0 0 .5-6.97z"/><circle cx="7" cy="8" r="2"/></svg>',
-    cloud: '<svg class="today-wicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>',
-    fog: '<svg class="today-wicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
-    drizzle: '<svg class="today-wicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2"/></svg>',
-    rain: '<svg class="today-wicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M7 18l-1.5 3M12 18l-1.5 3M17 18l-1.5 3"/></svg>',
-    snow: '<svg class="today-wicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M8 18l.01.01M12 18l.01.01M16 18l.01.01"/></svg>',
-    thunder: '<svg class="today-wicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><path d="M12 16l-2 4h3l-1.5 4"/></svg>'
-};
-function wmoIcon(code) {
-    if (code === 0 || code === 1) return WMO_ICON.sun;
-    if (code === 2) return WMO_ICON.partly;
-    if (code === 3) return WMO_ICON.cloud;
-    if (code === 45 || code === 48) return WMO_ICON.fog;
-    if (code >= 51 && code <= 55) return WMO_ICON.drizzle;
-    if (code >= 61 && code <= 67 || code >= 80 && code <= 82) return WMO_ICON.rain;
-    if (code >= 71 && code <= 77 || code >= 85 && code <= 86) return WMO_ICON.snow;
-    if (code >= 95) return WMO_ICON.thunder;
-    return WMO_ICON.cloud;
-}
-
-// 卡片图标（简洁 SVG，替代 emoji）
-const CARD_ICON = {
-    weather: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>',
-    recommend: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 18.8 6.2 21l1.1-6.5L2.6 9.8l6.5-.9z"/></svg>',
-    up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-    fav: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
-    stats: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
-    tip: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>'
-};
-
-// 进入/退出今天板块
-function showTodayPage(show) {
-    currentView = show ? 'today' : 'main';
+// 进入/退出我的板块
+function showMinePage(show) {
+    currentView = show ? 'mine' : 'main';
     var siteHeader = document.querySelector('.header');
     var siteFooter = document.querySelector('.footer');
     if (show) {
@@ -1110,12 +1056,11 @@ function showTodayPage(show) {
         if (siteHeader) siteHeader.style.display = 'none';
         if (siteFooter) siteFooter.style.display = 'none';
         scrollObserver.disconnect();
-        todayViewEl.style.display = 'block';
+        mineViewEl.style.display = 'block';
         navHome.classList.remove('active');
         navShorts.classList.remove('active');
-        navToday.classList.add('active');
-        renderTodayPage();
-        if (!todayWeather) fetchTodayWeather();
+        navMine.classList.add('active');
+        renderMinePage();
     } else {
         videoListEl.style.display = '';
         scrollSentinel.style.display = '';
@@ -1125,76 +1070,11 @@ function showTodayPage(show) {
         if (refreshBtn) refreshBtn.style.display = '';
         if (digestBtn) digestBtn.style.display = settings.digest ? '' : 'none';
         scrollObserver.observe(scrollSentinel);
-        todayViewEl.style.display = 'none';
+        mineViewEl.style.display = 'none';
         navHome.classList.add('active');
         navShorts.classList.remove('active');
-        navToday.classList.remove('active');
+        navMine.classList.remove('active');
     }
-}
-
-// 拉取天气（Open-Meteo，无需Key）
-async function fetchTodayWeather() {
-    try {
-        const geo = await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + encodeURIComponent(todayCity) + '&count=1&language=zh');
-        const gd = await geo.json();
-        const loc = gd.results && gd.results[0];
-        if (!loc) throw new Error('未找到城市');
-        const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + loc.latitude + '&longitude=' + loc.longitude +
-            '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m' +
-            '&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset' +
-            '&forecast_days=3&timezone=Asia%2FShanghai';
-        const fc = await fetch(url);
-        const d = await fc.json();
-        todayWeather = {
-            city: loc.name || todayCity,
-            temp: Math.round(d.current.temperature_2m),
-            feels: Math.round(d.current.apparent_temperature != null ? d.current.apparent_temperature : d.current.temperature_2m),
-            code: d.current.weather_code,
-            humidity: d.current.relative_humidity_2m,
-            wind: Math.round(d.current.wind_speed_10m),
-            sunrise: d.daily && d.daily.sunrise ? d.daily.sunrise[0] : '',
-            sunset: d.daily && d.daily.sunset ? d.daily.sunset[0] : '',
-            daily: (d.daily.time || []).map(function(t, i) { return {
-                date: t, max: Math.round(d.daily.temperature_2m_max[i]), min: Math.round(d.daily.temperature_2m_min[i]), code: d.daily.weather_code[i]
-            }; }),
-            updatedAt: Date.now()
-        };
-        renderTodayPage();
-    } catch (e) {
-        console.error('天气拉取失败:', e);
-        todayWeather = null;
-    }
-}
-
-// 计算卡片活跃度（0-100），决定排序与是否折叠
-function computeCardActivity() {
-    const now = Date.now();
-    const day = 86400000;
-    const upSet = {};
-    let recentViews = 0;
-    for (const bvid in viewHistory) {
-        const h = viewHistory[bvid];
-        if (h.upName) upSet[h.upName] = (upSet[h.upName] || 0) + (h.count || 1);
-        if (h.lastView && h.lastView > now - 3 * day) recentViews++;
-    }
-    const upCount = Object.keys(upSet).length;
-    let recentFavs = 0;
-    for (const bvid in favorites) {
-        if (favorites[bvid].favoritedAt && favorites[bvid].favoritedAt > now - 3 * day) recentFavs++;
-    }
-    const upActive = (recentViews > 0 || upCount > 0) ? Math.min(100, 55 + recentViews * 3 + upCount * 2) : 25;
-    const favActive = Object.keys(favorites).length > 0 ? Math.min(100, 50 + recentFavs * 8) : 20;
-    return { weather: 100, recommend: 95, up: upActive, fav: favActive };
-}
-
-// 读取/写入卡片折叠状态
-function getFoldedCards() {
-    try { const v = JSON.parse(localStorage.getItem(TODAY_FOLD_KEY) || '{}'); return v; } catch (e) { return {}; }
-}
-function setFoldedCard(key, folded) {
-    const f = getFoldedCards();
-    f[key] = folded ? 1 : 0;
-    try { localStorage.setItem(TODAY_FOLD_KEY, JSON.stringify(f)); } catch (e) {}
 }
 
 // 常看UP统计
@@ -1222,235 +1102,159 @@ function filterByUp(name) {
     currentCategory = '全部';
     document.querySelectorAll('.category-btn').forEach(function(b) { b.classList.toggle('active', b.dataset.category === '全部'); });
     refreshList();
-    showTodayPage(false);
+    showMinePage(false);
     window.scrollTo(0, 0);
 }
 
-// 折叠/展开卡片
-function toggleTodayCard(key) {
-    const card = document.getElementById('card-' + key);
-    if (!card) return;
-    const body = card.querySelector('.today-card-body');
-    const arrow = card.querySelector('.today-card-arrow');
-    const foldedNow = body.style.display === 'none';
-    body.style.display = foldedNow ? '' : 'none';
-    card.classList.toggle('collapsed', !foldedNow);
-    arrow.textContent = foldedNow ? '▾' : '▸';
-    setFoldedCard(key, !foldedNow);
-}
-
-// 城市选择器
-function showCityPicker() {
-    const citySel = document.getElementById('todayCitySelect');
-    if (!citySel) return;
-    citySel.value = todayCity;
-    citySel.style.display = (citySel.style.display === 'none' || !citySel.style.display) ? 'block' : 'none';
-}
-function changeTodayCity(sel) {
-    const val = sel.value.trim();
-    if (!val) return;
-    todayCity = val;
-    try { localStorage.setItem(TODAY_CITY_KEY, val); } catch (e) {}
-    todayWeather = null;
-    fetchTodayWeather();
-}
-
-// ===================== 今天问候区（日期 / 节日 / 问候语） =====================
-const SOLAR_FESTIVALS = {
-  '1-1': '元旦', '2-14': '情人节', '3-8': '妇女节', '3-12': '植树节', '4-1': '愚人节',
-  '5-1': '劳动节', '5-4': '青年节', '6-1': '儿童节', '7-1': '建党节', '8-1': '建军节',
-  '9-10': '教师节', '10-1': '国庆节', '10-24': '程序员节', '12-25': '圣诞节'
-};
-// 常用节日（按公历近似日期，误差±1天可接受，用于提醒）
-const SOLAR_TERMS = {
-  '1-5': '小寒', '1-20': '大寒', '2-4': '立春', '2-19': '雨水', '3-5': '惊蛰', '3-20': '春分',
-  '4-5': '清明', '4-20': '谷雨', '5-6': '立夏', '5-21': '小满', '6-6': '芒种', '6-21': '夏至',
-  '7-7': '小暑', '7-23': '大暑', '8-7': '立秋', '8-23': '处暑', '9-8': '白露', '9-23': '秋分',
-  '10-8': '寒露', '10-23': '霜降', '11-7': '立冬', '11-22': '小雪', '12-7': '大雪', '12-22': '冬至'
-};
-const TODAY_QUOTES = [
-  '愿这一天的暖阳，照进你心里的每个角落',
-  '生活明朗，万物可爱，人间值得，未来可期',
-  '每天给自己一个微笑，就是给生活一份力量',
-  '慢慢来，比较快；稳稳走，更长久',
-  '把日子过成喜欢的样子，从今天开始',
-  '愿有人陪你立黄昏，有人问你粥可温',
-  '温柔地对待自己，世界也会温柔待你',
-  '今天的你，也比昨天更接近理想一步',
-];
-function todayHeroHtml() {
-  const now = new Date();
-  const y = now.getFullYear(), m = now.getMonth() + 1, d = now.getDate();
-  const week = ['日', '一', '二', '三', '四', '五', '六'][now.getDay()];
-  const hour = now.getHours();
-  let greet;
-  if (hour >= 5 && hour < 9) greet = '早上好';
-  else if (hour >= 9 && hour < 12) greet = '上午好';
-  else if (hour >= 12 && hour < 14) greet = '中午好';
-  else if (hour >= 14 && hour < 18) greet = '下午好';
-  else if (hour >= 18 && hour < 22) greet = '晚上好';
-  else greet = '夜深了';
-  const key = m + '-' + d;
-  let badgeTxt = '';
-  let badgeCls = '';
-  if (SOLAR_FESTIVALS[key]) { badgeTxt = SOLAR_FESTIVALS[key]; badgeCls = 'today-hero-badge-fest'; }
-  else if (SOLAR_TERMS[key]) { badgeTxt = SOLAR_TERMS[key]; badgeCls = 'today-hero-badge-term'; }
-  else if (week === '日') { badgeTxt = '周末'; badgeCls = 'today-hero-badge-term'; }
-  const quote = TODAY_QUOTES[Math.floor(Math.random() * TODAY_QUOTES.length)];
-  return '<div class="today-hero-grad">'
-    + '<div class="today-hero-top">'
-    + '<div class="today-hero-date">' + m + '月' + d + '日 <span class="today-hero-week">星期' + week + '</span></div>'
-    + '<div class="today-hero-y">' + y + '年</div>'
-    + '</div>'
-    + '<div class="today-hero-greet">' + greet + '</div>'
-    + '<div class="today-hero-quote">' + quote + '</div>'
-    + (badgeTxt ? '<div class="today-hero-badge-wrap"><span class="today-hero-badge ' + badgeCls + '">' + badgeTxt + '</span></div>' : '')
-    + '</div>';
-}
-
-// 渲染今天板块
-function renderTodayPage() {
-    if (!todayContentEl) return;
-    const heroEl = document.getElementById('todayHero');
-    if (heroEl) heroEl.innerHTML = todayHeroHtml();
-    const act = computeCardActivity();
-    const folded = getFoldedCards();
-
-    // ---- 天气卡片 ----
-    const w = todayWeather;
-    let weatherBody;
-    if (w) {
-        const wc = wmoText(w.code);
-        const days = (w.daily || []).slice(0, 3).map(function(d, i) {
-            return '<div class="today-weather-day"><span>' + (i === 0 ? '今天' : d.date.slice(5)) + '</span><span class="today-weather-day-ico">' + wmoIcon(d.code) + '</span><span>' + d.min + '°/' + d.max + '°</span></div>';
-        }).join('');
-        const cityOptions = TODAY_CITIES.map(function(c) { return '<option value="' + c + '"' + (c === todayCity ? ' selected' : '') + '>' + c + '</option>'; }).join('');
-        const feelsHtml = w.feels != null ? '<span class="today-weather-feels">体感 ' + w.feels + '°</span>' : '';
-        const sunHtml = (w.sunrise && w.sunset) ? '<span class="today-weather-sun">日出 ' + String(w.sunrise).slice(11, 16) + ' · 日落 ' + String(w.sunset).slice(11, 16) + '</span>' : '';
-        weatherBody = '<div class="today-weather-main">'
-            + '<span class="today-weather-temp">' + w.temp + '°</span>'
-            + '<div class="today-weather-info"><div class="today-weather-cond">' + wmoIcon(w.code) + '<span>' + wc[0] + '</span>' + '</div>'
-            + '<div class="today-weather-meta">' + feelsHtml + '<span>湿度 ' + w.humidity + '%</span><span>风 ' + w.wind + 'km/h</span></div>'
-            + (sunHtml ? '<div class="today-weather-sun">' + sunHtml + '</div>' : '')
-            + '<div class="today-weather-city">' + escapeHtml(w.city) + '</div></div>'
-            + '<button class="today-weather-citybtn" onclick="showCityPicker()">切换城市</button>'
-            + '<select id="todayCitySelect" style="display:none" class="today-city-select" onchange="changeTodayCity(this)">' + cityOptions + '</select>'
-            + '</div>'
-            + '<div class="today-weather-days">' + days + '</div>';
-    } else {
-        weatherBody = '<div class="today-weather-loading">天气加载中… <button class="today-weather-retry" onclick="fetchTodayWeather()">重试</button></div>';
+// 观看数据统计
+function computeMineStats() {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    let totalViewed = 0, todayViewed = 0, totalDurationMs = 0;
+    for (const bvid in viewHistory) {
+        const h = viewHistory[bvid];
+        totalViewed++;
+        if (h.lastView && h.lastView > todayStart) todayViewed++;
+        if (h.totalDuration) totalDurationMs += h.totalDuration;
     }
+    const favTotal = Object.keys(favorites).length;
+    const upCount = Object.keys(upSetHelper()).length;
+    return { totalViewed: totalViewed, todayViewed: todayViewed, favTotal: favTotal, upCount: upCount, totalDurationMs: totalDurationMs };
+}
 
-    // ---- 推荐视频 ----
-    const recs = getTopRecommendations(true);
-    let recBody;
-    if (recs.length > 0) {
-        recBody = '<div class="today-rec-list">' + recs.slice(0, 3).map(function(v) {
-            return '<div class="today-rec-item" onclick="openPlayer(allVideos.find(function(x){return x.bvid===\'' + v.bvid + '\';}))">'
-                + '<div class="today-rec-cover"><img src="' + escapeHtml(v.cover || '') + '" referrerpolicy="no-referrer" loading="lazy"></div>'
-                + '<div class="today-rec-meta"><div class="today-rec-title">' + escapeHtml(v.title) + '</div><div class="today-rec-up">' + escapeHtml(v.up_name) + '</div></div>'
-                + '</div>';
-        }).join('') + '</div>';
+// 观看时长格式化（毫秒 -> "x小时x分" / "x分"）
+function formatWatchDuration(ms) {
+    if (!ms || ms <= 0) return '0分钟';
+    const totalMin = Math.round(ms / 60000);
+    if (totalMin < 60) return totalMin + '分钟';
+    const h = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+    return h + '小时' + (m > 0 ? m + '分钟' : '');
+}
+
+// 我的板块：查看视频对象（通过bvid在allVideos中找，找不到回退收藏）
+function mineVideoByBvid(bvid) {
+    const v = allVideos.find(function(x) { return x.bvid === bvid; });
+    if (v) return v;
+    return favVideoByBvid(bvid);
+}
+
+// 渲染我的板块
+function renderMinePage() {
+    if (!mineContentEl) return;
+
+    // ---- 问候区 ----
+    const now = new Date();
+    const week = ['日', '一', '二', '三', '四', '五', '六'][now.getDay()];
+    const hour = now.getHours();
+    let greet;
+    if (hour >= 5 && hour < 9) greet = '早上好';
+    else if (hour >= 9 && hour < 12) greet = '上午好';
+    else if (hour >= 12 && hour < 14) greet = '中午好';
+    else if (hour >= 14 && hour < 18) greet = '下午好';
+    else if (hour >= 18 && hour < 22) greet = '晚上好';
+    else greet = '夜深了';
+    const heroHtml = '<div class="mine-hero">'
+        + '<div class="mine-hero-date">' + (now.getMonth() + 1) + '月' + now.getDate() + '日 <span class="mine-hero-week">星期' + week + '</span></div>'
+        + '<div class="mine-hero-greet">' + greet + '</div>'
+        + '<div class="mine-hero-quote">看看今天看了什么，有什么新的收获</div>'
+        + '</div>';
+
+    // ---- 观看数据 ----
+    const st = computeMineStats();
+    const statsHtml = '<div class="mine-card">'
+        + '<div class="mine-card-title">观看数据</div>'
+        + '<div class="mine-stats-grid">'
+        + '<div class="mine-stat"><span class="mine-stat-num">' + st.totalViewed + '</span><span class="mine-stat-label">看过视频</span></div>'
+        + '<div class="mine-stat"><span class="mine-stat-num">' + st.todayViewed + '</span><span class="mine-stat-label">今日观看</span></div>'
+        + '<div class="mine-stat"><span class="mine-stat-num">' + st.favTotal + '</span><span class="mine-stat-label">我的收藏</span></div>'
+        + '<div class="mine-stat"><span class="mine-stat-num">' + st.upCount + '</span><span class="mine-stat-label">常看UP</span></div>'
+        + '</div>'
+        + '<div class="mine-stats-detail">'
+        + '<div class="mine-stats-row"><span>累计观看时长</span><span class="mine-stats-val">' + formatWatchDuration(st.totalDurationMs) + '</span></div>'
+        + '<div class="mine-stats-row"><span>个性化推荐</span><span class="mine-stats-val">' + (settings.recommend ? '已开启' : '已关闭') + '</span></div>'
+        + '<div class="mine-stats-row"><span>每日摘要</span><span class="mine-stats-val">' + (settings.digest ? '已开启' : '已关闭') + '</span></div>'
+        + '</div>'
+        + '</div>';
+
+    // ---- 最近观看 ----
+    const recentList = Object.entries(viewHistory)
+        .sort(function(a, b) { return (b[1].lastView || 0) - (a[1].lastView || 0); })
+        .slice(0, 5);
+    let recentHtml;
+    if (recentList.length > 0) {
+        recentHtml = '<div class="mine-card">'
+            + '<div class="mine-card-title">最近观看</div>'
+            + '<div class="mine-rec-list">'
+            + recentList.map(function(e) {
+                const bvid = String(e[0]).replace(/'/g, '');
+                const v = mineVideoByBvid(e[0]);
+                const title = v ? v.title : (e[1].title || '已下架视频');
+                const upName = v ? v.up_name : (e[1].upName || '');
+                const times = e[1].count || 1;
+                return '<div class="mine-rec-item" onclick="openPlayer(mineVideoByBvid(\'' + bvid + '\'))">'
+                    + (v && v.cover ? '<div class="mine-rec-cover"><img src="' + escapeHtml(v.cover) + '" referrerpolicy="no-referrer" loading="lazy"></div>' : '')
+                    + '<div class="mine-rec-meta"><div class="mine-rec-title">' + escapeHtml(title) + '</div>'
+                    + '<div class="mine-rec-up">' + escapeHtml(upName) + ' · 看过' + times + '次</div></div>'
+                    + '</div>';
+            }).join('')
+            + '</div></div>';
     } else {
-        recBody = '<div class="today-empty">暂无推荐，多看几个视频就能获得专属推荐</div>';
+        recentHtml = '';
     }
 
     // ---- 常看UP ----
     const upSorted = Object.entries(upSetHelper()).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 4);
-    let upBody;
+    let upHtml;
     if (upSorted.length > 0) {
-        upBody = '<div class="today-up-list">' + upSorted.map(function(u) {
-            const uname = String(u[0]).replace(/'/g, '');
-            return '<div class="today-up-item" onclick="filterByUp(\'' + uname + '\')">' + escapeHtml(u[0]) + ' <span class="today-up-count">看过' + u[1] + '次</span></div>';
-        }).join('') + '</div>';
+        upHtml = '<div class="mine-card">'
+            + '<div class="mine-card-title">常看UP</div>'
+            + '<div class="mine-up-list">'
+            + upSorted.map(function(u) {
+                const uname = String(u[0]).replace(/'/g, '');
+                return '<div class="mine-up-item" onclick="filterByUp(\'' + uname + '\')">' + escapeHtml(u[0]) + ' <span class="mine-up-count">看过' + u[1] + '次</span></div>';
+            }).join('')
+            + '</div></div>';
     } else {
-        upBody = '<div class="today-empty">还没有常看的UP主，多逛逛吧</div>';
+        upHtml = '';
     }
 
     // ---- 我的收藏 ----
-    const favList = Object.values(favorites).sort(function(a, b) { return (b.favoritedAt || 0) - (a.favoritedAt || 0); }).slice(0, 4);
-    let favBody;
+    const favList = Object.values(favorites).sort(function(a, b) { return (b.favoritedAt || 0) - (a.favoritedAt || 0); }).slice(0, 5);
+    let favHtml;
     if (favList.length > 0) {
-        favBody = '<div class="today-fav-list">' + favList.map(function(v) {
-            const bvid = String(v.bvid || '').replace(/'/g, '');
-            return '<div class="today-fav-item" onclick="openPlayer(favVideoByBvid(\'' + bvid + '\'))">'
-                + '<span class="today-fav-title">' + escapeHtml(v.title || '') + '</span><span class="today-fav-up">' + escapeHtml(v.up_name || '') + '</span>'
-                + '</div>';
-        }).join('') + '</div>';
+        favHtml = '<div class="mine-card">'
+            + '<div class="mine-card-title">我的收藏</div>'
+            + '<div class="mine-fav-list">'
+            + favList.map(function(v) {
+                const bvid = String(v.bvid || '').replace(/'/g, '');
+                return '<div class="mine-fav-item" onclick="openPlayer(favVideoByBvid(\'' + bvid + '\'))">'
+                    + '<span class="mine-fav-title">' + escapeHtml(v.title || '') + '</span><span class="mine-fav-up">' + escapeHtml(v.up_name || '') + '</span>'
+                    + '</div>';
+            }).join('')
+            + '</div></div>';
     } else {
-        favBody = '<div class="today-empty">还没有收藏，在视频播放页点击收藏即可</div>';
+        favHtml = '';
     }
 
-    // ---- 今日概览（使用数据）----
-    const now0 = new Date();
-    const todayStart0 = new Date(now0.getFullYear(), now0.getMonth(), now0.getDate()).getTime();
-    let todayViewed = 0, totalViewed = 0, todayFavs = 0;
-    for (const bvid in viewHistory) {
-        const h = viewHistory[bvid];
-        totalViewed++;
-        if (h.lastView && h.lastView > todayStart0) todayViewed++;
-    }
-    for (const bvid in favorites) {
-        if (favorites[bvid].favoritedAt && favorites[bvid].favoritedAt > todayStart0) todayFavs++;
-    }
-    const favTotal = Object.keys(favorites).length;
-    const upCount = Object.keys(upSetHelper()).length;
-    const statsBody = '<div class="today-stats-grid">'
-        + '<div class="today-stat"><span class="today-stat-num">' + totalViewed + '</span><span class="today-stat-label">看过视频</span></div>'
-        + '<div class="today-stat"><span class="today-stat-num">' + todayViewed + '</span><span class="today-stat-label">今日观看</span></div>'
-        + '<div class="today-stat"><span class="today-stat-num">' + favTotal + '</span><span class="today-stat-label">我的收藏</span></div>'
-        + '<div class="today-stat"><span class="today-stat-num">' + upCount + '</span><span class="today-stat-label">常看UP</span></div>'
+    // ---- 设置入口（二级菜单）----
+    const settingsHtml = '<div class="mine-card">'
+        + '<div class="mine-menu-item" onclick="openSettings()">'
+        + '<span class="mine-menu-label">设置</span>'
+        + '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mine-menu-arrow"><polyline points="9 18 15 12 9 6"/></svg>'
         + '</div>'
-        + '<div class="today-stats-tip">' + (todayViewed > 0 ? '今天已看了 ' + todayViewed + ' 个视频，收获满满' : '今天还没看视频，去找个喜欢的看看吧') + '</div>';
+        + '</div>';
 
-    // ---- 生活小贴士（基于天气）----
-    let tipText = '多喝水、多走走，健康每一天';
-    if (w) {
-        const t = w.temp;
-        if (t >= 33) tipText = '今天较热，记得防暑降温、及时补水';
-        else if (t >= 27) tipText = '天气偏热，外出注意防晒、多补充水分';
-        else if (t >= 20) tipText = '温度适宜，很适合出门走走、晒晒太阳';
-        else if (t >= 12) tipText = '有点凉，记得添件外套，别着凉';
-        else if (t >= 5) tipText = '天气偏冷，注意保暖，喝点热水暖暖身';
-        else tipText = '天冷路滑，出门多穿衣，注意脚下安全';
-        const c = w.code;
-        if (c >= 61 && c <= 67 || c >= 80 && c <= 82) tipText += '；今天可能有雨，出门记得带伞';
-        else if (c >= 71 && c <= 77 || c >= 85 && c <= 86) tipText += '；今天有雪，注意保暖防滑';
-        else if (c >= 95) tipText += '；今天有雷雨，尽量减少外出';
-    }
-    const tipBody = '<div class="today-tip">' + tipText + '</div>';
-
-    // ---- 组装卡片（天气置顶，其余按活跃度排序；低活跃自动折叠） ----
-    const cards = [
-        { key: 'weather', title: '今天天气', icon: CARD_ICON.weather, active: act.weather, body: weatherBody, alwaysTop: true },
-        { key: 'recommend', title: '今日推荐', icon: CARD_ICON.recommend, active: act.recommend, body: recBody },
-        { key: 'stats', title: '今日概览', icon: CARD_ICON.stats, active: 90, body: statsBody },
-        { key: 'tip', title: '生活小贴士', icon: CARD_ICON.tip, active: 85, body: tipBody },
-        { key: 'up', title: '常看UP', icon: CARD_ICON.up, active: act.up, body: upBody },
-        { key: 'fav', title: '我的收藏', icon: CARD_ICON.fav, active: act.fav, body: favBody }
-    ];
-    cards.sort(function(a, b) { return (b.alwaysTop ? 1 : 0) - (a.alwaysTop ? 1 : 0) || (b.active - a.active); });
-
-    todayContentEl.innerHTML = cards.map(function(c) {
-        const isFolded = folded[c.key] === 1;
-        const collapsed = (folded[c.key] !== undefined) ? isFolded : (c.active <= 35);
-        return '<div class="today-card' + (collapsed ? ' collapsed' : '') + '" id="card-' + c.key + '">'
-            + '<div class="today-card-header" onclick="toggleTodayCard(\'' + c.key + '\')">'
-            + '<span class="today-card-icon">' + c.icon + '</span><span class="today-card-title">' + c.title + '</span>'
-            + '<span class="today-card-arrow">' + (collapsed ? '▸' : '▾') + '</span>'
-            + '</div>'
-            + '<div class="today-card-body"' + (collapsed ? ' style="display:none"' : '') + '>' + c.body + '</div>'
-            + '</div>';
-    }).join('');
+    mineContentEl.innerHTML = heroHtml + statsHtml + recentHtml + upHtml + favHtml + settingsHtml;
 }
 
 // 导航事件
-if (navToday) navToday.addEventListener('click', function() { showTodayPage(true); });
-if (todayBackBtn) todayBackBtn.addEventListener('click', function() { showTodayPage(false); });
+if (navMine) navMine.addEventListener('click', function() { showMinePage(true); });
+if (mineBackBtn) mineBackBtn.addEventListener('click', function() { showMinePage(false); });
 
-// 云控：今天板块开关（在 applyCloudConfig 中同步显隐 navToday）
-function applyTodayVisibility() {
-    if (navToday) navToday.style.display = isFeatureVisible('today') ? '' : 'none';
+// 云控：我的板块开关（在 applyCloudConfig 中同步显隐 navMine）
+function applyMineVisibility() {
+    if (navMine) navMine.style.display = isFeatureVisible('mine') ? '' : 'none';
 }
 
 function renderDigestPage() {
@@ -2272,7 +2076,7 @@ function closeSettings() {
     document.body.style.overflow = "";
 }
 
-settingsBtn.addEventListener("click", openSettings);
+if (settingsBtn) settingsBtn.addEventListener("click", openSettings);
 settingsClose.addEventListener("click", closeSettings);
 settingsOverlay.addEventListener("click", closeSettings);
 
@@ -2603,7 +2407,7 @@ function isFeatureVisible(key) {
 
 // 应用功能开关
 function applyCloudConfig() {
-    applyTodayVisibility();
+    applyMineVisibility();
     // 短视频
     if (navShorts) navShorts.style.display = isFeatureVisible('shorts') ? '' : 'none';
     // 液态玻璃

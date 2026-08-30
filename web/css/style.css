@@ -3148,20 +3148,16 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
 }
 
 /* ============================================================
- * 今天板块（天气 / 推荐 / 常看UP / 我的收藏）
+ * 我的板块（观看数据 / 设置）
  * ============================================================
-
-/* ============================================================
- * 今天板块 - 与主站视频卡片统一：克制简洁
- * ============================================================
-.today-view {
+.mine-view {
     padding: 28px 24px 56px;
     max-width: 640px;
     margin: 0 auto;
     min-height: 100vh;
 }
 
-.today-header {
+.mine-header {
     display: flex;
     align-items: center;
     gap: var(--space-3);
@@ -3170,7 +3166,7 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     margin-bottom: 24px;
 }
 
-.today-back-btn {
+.mine-back-btn {
     background: none;
     border: none;
     color: var(--ink);
@@ -3180,251 +3176,103 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     align-items: center;
     border-radius: var(--radius-sm);
 }
-.today-back-btn:active { background: var(--cloud); }
+.mine-back-btn:active { background: var(--cloud); }
 
-.today-title {
+.mine-title {
     font-size: var(--font-large);
     font-weight: 700;
     color: var(--ink);
     margin: 0;
 }
 
-/* === 问候区：简洁一行，不做大渐变卡 === */
-.today-hero {
+/* === 问候区：简洁文字 === */
+.mine-hero {
     margin-bottom: 24px;
-}
-.today-hero-grad {
     padding: var(--space-4) 0 var(--space-5);
 }
-.today-hero-top {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-3);
-}
-.today-hero-date {
+.mine-hero-date {
     font-size: var(--font-large);
     font-weight: 700;
     color: var(--ink);
 }
-.today-hero-week {
+.mine-hero-week {
     font-weight: 500;
     color: var(--ash);
     margin-left: 2px;
 }
-.today-hero-y {
-    font-size: var(--font-small);
-    color: var(--mute);
-}
-.today-hero-greet {
+.mine-hero-greet {
     margin-top: 6px;
     font-size: 22px;
     font-weight: 700;
     color: var(--ink);
     letter-spacing: 0.5px;
 }
-.today-hero-quote {
+.mine-hero-quote {
     margin-top: 4px;
     font-size: var(--font-small);
     color: var(--mute);
     line-height: 1.6;
 }
-.today-hero-badge-wrap {
-    margin-top: 10px;
-}
-.today-hero-badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: var(--radius-sm);
-    font-size: var(--font-micro);
-    font-weight: 600;
-    color: var(--rausch);
-    background: var(--cloud);
-    border: 1px solid var(--hairline);
-}
 
-.today-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-8);
+/* === 卡片：与视频卡片一致的克制风格 === */
+.mine-card {
+    margin-bottom: 28px;
 }
-
-/* === 卡片：与视频卡片一致的克制风格（无重阴影/无毛玻璃） === */
-.today-card {
-    background: transparent;
-}
-.today-card-header {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    padding: var(--space-2) 0 var(--space-4);
-    cursor: pointer;
-    user-select: none;
-}
-
-/* 图标：小号线性图标，无彩色大色块 */
-.today-card-icon {
-    width: 26px;
-    height: 26px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    color: var(--ash);
-}
-.today-card-icon svg { width: 20px; height: 20px; }
-
-.today-card-title {
+.mine-card-title {
     font-size: var(--font-large);
     font-weight: 700;
     color: var(--ink);
-    flex: 1;
+    padding: var(--space-2) 0 var(--space-3);
 }
 
-.today-card-arrow {
-    font-size: 16px;
-    color: var(--mute);
-    flex-shrink: 0;
-    transition: transform 0.2s ease;
-}
-
-.today-card-body {
-    padding: 0;
-}
-
-/* 折叠状态 */
-.today-card.collapsed .today-card-header {
-    opacity: 0.75;
-}
-
-/* === 天气卡片 === */
-#card-weather .today-card-body {
-    border: 1px solid var(--hairline);
-    border-radius: var(--radius-md);
-    padding: var(--space-5);
-    background: var(--canvas);
-}
-
-.today-weather-main {
-    display: flex;
-    align-items: center;
-    gap: var(--space-5);
+/* === 观看数据 === */
+.mine-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-3);
     padding: var(--space-2) 0 var(--space-4);
 }
-
-.today-weather-temp {
-    font-size: 56px;
+.mine-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: var(--space-4) var(--space-2);
+    border-radius: var(--radius-md);
+}
+.mine-stat-num {
+    font-size: 26px;
     font-weight: 800;
     color: var(--ink);
     line-height: 1;
-    letter-spacing: -2px;
 }
-
-.today-weather-info {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-    min-width: 0;
-}
-
-.today-weather-cond {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: var(--font-large);
-    font-weight: 600;
-    color: var(--ink);
-}
-.today-wicon { width: 28px; height: 28px; }
-
-.today-weather-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px 12px;
-    font-size: var(--font-small);
-    color: var(--ash);
-}
-.today-weather-meta span { white-space: nowrap; }
-.today-weather-feels { font-weight: 600; color: var(--ink); }
-.today-weather-sun {
+.mine-stat-label {
     font-size: var(--font-micro);
     color: var(--mute);
-    margin-top: 4px;
 }
-.today-weather-city {
-    font-size: var(--font-small);
-    color: var(--mute);
-}
-
-.today-weather-citybtn {
-    margin-left: auto;
-    background: var(--cloud);
-    border: 1px solid var(--hairline);
-    border-radius: var(--radius-pill);
-    padding: 6px 14px;
-    font-size: var(--font-small);
-    color: var(--ink);
-    cursor: pointer;
-    flex-shrink: 0;
-}
-.today-weather-citybtn:active { background: var(--hairline); }
-
-.today-city-select {
-    width: 100%;
-    margin-top: var(--space-3);
-    padding: 10px 12px;
-    font-size: var(--font-body);
+.mine-stats-detail {
     border: 1px solid var(--hairline);
     border-radius: var(--radius-md);
-    background: var(--canvas);
-    color: var(--ink);
+    overflow: hidden;
 }
-
-.today-weather-days {
+.mine-stats-row {
     display: flex;
-    gap: var(--space-3);
-    padding-top: var(--space-4);
-    border-top: 1px solid var(--hairline);
-}
-
-.today-weather-day {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 4px;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-5);
     font-size: var(--font-small);
     color: var(--ash);
+    border-bottom: 1px solid var(--hairline);
 }
-.today-weather-day-ico .today-wicon { width: 22px; height: 22px; }
-.today-weather-day span:last-child {
+.mine-stats-row:last-child { border-bottom: none; }
+.mine-stats-val {
     color: var(--ink);
     font-weight: 600;
 }
 
-.today-weather-loading {
-    padding: var(--space-4) 0;
-    font-size: var(--font-body);
-    color: var(--mute);
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-}
-
-.today-weather-retry {
-    background: var(--cloud);
-    color: var(--ink);
-    border: 1px solid var(--hairline);
-    border-radius: var(--radius-pill);
-    padding: 6px 16px;
-    font-size: var(--font-small);
-    cursor: pointer;
-}
-
-/* === 今日推荐：沿用视频卡片封面+标题风格 === */
-.today-rec-list { display: flex; flex-direction: column; gap: var(--space-5); }
-
-.today-rec-item {
+/* === 最近观看 === */
+.mine-rec-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.mine-rec-item {
     display: flex;
     align-items: center;
     gap: var(--space-4);
@@ -3432,9 +3280,8 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     border-radius: var(--radius-md);
     cursor: pointer;
 }
-.today-rec-item:active { background: var(--cloud); }
-
-.today-rec-cover {
+.mine-rec-item:active { background: var(--cloud); }
+.mine-rec-cover {
     width: 132px;
     aspect-ratio: 16 / 9;
     border-radius: var(--radius-md);
@@ -3442,17 +3289,15 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     flex-shrink: 0;
     background: var(--cloud);
 }
-.today-rec-cover img { width: 100%; height: 100%; object-fit: cover; }
-
-.today-rec-meta {
+.mine-rec-cover img { width: 100%; height: 100%; object-fit: cover; }
+.mine-rec-meta {
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
-
-.today-rec-title {
+.mine-rec-title {
     font-size: var(--font-large);
     font-weight: 600;
     color: var(--ink);
@@ -3462,59 +3307,14 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
-
-.today-rec-up {
+.mine-rec-up {
     font-size: var(--font-small);
     color: var(--ash);
 }
 
-/* === 今日概览：简洁数字网格 === */
-.today-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-3);
-    padding: var(--space-2) 0 var(--space-4);
-}
-.today-stat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    padding: var(--space-4) var(--space-2);
-    border-radius: var(--radius-md);
-}
-.today-stat-num {
-    font-size: 26px;
-    font-weight: 800;
-    color: var(--ink);
-    line-height: 1;
-}
-.today-stat-label {
-    font-size: var(--font-micro);
-    color: var(--mute);
-}
-.today-stats-tip {
-    font-size: var(--font-small);
-    color: var(--mute);
-    text-align: center;
-    padding-bottom: var(--space-2);
-}
-
-/* === 生活小贴士：克制线条卡片 === */
-.today-tip {
-    padding: var(--space-4);
-    border: 1px solid var(--hairline);
-    border-radius: var(--radius-md);
-    background: var(--canvas);
-    font-size: var(--font-body);
-    line-height: 1.7;
-    color: var(--ink);
-}
-
 /* === 常看UP === */
-.today-up-list { display: flex; flex-direction: column; gap: var(--space-2); }
-
-.today-up-item {
+.mine-up-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.mine-up-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -3525,18 +3325,16 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     color: var(--ink);
     cursor: pointer;
 }
-.today-up-item:active { background: var(--cloud); }
-
-.today-up-count {
+.mine-up-item:active { background: var(--cloud); }
+.mine-up-count {
     font-size: var(--font-micro);
     color: var(--mute);
     font-weight: 400;
 }
 
 /* === 我的收藏 === */
-.today-fav-list { display: flex; flex-direction: column; gap: var(--space-2); }
-
-.today-fav-item {
+.mine-fav-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.mine-fav-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -3545,9 +3343,8 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     border-radius: var(--radius-md);
     cursor: pointer;
 }
-.today-fav-item:active { background: var(--cloud); }
-
-.today-fav-title {
+.mine-fav-item:active { background: var(--cloud); }
+.mine-fav-title {
     flex: 1;
     min-width: 0;
     font-size: var(--font-small);
@@ -3556,31 +3353,39 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
-.today-fav-up {
+.mine-fav-up {
     font-size: var(--font-micro);
     color: var(--mute);
     flex-shrink: 0;
 }
 
-/* === 空状态 === */
-.today-empty {
-    padding: var(--space-5) 0;
-    text-align: center;
-    font-size: var(--font-small);
-    color: var(--mute);
+/* === 设置入口（二级菜单） === */
+.mine-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-3);
+    border-radius: var(--radius-md);
+    cursor: pointer;
 }
+.mine-menu-item:active { background: var(--cloud); }
+.mine-menu-label {
+    font-size: var(--font-body);
+    font-weight: 600;
+    color: var(--ink);
+}
+.mine-menu-arrow { color: var(--mute); }
 
 /* 大屏：内容区右移，避开左侧导航 */
 @media (min-width: 768px) {
-    .today-view {
+    .mine-view {
         margin-left: 80px;
     }
 }
 
 /* 云控加载中：隐藏所有受云控控制的功能元素，避免闪烁 */
 body.cloud-pending #navShorts,
-body.cloud-pending #navToday,
+body.cloud-pending #navMine,
 body.cloud-pending .skin-option[data-theme="liquid"],
 body.cloud-pending #liquidIntensityRow,
 body.cloud-pending #digestSettingsGroup,
