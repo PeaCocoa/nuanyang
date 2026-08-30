@@ -3185,6 +3185,76 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     margin: 0;
 }
 
+.today-hero {
+    margin-bottom: 32px;
+}
+.today-hero-grad {
+    position: relative;
+    overflow: hidden;
+    border-radius: 28px;
+    padding: 32px 28px 28px;
+    color: #fff;
+    background: linear-gradient(135deg, #FF9A56 0%, #FF6B6B 45%, #F0517E 100%);
+    box-shadow: 0 10px 30px rgba(240, 81, 126, 0.30);
+}
+.today-hero-grad::after {
+    content: "";
+    position: absolute;
+    right: -60px;
+    top: -60px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.14);
+}
+.today-hero-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 22px;
+}
+.today-hero-date {
+    font-size: var(--font-large);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+.today-hero-week {
+    font-weight: 500;
+    opacity: 0.9;
+    margin-left: 4px;
+}
+.today-hero-y {
+    font-size: var(--font-small);
+    opacity: 0.85;
+}
+.today-hero-greet {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    line-height: 1.3;
+}
+.today-hero-quote {
+    margin-top: 12px;
+    font-size: var(--font-small);
+    line-height: 1.6;
+    opacity: 0.92;
+}
+.today-hero-badge-wrap {
+    margin-top: 18px;
+}
+.today-hero-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: var(--radius-pill);
+    font-size: var(--font-small);
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.24);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(6px);
+}
+.today-hero-badge-fest { background: rgba(255, 215, 0, 0.30); }
+.today-hero-badge-term { background: rgba(255, 255, 255, 0.22); }
+
 .today-content {
     display: flex;
     flex-direction: column;
@@ -3290,6 +3360,27 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     color: #fff;
 }
 .today-wicon { width: 28px; height: 28px; }
+
+.today-weather-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+    font-size: var(--font-small);
+    color: rgba(255, 255, 255, 0.92);
+}
+.today-weather-meta span { white-space: nowrap; }
+.today-weather-feels { font-weight: 600; }
+.today-weather-sun {
+    font-size: var(--font-micro);
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 6px;
+}
+.today-weather-city {
+    margin-top: 4px;
+    font-size: var(--font-small);
+    color: rgba(255, 255, 255, 0.85);
+}
 
 .today-weather-city {
     font-size: var(--font-small);

@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-30 14:08"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-30 14:45"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -1138,17 +1138,20 @@ async function fetchTodayWeather() {
         const loc = gd.results && gd.results[0];
         if (!loc) throw new Error('未找到城市');
         const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + loc.latitude + '&longitude=' + loc.longitude +
-            '&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m' +
-            '&daily=temperature_2m_max,temperature_2m_min,weather_code' +
+            '&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m' +
+            '&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset' +
             '&forecast_days=3&timezone=Asia%2FShanghai';
         const fc = await fetch(url);
         const d = await fc.json();
         todayWeather = {
             city: loc.name || todayCity,
             temp: Math.round(d.current.temperature_2m),
+            feels: Math.round(d.current.apparent_temperature != null ? d.current.apparent_temperature : d.current.temperature_2m),
             code: d.current.weather_code,
             humidity: d.current.relative_humidity_2m,
-            wind: d.current.wind_speed_10m,
+            wind: Math.round(d.current.wind_speed_10m),
+            sunrise: d.daily && d.daily.sunrise ? d.daily.sunrise[0] : '',
+            sunset: d.daily && d.daily.sunset ? d.daily.sunset[0] : '',
             daily: (d.daily.time || []).map(function(t, i) { return {
                 date: t, max: Math.round(d.daily.temperature_2m_max[i]), min: Math.round(d.daily.temperature_2m_min[i]), code: d.daily.weather_code[i]
             }; }),
@@ -1250,9 +1253,64 @@ function changeTodayCity(sel) {
     fetchTodayWeather();
 }
 
+// ===================== 今天问候区（日期 / 节日 / 问候语） =====================
+const SOLAR_FESTIVALS = {
+  '1-1': '元旦', '2-14': '情人节', '3-8': '妇女节', '3-12': '植树节', '4-1': '愚人节',
+  '5-1': '劳动节', '5-4': '青年节', '6-1': '儿童节', '7-1': '建党节', '8-1': '建军节',
+  '9-10': '教师节', '10-1': '国庆节', '10-24': '程序员节', '12-25': '圣诞节'
+};
+// 常用节日（按公历近似日期，误差±1天可接受，用于提醒）
+const SOLAR_TERMS = {
+  '1-5': '小寒', '1-20': '大寒', '2-4': '立春', '2-19': '雨水', '3-5': '惊蛰', '3-20': '春分',
+  '4-5': '清明', '4-20': '谷雨', '5-6': '立夏', '5-21': '小满', '6-6': '芒种', '6-21': '夏至',
+  '7-7': '小暑', '7-23': '大暑', '8-7': '立秋', '8-23': '处暑', '9-8': '白露', '9-23': '秋分',
+  '10-8': '寒露', '10-23': '霜降', '11-7': '立冬', '11-22': '小雪', '12-7': '大雪', '12-22': '冬至'
+};
+const TODAY_QUOTES = [
+  '愿这一天的暖阳，照进你心里的每个角落',
+  '生活明朗，万物可爱，人间值得，未来可期',
+  '每天给自己一个微笑，就是给生活一份力量',
+  '慢慢来，比较快；稳稳走，更长久',
+  '把日子过成喜欢的样子，从今天开始',
+  '愿有人陪你立黄昏，有人问你粥可温',
+  '温柔地对待自己，世界也会温柔待你',
+  '今天的你，也比昨天更接近理想一步',
+];
+function todayHeroHtml() {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth() + 1, d = now.getDate();
+  const week = ['日', '一', '二', '三', '四', '五', '六'][now.getDay()];
+  const hour = now.getHours();
+  let greet;
+  if (hour >= 5 && hour < 9) greet = '早上好';
+  else if (hour >= 9 && hour < 12) greet = '上午好';
+  else if (hour >= 12 && hour < 14) greet = '中午好';
+  else if (hour >= 14 && hour < 18) greet = '下午好';
+  else if (hour >= 18 && hour < 22) greet = '晚上好';
+  else greet = '夜深了';
+  const key = m + '-' + d;
+  let badgeTxt = '';
+  let badgeCls = '';
+  if (SOLAR_FESTIVALS[key]) { badgeTxt = SOLAR_FESTIVALS[key]; badgeCls = 'today-hero-badge-fest'; }
+  else if (SOLAR_TERMS[key]) { badgeTxt = SOLAR_TERMS[key]; badgeCls = 'today-hero-badge-term'; }
+  else if (week === '日') { badgeTxt = '周末'; badgeCls = 'today-hero-badge-term'; }
+  const quote = TODAY_QUOTES[Math.floor(Math.random() * TODAY_QUOTES.length)];
+  return '<div class="today-hero-grad">'
+    + '<div class="today-hero-top">'
+    + '<div class="today-hero-date">' + m + '月' + d + '日 <span class="today-hero-week">星期' + week + '</span></div>'
+    + '<div class="today-hero-y">' + y + '年</div>'
+    + '</div>'
+    + '<div class="today-hero-greet">' + greet + '</div>'
+    + '<div class="today-hero-quote">' + quote + '</div>'
+    + (badgeTxt ? '<div class="today-hero-badge-wrap"><span class="today-hero-badge ' + badgeCls + '">' + badgeTxt + '</span></div>' : '')
+    + '</div>';
+}
+
 // 渲染今天板块
 function renderTodayPage() {
     if (!todayContentEl) return;
+    const heroEl = document.getElementById('todayHero');
+    if (heroEl) heroEl.innerHTML = todayHeroHtml();
     const act = computeCardActivity();
     const folded = getFoldedCards();
 
@@ -1265,11 +1323,15 @@ function renderTodayPage() {
             return '<div class="today-weather-day"><span>' + (i === 0 ? '今天' : d.date.slice(5)) + '</span><span class="today-weather-day-ico">' + wmoIcon(d.code) + '</span><span>' + d.min + '°/' + d.max + '°</span></div>';
         }).join('');
         const cityOptions = TODAY_CITIES.map(function(c) { return '<option value="' + c + '"' + (c === todayCity ? ' selected' : '') + '>' + c + '</option>'; }).join('');
+        const feelsHtml = w.feels != null ? '<span class="today-weather-feels">体感 ' + w.feels + '°</span>' : '';
+        const sunHtml = (w.sunrise && w.sunset) ? '<span class="today-weather-sun">日出 ' + String(w.sunrise).slice(11, 16) + ' · 日落 ' + String(w.sunset).slice(11, 16) + '</span>' : '';
         weatherBody = '<div class="today-weather-main">'
-            + '<span class="today-weather-temp">' + w.temp + '°C</span>'
+            + '<span class="today-weather-temp">' + w.temp + '°</span>'
             + '<div class="today-weather-info"><div class="today-weather-cond">' + wmoIcon(w.code) + '<span>' + wc[0] + '</span>' + '</div>'
-            + '<div class="today-weather-city">' + escapeHtml(w.city) + ' · 湿度' + w.humidity + '% · 风' + w.wind + 'km/h</div></div>'
-            + '<button class="today-weather-citybtn" onclick="showCityPicker()">切换城市 ▾</button>'
+            + '<div class="today-weather-meta">' + feelsHtml + '<span>湿度 ' + w.humidity + '%</span><span>风 ' + w.wind + 'km/h</span></div>'
+            + (sunHtml ? '<div class="today-weather-sun">' + sunHtml + '</div>' : '')
+            + '<div class="today-weather-city">' + escapeHtml(w.city) + '</div></div>'
+            + '<button class="today-weather-citybtn" onclick="showCityPicker()">切换城市</button>'
             + '<select id="todayCitySelect" style="display:none" class="today-city-select" onchange="changeTodayCity(this)">' + cityOptions + '</select>'
             + '</div>'
             + '<div class="today-weather-days">' + days + '</div>';

@@ -119,6 +119,7 @@
             </button>
             <h2 class="today-title">今天</h2>
         </div>
+        <div class="today-hero" id="todayHero"></div>
         <div class="today-content" id="todayContent"></div>
     </div>
 
@@ -453,11 +454,11 @@
         </button>
     </nav>
 
-    <script src="js/app.js?v=56"></script>
+    <script src="js/app.js?v=57"></script>
     <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js?v=53').catch(function(){});
+            navigator.serviceWorker.register('/sw.js?v=54').catch(function(){});
         });
     }
     </script>
