@@ -3505,3 +3505,14 @@ body[data-theme="liquid"] .today-weather-citybtn {
     border-color: rgba(255,255,255,0.25);
 }
 
+/* 云控加载中：隐藏所有受云控控制的功能元素，避免闪烁 */
+body.cloud-pending #navShorts,
+body.cloud-pending #navToday,
+body.cloud-pending .skin-option[data-theme="liquid"],
+body.cloud-pending #liquidIntensityRow,
+body.cloud-pending #digestSettingsGroup,
+body.cloud-pending #digestBtn,
+body.cloud-pending #announceBtn {
+    display: none !important;
+}
+

@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-30 10:07"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-30 10:40"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -2422,7 +2422,10 @@ fetch('data/cloud_config.json?t=' + Date.now())
         try { localStorage.setItem(CLOUD_CACHE_KEY, JSON.stringify(cfg)); } catch (e) {}
         applyCloudConfig();
     })
-    .catch(() => {});
+    .catch(() => {
+        // 云端配置加载失败：回退为默认全显示（无缓存时），并解除加载态
+        applyCloudConfig();
+    });
 
 function getEffectiveConfig() {
     if (!cloudConfig) return { features: {}, announcement: { enabled: false, title: '', content: '' }, debug: {} };
@@ -2485,6 +2488,8 @@ function applyCloudConfig() {
     applyAnnouncement();
     // 调试入口
     setupDebugMode();
+    // 云控已应用，移除加载态标记
+    document.body.classList.remove("cloud-pending");
 }
 
 // === 公告 ===
