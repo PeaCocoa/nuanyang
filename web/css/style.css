@@ -3150,9 +3150,13 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
 /* ============================================================
  * 今天板块（天气 / 推荐 / 常看UP / 我的收藏）
  * ============================================================
+
+/* ============================================================
+ * 今天板块 - 与主站视频卡片统一：克制简洁
+ * ============================================================
 .today-view {
     padding: 28px 24px 56px;
-    max-width: 760px;
+    max-width: 640px;
     margin: 0 auto;
     min-height: 100vh;
 }
@@ -3163,7 +3167,7 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     gap: var(--space-3);
     padding: var(--space-4) 0 var(--space-5);
     border-bottom: 2px solid var(--rausch);
-    margin-bottom: 32px;
+    margin-bottom: 24px;
 }
 
 .today-back-btn {
@@ -3185,119 +3189,89 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     margin: 0;
 }
 
+/* === 问候区：简洁一行，不做大渐变卡 === */
 .today-hero {
-    margin-bottom: 32px;
+    margin-bottom: 24px;
 }
 .today-hero-grad {
-    position: relative;
-    overflow: hidden;
-    border-radius: 28px;
-    padding: 32px 28px 28px;
-    color: #fff;
-    background: linear-gradient(135deg, #FF9A56 0%, #FF6B6B 45%, #F0517E 100%);
-    box-shadow: 0 10px 30px rgba(240, 81, 126, 0.30);
-}
-.today-hero-grad::after {
-    content: "";
-    position: absolute;
-    right: -60px;
-    top: -60px;
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.14);
+    padding: var(--space-4) 0 var(--space-5);
 }
 .today-hero-top {
     display: flex;
     align-items: baseline;
-    justify-content: space-between;
-    margin-bottom: 22px;
+    gap: var(--space-3);
 }
 .today-hero-date {
     font-size: var(--font-large);
     font-weight: 700;
-    letter-spacing: 0.5px;
+    color: var(--ink);
 }
 .today-hero-week {
     font-weight: 500;
-    opacity: 0.9;
-    margin-left: 4px;
+    color: var(--ash);
+    margin-left: 2px;
 }
 .today-hero-y {
     font-size: var(--font-small);
-    opacity: 0.85;
+    color: var(--mute);
 }
 .today-hero-greet {
-    font-size: 30px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    line-height: 1.3;
+    margin-top: 6px;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.5px;
 }
 .today-hero-quote {
-    margin-top: 12px;
+    margin-top: 4px;
     font-size: var(--font-small);
+    color: var(--mute);
     line-height: 1.6;
-    opacity: 0.92;
 }
 .today-hero-badge-wrap {
-    margin-top: 18px;
+    margin-top: 10px;
 }
 .today-hero-badge {
     display: inline-block;
-    padding: 6px 16px;
-    border-radius: var(--radius-pill);
-    font-size: var(--font-small);
+    padding: 3px 10px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-micro);
     font-weight: 600;
-    background: rgba(255, 255, 255, 0.24);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(6px);
+    color: var(--rausch);
+    background: var(--cloud);
+    border: 1px solid var(--hairline);
 }
-.today-hero-badge-fest { background: rgba(255, 215, 0, 0.30); }
-.today-hero-badge-term { background: rgba(255, 255, 255, 0.22); }
 
 .today-content {
     display: flex;
     flex-direction: column;
-    gap: 40px;
+    gap: var(--space-8);
 }
 
-/* 卡片通用：大圆角 + 柔和阴影 */
+/* === 卡片：与视频卡片一致的克制风格（无重阴影/无毛玻璃） === */
 .today-card {
-    background: var(--cloud);
-    border: 1px solid var(--hairline);
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
-    transition: box-shadow 0.2s ease;
+    background: transparent;
 }
-
 .today-card-header {
     display: flex;
     align-items: center;
     gap: var(--space-3);
-    padding: var(--space-5) var(--space-6);
+    padding: var(--space-2) 0 var(--space-4);
     cursor: pointer;
     user-select: none;
 }
 
-/* 图标色块：每种卡片不同颜色，形成层次 */
+/* 图标：小号线性图标，无彩色大色块 */
 .today-card-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
+    width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    color: #fff;
+    color: var(--ash);
 }
-.today-card-icon svg { width: 22px; height: 22px; }
-#card-weather .today-card-icon { background: linear-gradient(135deg, #FFB74D, #F57C00); }
-#card-recommend .today-card-icon { background: linear-gradient(135deg, #FF8A65, #F4511E); }
-#card-up .today-card-icon { background: linear-gradient(135deg, #66BB6A, #2E7D32); }
-#card-fav .today-card-icon { background: linear-gradient(135deg, #F06292, #D81B60); }
-#card-stats .today-card-icon { background: linear-gradient(135deg, #4FC3F7, #0288D1); }
-#card-tip .today-card-icon { background: linear-gradient(135deg, #FFB74D, #F57C00); }
+.today-card-icon svg { width: 20px; height: 20px; }
 
 .today-card-title {
     font-size: var(--font-large);
@@ -3314,7 +3288,7 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
 }
 
 .today-card-body {
-    padding: var(--space-2) var(--space-6) var(--space-6);
+    padding: 0;
 }
 
 /* 折叠状态 */
@@ -3322,35 +3296,34 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     opacity: 0.75;
 }
 
-/* === 天气卡片：蓝色渐变背景（天空质感） === */
-#card-weather {
-    background: linear-gradient(135deg, #4A90D9 0%, #1E5AA8 100%);
-    border: none;
-    box-shadow: 0 8px 28px rgba(30, 90, 168, 0.35);
+/* === 天气卡片 === */
+#card-weather .today-card-body {
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+    background: var(--canvas);
 }
-#card-weather .today-card-title,
-#card-weather .today-card-arrow { color: #fff; }
 
 .today-weather-main {
     display: flex;
     align-items: center;
     gap: var(--space-5);
-    padding: var(--space-4) 0;
+    padding: var(--space-2) 0 var(--space-4);
 }
 
 .today-weather-temp {
-    font-size: 72px;
+    font-size: 56px;
     font-weight: 800;
-    color: #FFB74D;
+    color: var(--ink);
     line-height: 1;
     letter-spacing: -2px;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .today-weather-info {
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
+    min-width: 0;
 }
 
 .today-weather-cond {
@@ -3359,7 +3332,7 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     gap: 8px;
     font-size: var(--font-large);
     font-weight: 600;
-    color: #fff;
+    color: var(--ink);
 }
 .today-wicon { width: 28px; height: 28px; }
 
@@ -3367,57 +3340,51 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px 14px;
+    gap: 6px 12px;
     font-size: var(--font-small);
-    color: rgba(255, 255, 255, 0.92);
+    color: var(--ash);
 }
 .today-weather-meta span { white-space: nowrap; }
-.today-weather-feels { font-weight: 600; }
+.today-weather-feels { font-weight: 600; color: var(--ink); }
 .today-weather-sun {
     font-size: var(--font-micro);
-    color: rgba(255, 255, 255, 0.8);
-    margin-top: 6px;
-}
-.today-weather-city {
+    color: var(--mute);
     margin-top: 4px;
-    font-size: var(--font-small);
-    color: rgba(255, 255, 255, 0.85);
 }
-
 .today-weather-city {
     font-size: var(--font-small);
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--mute);
 }
 
 .today-weather-citybtn {
     margin-left: auto;
-    background: rgba(255, 255, 255, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: var(--cloud);
+    border: 1px solid var(--hairline);
     border-radius: var(--radius-pill);
     padding: 6px 14px;
     font-size: var(--font-small);
-    color: #fff;
+    color: var(--ink);
     cursor: pointer;
     flex-shrink: 0;
 }
-.today-weather-citybtn:active { background: rgba(255, 255, 255, 0.3); }
+.today-weather-citybtn:active { background: var(--hairline); }
 
 .today-city-select {
     width: 100%;
     margin-top: var(--space-3);
     padding: 10px 12px;
     font-size: var(--font-body);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid var(--hairline);
     border-radius: var(--radius-md);
-    background: rgba(255, 255, 255, 0.15);
-    color: #fff;
+    background: var(--canvas);
+    color: var(--ink);
 }
 
 .today-weather-days {
     display: flex;
     gap: var(--space-3);
     padding-top: var(--space-4);
-    border-top: 1px solid rgba(255, 255, 255, 0.25);
+    border-top: 1px solid var(--hairline);
 }
 
 .today-weather-day {
@@ -3427,55 +3394,53 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     align-items: center;
     gap: 4px;
     font-size: var(--font-small);
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--ash);
 }
 .today-weather-day-ico .today-wicon { width: 22px; height: 22px; }
 .today-weather-day span:last-child {
-    color: #fff;
+    color: var(--ink);
     font-weight: 600;
 }
 
 .today-weather-loading {
     padding: var(--space-4) 0;
     font-size: var(--font-body);
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--mute);
     display: flex;
     align-items: center;
     gap: var(--space-3);
 }
 
 .today-weather-retry {
-    background: rgba(255, 255, 255, 0.2);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: var(--cloud);
+    color: var(--ink);
+    border: 1px solid var(--hairline);
     border-radius: var(--radius-pill);
     padding: 6px 16px;
     font-size: var(--font-small);
     cursor: pointer;
 }
 
-/* === 推荐视频 === */
-.today-rec-list { display: flex; flex-direction: column; gap: var(--space-4); }
+/* === 今日推荐：沿用视频卡片封面+标题风格 === */
+.today-rec-list { display: flex; flex-direction: column; gap: var(--space-5); }
 
 .today-rec-item {
     display: flex;
     align-items: center;
     gap: var(--space-4);
-    padding: var(--space-4);
-    background: var(--canvas);
+    padding: var(--space-2);
     border-radius: var(--radius-md);
-    border: 1px solid var(--hairline);
     cursor: pointer;
 }
 .today-rec-item:active { background: var(--cloud); }
 
 .today-rec-cover {
-    width: 110px;
-    height: 66px;
-    border-radius: var(--radius-sm);
+    width: 132px;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-md);
     overflow: hidden;
     flex-shrink: 0;
-    background: var(--stone);
+    background: var(--cloud);
 }
 .today-rec-cover img { width: 100%; height: 100%; object-fit: cover; }
 
@@ -3488,9 +3453,10 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
 }
 
 .today-rec-title {
-    font-size: var(--font-small);
+    font-size: var(--font-large);
     font-weight: 600;
     color: var(--ink);
+    line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -3498,21 +3464,62 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
 }
 
 .today-rec-up {
-    font-size: var(--font-micro);
+    font-size: var(--font-small);
     color: var(--ash);
 }
 
+/* === 今日概览：简洁数字网格 === */
+.today-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-3);
+    padding: var(--space-2) 0 var(--space-4);
+}
+.today-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: var(--space-4) var(--space-2);
+    border-radius: var(--radius-md);
+}
+.today-stat-num {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--ink);
+    line-height: 1;
+}
+.today-stat-label {
+    font-size: var(--font-micro);
+    color: var(--mute);
+}
+.today-stats-tip {
+    font-size: var(--font-small);
+    color: var(--mute);
+    text-align: center;
+    padding-bottom: var(--space-2);
+}
+
+/* === 生活小贴士：克制线条卡片 === */
+.today-tip {
+    padding: var(--space-4);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-md);
+    background: var(--canvas);
+    font-size: var(--font-body);
+    line-height: 1.7;
+    color: var(--ink);
+}
+
 /* === 常看UP === */
-.today-up-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.today-up-list { display: flex; flex-direction: column; gap: var(--space-2); }
 
 .today-up-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--space-4) var(--space-5);
-    background: var(--canvas);
+    padding: var(--space-4) var(--space-3);
     border-radius: var(--radius-md);
-    border: 1px solid var(--hairline);
     font-size: var(--font-body);
     font-weight: 600;
     color: var(--ink);
@@ -3527,17 +3534,15 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
 }
 
 /* === 我的收藏 === */
-.today-fav-list { display: flex; flex-direction: column; gap: var(--space-3); }
+.today-fav-list { display: flex; flex-direction: column; gap: var(--space-2); }
 
 .today-fav-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    padding: var(--space-4) var(--space-5);
-    background: var(--canvas);
+    padding: var(--space-4) var(--space-3);
     border-radius: var(--radius-md);
-    border: 1px solid var(--hairline);
     cursor: pointer;
 }
 .today-fav-item:active { background: var(--cloud); }
@@ -3558,78 +3563,12 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     flex-shrink: 0;
 }
 
-
-/* === 今日概览 === */
-.today-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-3);
-    padding: var(--space-4) 0 var(--space-3);
-}
-.today-stat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    padding: var(--space-4) var(--space-2);
-    background: var(--canvas);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--hairline);
-}
-.today-stat-num {
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--ink);
-    line-height: 1;
-}
-.today-stat-label {
-    font-size: var(--font-micro);
-    color: var(--mute);
-}
-.today-stats-tip {
-    font-size: var(--font-small);
-    color: var(--ash);
-    padding: var(--space-2) var(--space-1) var(--space-4);
-    text-align: center;
-}
-
-/* === 生活小贴士 === */
-.today-tip {
-    margin: var(--space-4) 0;
-    padding: var(--space-5) var(--space-6);
-    background: linear-gradient(135deg, #FFF8E1, #FFECB3);
-    border: 1px solid #FFE082;
-    border-radius: var(--radius-md);
-    font-size: var(--font-body);
-    line-height: 1.7;
-    color: #5D4037;
-}
-
 /* === 空状态 === */
 .today-empty {
-    padding: var(--space-5);
+    padding: var(--space-5) 0;
     text-align: center;
     font-size: var(--font-small);
     color: var(--mute);
-}
-
-
-/* 深色模式 */
-body[data-color-scheme="dark"] .today-card, body.dark .today-card {
-    background: #2A2A2C;
-    border-color: var(--hairline);
-}
-body[data-color-scheme="dark"] .today-rec-item, body.dark .today-rec-item,
-body[data-color-scheme="dark"] .today-up-item, body.dark .today-up-item,
-body[data-color-scheme="dark"] .today-fav-item, body.dark .today-fav-item {
-    background: #222224;
-    border-color: rgba(255,255,255,0.12);
-}
-body[data-color-scheme="dark"] .today-rec-title, body.dark .today-rec-title,
-body[data-color-scheme="dark"] .today-weather-temp, body.dark .today-weather-temp,
-body[data-color-scheme="dark"] .today-weather-cond, body.dark .today-weather-cond,
-body[data-color-scheme="dark"] .today-card-title, body.dark .today-card-title {
-    color: #eee;
 }
 
 /* 大屏：内容区右移，避开左侧导航 */
@@ -3637,39 +3576,6 @@ body[data-color-scheme="dark"] .today-card-title, body.dark .today-card-title {
     .today-view {
         margin-left: 80px;
     }
-}
-
-/* 液态玻璃主题 */
-body[data-theme="liquid"] .today-card {
-    background: rgba(0, 0, 0, 0.4);
-    border-color: rgba(255,255,255,0.12);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-}
-body[data-theme="liquid"] .today-card-title,
-body[data-theme="liquid"] .today-weather-temp,
-body[data-theme="liquid"] .today-weather-cond,
-body[data-theme="liquid"] .today-rec-title,
-body[data-theme="liquid"] .today-up-item,
-body[data-theme="liquid"] .today-fav-title {
-    color: #fff;
-}
-body[data-theme="liquid"] .today-rec-item,
-body[data-theme="liquid"] .today-up-item,
-body[data-theme="liquid"] .today-fav-item {
-    background: rgba(255,255,255,0.08);
-    border-color: rgba(255,255,255,0.1);
-}
-body[data-theme="liquid"] .today-weather-day span:last-child {
-    color: #fff;
-}
-body[data-theme="liquid"] .today-city-select {
-    background: rgba(255,255,255,0.1);
-    color: #fff;
-    border-color: rgba(255,255,255,0.2);
-}
-body[data-theme="liquid"] .today-weather-citybtn {
-    color: rgba(255,255,255,0.8);
-    border-color: rgba(255,255,255,0.25);
 }
 
 /* 云控加载中：隐藏所有受云控控制的功能元素，避免闪烁 */
