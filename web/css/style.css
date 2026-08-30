@@ -3296,6 +3296,8 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
 #card-recommend .today-card-icon { background: linear-gradient(135deg, #FF8A65, #F4511E); }
 #card-up .today-card-icon { background: linear-gradient(135deg, #66BB6A, #2E7D32); }
 #card-fav .today-card-icon { background: linear-gradient(135deg, #F06292, #D81B60); }
+#card-stats .today-card-icon { background: linear-gradient(135deg, #4FC3F7, #0288D1); }
+#card-tip .today-card-icon { background: linear-gradient(135deg, #FFB74D, #F57C00); }
 
 .today-card-title {
     font-size: var(--font-large);
@@ -3554,6 +3556,53 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     font-size: var(--font-micro);
     color: var(--mute);
     flex-shrink: 0;
+}
+
+
+/* === 今日概览 === */
+.today-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-3);
+    padding: var(--space-4) 0 var(--space-3);
+}
+.today-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: var(--space-4) var(--space-2);
+    background: var(--canvas);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--hairline);
+}
+.today-stat-num {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--ink);
+    line-height: 1;
+}
+.today-stat-label {
+    font-size: var(--font-micro);
+    color: var(--mute);
+}
+.today-stats-tip {
+    font-size: var(--font-small);
+    color: var(--ash);
+    padding: var(--space-2) var(--space-1) var(--space-4);
+    text-align: center;
+}
+
+/* === 生活小贴士 === */
+.today-tip {
+    margin: var(--space-4) 0;
+    padding: var(--space-5) var(--space-6);
+    background: linear-gradient(135deg, #FFF8E1, #FFECB3);
+    border: 1px solid #FFE082;
+    border-radius: var(--radius-md);
+    font-size: var(--font-body);
+    line-height: 1.7;
+    color: #5D4037;
 }
 
 /* === 空状态 === */

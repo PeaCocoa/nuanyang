@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-30 14:45"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-30 15:05"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -1090,7 +1090,9 @@ const CARD_ICON = {
     weather: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>',
     recommend: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 18.8 6.2 21l1.1-6.5L2.6 9.8l6.5-.9z"/></svg>',
     up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-    fav: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>'
+    fav: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+    stats: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+    tip: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>'
 };
 
 // 进入/退出今天板块
@@ -1379,10 +1381,51 @@ function renderTodayPage() {
         favBody = '<div class="today-empty">还没有收藏，在视频播放页点击收藏即可</div>';
     }
 
+    // ---- 今日概览（使用数据）----
+    const now0 = new Date();
+    const todayStart0 = new Date(now0.getFullYear(), now0.getMonth(), now0.getDate()).getTime();
+    let todayViewed = 0, totalViewed = 0, todayFavs = 0;
+    for (const bvid in viewHistory) {
+        const h = viewHistory[bvid];
+        totalViewed++;
+        if (h.lastView && h.lastView > todayStart0) todayViewed++;
+    }
+    for (const bvid in favorites) {
+        if (favorites[bvid].favoritedAt && favorites[bvid].favoritedAt > todayStart0) todayFavs++;
+    }
+    const favTotal = Object.keys(favorites).length;
+    const upCount = Object.keys(upSetHelper()).length;
+    const statsBody = '<div class="today-stats-grid">'
+        + '<div class="today-stat"><span class="today-stat-num">' + totalViewed + '</span><span class="today-stat-label">看过视频</span></div>'
+        + '<div class="today-stat"><span class="today-stat-num">' + todayViewed + '</span><span class="today-stat-label">今日观看</span></div>'
+        + '<div class="today-stat"><span class="today-stat-num">' + favTotal + '</span><span class="today-stat-label">我的收藏</span></div>'
+        + '<div class="today-stat"><span class="today-stat-num">' + upCount + '</span><span class="today-stat-label">常看UP</span></div>'
+        + '</div>'
+        + '<div class="today-stats-tip">' + (todayViewed > 0 ? '今天已看了 ' + todayViewed + ' 个视频，收获满满' : '今天还没看视频，去找个喜欢的看看吧') + '</div>';
+
+    // ---- 生活小贴士（基于天气）----
+    let tipText = '多喝水、多走走，健康每一天';
+    if (w) {
+        const t = w.temp;
+        if (t >= 33) tipText = '今天较热，记得防暑降温、及时补水';
+        else if (t >= 27) tipText = '天气偏热，外出注意防晒、多补充水分';
+        else if (t >= 20) tipText = '温度适宜，很适合出门走走、晒晒太阳';
+        else if (t >= 12) tipText = '有点凉，记得添件外套，别着凉';
+        else if (t >= 5) tipText = '天气偏冷，注意保暖，喝点热水暖暖身';
+        else tipText = '天冷路滑，出门多穿衣，注意脚下安全';
+        const c = w.code;
+        if (c >= 61 && c <= 67 || c >= 80 && c <= 82) tipText += '；今天可能有雨，出门记得带伞';
+        else if (c >= 71 && c <= 77 || c >= 85 && c <= 86) tipText += '；今天有雪，注意保暖防滑';
+        else if (c >= 95) tipText += '；今天有雷雨，尽量减少外出';
+    }
+    const tipBody = '<div class="today-tip">' + tipText + '</div>';
+
     // ---- 组装卡片（天气置顶，其余按活跃度排序；低活跃自动折叠） ----
     const cards = [
         { key: 'weather', title: '今天天气', icon: CARD_ICON.weather, active: act.weather, body: weatherBody, alwaysTop: true },
         { key: 'recommend', title: '今日推荐', icon: CARD_ICON.recommend, active: act.recommend, body: recBody },
+        { key: 'stats', title: '今日概览', icon: CARD_ICON.stats, active: 90, body: statsBody },
+        { key: 'tip', title: '生活小贴士', icon: CARD_ICON.tip, active: 85, body: tipBody },
         { key: 'up', title: '常看UP', icon: CARD_ICON.up, active: act.up, body: upBody },
         { key: 'fav', title: '我的收藏', icon: CARD_ICON.fav, active: act.fav, body: favBody }
     ];
