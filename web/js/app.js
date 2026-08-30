@@ -1300,6 +1300,8 @@ function resetSettingsToDefault() {
     if (digestBtn) digestBtn.style.display = settings.digest ? '' : 'none';
     // 若当前处于每日摘要视图则返回首页
     if (currentView === 'digest') showDigestPage(false);
+    // 若当前停留在"我的"板块视图则切回首页（板块已被云控关闭）
+    if (currentView === 'mine') showMinePage(false);
 }
 
 function renderDigestPage() {
