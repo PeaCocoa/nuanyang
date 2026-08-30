@@ -3148,223 +3148,197 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
 }
 
 /* ============================================================
- * 我的板块（观看数据 / 设置）
+ * 我的板块（暖阳标题栏 + 横向视频卡片）
  * ============================================================
 .mine-view {
-    padding: 28px 24px 56px;
+    padding: 0 24px 56px;
     max-width: 640px;
     margin: 0 auto;
     min-height: 100vh;
 }
 
+/* === 顶部标题栏：与首页一致的暖阳标题 === */
 .mine-header {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
+    justify-content: space-between;
     padding: var(--space-4) 0 var(--space-5);
     border-bottom: 2px solid var(--rausch);
     margin-bottom: 24px;
 }
-
-.mine-back-btn {
-    background: none;
-    border: none;
-    color: var(--ink);
-    cursor: pointer;
-    padding: 4px;
+.mine-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.mine-header-title {
+    font-size: var(--font-title);
+    font-weight: 700;
+    color: var(--rausch);
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin: 0;
+}
+.mine-header-subtitle {
+    font-size: var(--font-micro);
+    font-weight: 400;
+    color: var(--ash);
+    margin-top: 2px;
+}
+.mine-header-right {
     display: flex;
     align-items: center;
-    border-radius: var(--radius-sm);
+    gap: var(--space-2);
 }
-.mine-back-btn:active { background: var(--cloud); }
 
-.mine-title {
+/* === 分区标题 === */
+.mine-section {
+    margin-bottom: 28px;
+}
+.mine-section-title {
     font-size: var(--font-large);
     font-weight: 700;
     color: var(--ink);
+    padding: var(--space-2) 0 var(--space-4);
     margin: 0;
 }
 
-/* === 问候区：简洁文字 === */
-.mine-hero {
-    margin-bottom: 24px;
-    padding: var(--space-4) 0 var(--space-5);
-}
-.mine-hero-date {
-    font-size: var(--font-large);
-    font-weight: 700;
-    color: var(--ink);
-}
-.mine-hero-week {
-    font-weight: 500;
-    color: var(--ash);
-    margin-left: 2px;
-}
-.mine-hero-greet {
-    margin-top: 6px;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--ink);
-    letter-spacing: 0.5px;
-}
-.mine-hero-quote {
-    margin-top: 4px;
-    font-size: var(--font-small);
-    color: var(--mute);
-    line-height: 1.6;
-}
-
-/* === 卡片：与视频卡片一致的克制风格 === */
-.mine-card {
-    margin-bottom: 28px;
-}
-.mine-card-title {
-    font-size: var(--font-large);
-    font-weight: 700;
-    color: var(--ink);
-    padding: var(--space-2) 0 var(--space-3);
-}
-
-/* === 观看数据 === */
-.mine-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-3);
-    padding: var(--space-2) 0 var(--space-4);
-}
-.mine-stat {
+/* === 横向滚动视频卡片 === */
+.mine-hscroll {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    padding: var(--space-4) var(--space-2);
-    border-radius: var(--radius-md);
-}
-.mine-stat-num {
-    font-size: 26px;
-    font-weight: 800;
-    color: var(--ink);
-    line-height: 1;
-}
-.mine-stat-label {
-    font-size: var(--font-micro);
-    color: var(--mute);
-}
-.mine-stats-detail {
-    border: 1px solid var(--hairline);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-}
-.mine-stats-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--space-4) var(--space-5);
-    font-size: var(--font-small);
-    color: var(--ash);
-    border-bottom: 1px solid var(--hairline);
-}
-.mine-stats-row:last-child { border-bottom: none; }
-.mine-stats-val {
-    color: var(--ink);
-    font-weight: 600;
-}
-
-/* === 最近观看 === */
-.mine-rec-list { display: flex; flex-direction: column; gap: var(--space-3); }
-.mine-rec-item {
-    display: flex;
-    align-items: center;
     gap: var(--space-4);
-    padding: var(--space-2);
-    border-radius: var(--radius-md);
-    cursor: pointer;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    padding-bottom: var(--space-2);
+    margin: 0 -24px;
+    padding-left: 24px;
+    padding-right: 24px;
 }
-.mine-rec-item:active { background: var(--cloud); }
-.mine-rec-cover {
-    width: 132px;
+.mine-hscroll::-webkit-scrollbar { display: none; }
+
+.mine-vcard {
+    flex: 0 0 172px;
+    width: 172px;
+    cursor: pointer;
+    scroll-snap-align: start;
+}
+.mine-vcard:active { opacity: 0.85; }
+
+.mine-vcard-cover {
+    position: relative;
+    width: 100%;
     aspect-ratio: 16 / 9;
     border-radius: var(--radius-md);
     overflow: hidden;
-    flex-shrink: 0;
     background: var(--cloud);
 }
-.mine-rec-cover img { width: 100%; height: 100%; object-fit: cover; }
-.mine-rec-meta {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+.mine-vcard-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
-.mine-rec-title {
-    font-size: var(--font-large);
+.mine-vcard-cover-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--stone);
+    font-size: 24px;
+    font-weight: 600;
+}
+.mine-vcard-dur {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-micro);
+    font-weight: 600;
+}
+.mine-vcard-title {
+    font-size: var(--font-small);
     font-weight: 600;
     color: var(--ink);
     line-height: 1.4;
+    margin-top: var(--space-2);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
-.mine-rec-up {
-    font-size: var(--font-small);
-    color: var(--ash);
-}
-
-/* === 常看UP === */
-.mine-up-list { display: flex; flex-direction: column; gap: var(--space-2); }
-.mine-up-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--space-4) var(--space-3);
-    border-radius: var(--radius-md);
-    font-size: var(--font-body);
-    font-weight: 600;
-    color: var(--ink);
-    cursor: pointer;
-}
-.mine-up-item:active { background: var(--cloud); }
-.mine-up-count {
+.mine-vcard-up {
     font-size: var(--font-micro);
     color: var(--mute);
-    font-weight: 400;
-}
-
-/* === 我的收藏 === */
-.mine-fav-list { display: flex; flex-direction: column; gap: var(--space-2); }
-.mine-fav-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-    padding: var(--space-4) var(--space-3);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-}
-.mine-fav-item:active { background: var(--cloud); }
-.mine-fav-title {
-    flex: 1;
-    min-width: 0;
-    font-size: var(--font-small);
-    color: var(--ink);
+    margin-top: 4px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.mine-fav-up {
-    font-size: var(--font-micro);
-    color: var(--mute);
+
+/* === 常看UP（横向） === */
+.mine-up-hscroll {
+    display: flex;
+    gap: var(--space-4);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    padding-bottom: var(--space-2);
+    margin: 0 -24px;
+    padding-left: 24px;
+    padding-right: 24px;
+}
+.mine-up-hscroll::-webkit-scrollbar { display: none; }
+
+.mine-up-chip {
+    flex: 0 0 96px;
+    width: 96px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: var(--space-4) var(--space-2);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    scroll-snap-align: start;
+}
+.mine-up-chip:active { background: var(--cloud); }
+
+.mine-up-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 24px;
+    font-weight: 700;
     flex-shrink: 0;
 }
+.mine-up-chip-name {
+    font-size: var(--font-small);
+    font-weight: 600;
+    color: var(--ink);
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.mine-up-chip-count {
+    font-size: var(--font-micro);
+    color: var(--mute);
+}
 
-/* === 设置入口（二级菜单） === */
+/* === 设置入口 === */
 .mine-menu-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: var(--space-4) var(--space-3);
+    border: 1px solid var(--hairline);
     border-radius: var(--radius-md);
     cursor: pointer;
 }
@@ -3375,6 +3349,15 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
     color: var(--ink);
 }
 .mine-menu-arrow { color: var(--mute); }
+
+/* === 空状态 === */
+.mine-empty {
+    padding: var(--space-8) 0;
+    text-align: center;
+    font-size: var(--font-small);
+    color: var(--mute);
+    line-height: 1.7;
+}
 
 /* 大屏：内容区右移，避开左侧导航 */
 @media (min-width: 768px) {

@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-30 16:00"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-30 16:30"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -489,6 +489,7 @@ if (digestBackBtn) {
 function showDigestPage(show) {
     currentView = show ? "digest" : "main";
     if (show) {
+        hideAllSubViews();
         videoListEl.style.display = "none";
         loadMoreEl.style.display = "none";
         scrollSentinel.style.display = "none";
@@ -524,6 +525,7 @@ function showShortsPage(show) {
     var siteHeader = document.querySelector(".header");
     var siteFooter = document.querySelector(".footer");
     if (show) {
+        hideAllSubViews();
         videoListEl.style.display = "none";
         loadMoreEl.style.display = "none";
         scrollSentinel.style.display = "none";
@@ -1030,23 +1032,31 @@ function onShortsSlideChanged(index) {
 }
 
 // 导航栏和返回按钮事件
-if (navHome) navHome.addEventListener("click", () => showShortsPage(false));
-if (navShorts) navShorts.addEventListener("click", () => showShortsPage(true));
-if (shortsBackBtn) shortsBackBtn.addEventListener("click", () => showShortsPage(false));
+if (navHome) navHome.addEventListener("click", () => { hideAllSubViews(); showShortsPage(false); });
+if (navShorts) navShorts.addEventListener("click", () => { hideAllSubViews(); showShortsPage(true); });
+if (shortsBackBtn) shortsBackBtn.addEventListener("click", () => { hideAllSubViews(); showShortsPage(false); });
 // =====================
 // 我的板块（观看数据 / 设置）
 // =====================
 const navMine = document.getElementById("navMine");
 const mineViewEl = document.getElementById("mineView");
-const mineBackBtn = document.getElementById("mineBackBtn");
 const mineContentEl = document.getElementById("mineContent");
 
-// 进入/退出我的板块
+// 统一隐藏所有子视图（用于修复视图重叠Bug）
+function hideAllSubViews() {
+    if (shortsViewEl) shortsViewEl.style.display = 'none';
+    if (digestViewEl) digestViewEl.style.display = 'none';
+    if (mineViewEl) mineViewEl.style.display = 'none';
+}
+
+// 进入/退出我的板块（与其他视图互斥，修复重叠Bug）
 function showMinePage(show) {
     currentView = show ? 'mine' : 'main';
     var siteHeader = document.querySelector('.header');
     var siteFooter = document.querySelector('.footer');
     if (show) {
+        // 隐藏所有其他视图，避免重叠
+        hideAllSubViews();
         videoListEl.style.display = 'none';
         loadMoreEl.style.display = 'none';
         scrollSentinel.style.display = 'none';
@@ -1061,7 +1071,9 @@ function showMinePage(show) {
         navShorts.classList.remove('active');
         navMine.classList.add('active');
         renderMinePage();
+        setupMineAnnounceBtn();
     } else {
+        hideAllSubViews();
         videoListEl.style.display = '';
         scrollSentinel.style.display = '';
         categoriesEl.style.display = '';
@@ -1070,7 +1082,6 @@ function showMinePage(show) {
         if (refreshBtn) refreshBtn.style.display = '';
         if (digestBtn) digestBtn.style.display = settings.digest ? '' : 'none';
         scrollObserver.observe(scrollSentinel);
-        mineViewEl.style.display = 'none';
         navHome.classList.add('active');
         navShorts.classList.remove('active');
         navMine.classList.remove('active');
@@ -1139,63 +1150,40 @@ function mineVideoByBvid(bvid) {
     return favVideoByBvid(bvid);
 }
 
-// 渲染我的板块
+// 生成UP头像（无头像数据时用首字 + 稳定配色）
+const UP_AVATAR_COLORS = ['#FF6B35', '#4A90D9', '#2E7D32', '#D81B60', '#8E44AD', '#F57C00', '#00ACC1', '#C62828'];
+function upAvatarHtml(name) {
+    const ch = (name || '?').trim().charAt(0) || '?';
+    let hash = 0;
+    for (let k = 0; k < (name || '').length; k++) hash = (hash * 31 + (name.charCodeAt(k) || 0)) % 997;
+    const color = UP_AVATAR_COLORS[hash % UP_AVATAR_COLORS.length];
+    return '<div class="mine-up-avatar" style="background:' + color + '">' + escapeHtml(ch) + '</div>';
+}
+
+// 渲染我的板块：横向最近观看 + 横向我的收藏 + 横向常看UP
 function renderMinePage() {
     if (!mineContentEl) return;
 
-    // ---- 问候区 ----
-    const now = new Date();
-    const week = ['日', '一', '二', '三', '四', '五', '六'][now.getDay()];
-    const hour = now.getHours();
-    let greet;
-    if (hour >= 5 && hour < 9) greet = '早上好';
-    else if (hour >= 9 && hour < 12) greet = '上午好';
-    else if (hour >= 12 && hour < 14) greet = '中午好';
-    else if (hour >= 14 && hour < 18) greet = '下午好';
-    else if (hour >= 18 && hour < 22) greet = '晚上好';
-    else greet = '夜深了';
-    const heroHtml = '<div class="mine-hero">'
-        + '<div class="mine-hero-date">' + (now.getMonth() + 1) + '月' + now.getDate() + '日 <span class="mine-hero-week">星期' + week + '</span></div>'
-        + '<div class="mine-hero-greet">' + greet + '</div>'
-        + '<div class="mine-hero-quote">看看今天看了什么，有什么新的收获</div>'
-        + '</div>';
-
-    // ---- 观看数据 ----
-    const st = computeMineStats();
-    const statsHtml = '<div class="mine-card">'
-        + '<div class="mine-card-title">观看数据</div>'
-        + '<div class="mine-stats-grid">'
-        + '<div class="mine-stat"><span class="mine-stat-num">' + st.totalViewed + '</span><span class="mine-stat-label">看过视频</span></div>'
-        + '<div class="mine-stat"><span class="mine-stat-num">' + st.todayViewed + '</span><span class="mine-stat-label">今日观看</span></div>'
-        + '<div class="mine-stat"><span class="mine-stat-num">' + st.favTotal + '</span><span class="mine-stat-label">我的收藏</span></div>'
-        + '<div class="mine-stat"><span class="mine-stat-num">' + st.upCount + '</span><span class="mine-stat-label">常看UP</span></div>'
-        + '</div>'
-        + '<div class="mine-stats-detail">'
-        + '<div class="mine-stats-row"><span>累计观看时长</span><span class="mine-stats-val">' + formatWatchDuration(st.totalDurationMs) + '</span></div>'
-        + '<div class="mine-stats-row"><span>个性化推荐</span><span class="mine-stats-val">' + (settings.recommend ? '已开启' : '已关闭') + '</span></div>'
-        + '<div class="mine-stats-row"><span>每日摘要</span><span class="mine-stats-val">' + (settings.digest ? '已开启' : '已关闭') + '</span></div>'
-        + '</div>'
-        + '</div>';
-
-    // ---- 最近观看 ----
+    // ---- 最近观看（横向排布）----
     const recentList = Object.entries(viewHistory)
         .sort(function(a, b) { return (b[1].lastView || 0) - (a[1].lastView || 0); })
-        .slice(0, 5);
+        .slice(0, 10);
     let recentHtml;
     if (recentList.length > 0) {
-        recentHtml = '<div class="mine-card">'
-            + '<div class="mine-card-title">最近观看</div>'
-            + '<div class="mine-rec-list">'
+        recentHtml = '<div class="mine-section">'
+            + '<h3 class="mine-section-title">最近观看</h3>'
+            + '<div class="mine-hscroll">'
             + recentList.map(function(e) {
                 const bvid = String(e[0]).replace(/'/g, '');
                 const v = mineVideoByBvid(e[0]);
                 const title = v ? v.title : (e[1].title || '已下架视频');
                 const upName = v ? v.up_name : (e[1].upName || '');
-                const times = e[1].count || 1;
-                return '<div class="mine-rec-item" onclick="openPlayer(mineVideoByBvid(\'' + bvid + '\'))">'
-                    + (v && v.cover ? '<div class="mine-rec-cover"><img src="' + escapeHtml(v.cover) + '" referrerpolicy="no-referrer" loading="lazy"></div>' : '')
-                    + '<div class="mine-rec-meta"><div class="mine-rec-title">' + escapeHtml(title) + '</div>'
-                    + '<div class="mine-rec-up">' + escapeHtml(upName) + ' · 看过' + times + '次</div></div>'
+                const cover = v && v.cover ? v.cover : '';
+                const dur = v && v.duration_text ? v.duration_text : '';
+                return '<div class="mine-vcard" onclick="openPlayer(mineVideoByBvid(\'' + bvid + '\'))">'
+                    + (cover ? '<div class="mine-vcard-cover"><img src="' + escapeHtml(cover) + '" referrerpolicy="no-referrer" loading="lazy">' + (dur ? '<span class="mine-vcard-dur">' + escapeHtml(dur) + '</span>' : '') + '</div>' : '<div class="mine-vcard-cover mine-vcard-cover-empty">暖阳</div>')
+                    + '<div class="mine-vcard-title">' + escapeHtml(title) + '</div>'
+                    + '<div class="mine-vcard-up">' + escapeHtml(upName) + '</div>'
                     + '</div>';
             }).join('')
             + '</div></div>';
@@ -1203,54 +1191,74 @@ function renderMinePage() {
         recentHtml = '';
     }
 
-    // ---- 常看UP ----
-    const upSorted = Object.entries(upSetHelper()).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 4);
+    // ---- 我的收藏（横向排布）----
+    const favList = Object.values(favorites).sort(function(a, b) { return (b.favoritedAt || 0) - (a.favoritedAt || 0); }).slice(0, 10);
+    let favHtml;
+    if (favList.length > 0) {
+        favHtml = '<div class="mine-section">'
+            + '<h3 class="mine-section-title">我的收藏</h3>'
+            + '<div class="mine-hscroll">'
+            + favList.map(function(v) {
+                const bvid = String(v.bvid || '').replace(/'/g, '');
+                const cover = v.cover || '';
+                const dur = v.duration_text || '';
+                return '<div class="mine-vcard" onclick="openPlayer(favVideoByBvid(\'' + bvid + '\'))">'
+                    + (cover ? '<div class="mine-vcard-cover"><img src="' + escapeHtml(cover) + '" referrerpolicy="no-referrer" loading="lazy">' + (dur ? '<span class="mine-vcard-dur">' + escapeHtml(dur) + '</span>' : '') + '</div>' : '<div class="mine-vcard-cover mine-vcard-cover-empty">暖阳</div>')
+                    + '<div class="mine-vcard-title">' + escapeHtml(v.title || '') + '</div>'
+                    + '<div class="mine-vcard-up">' + escapeHtml(v.up_name || '') + '</div>'
+                    + '</div>';
+            }).join('')
+            + '</div></div>';
+    } else {
+        favHtml = '<div class="mine-section"><h3 class="mine-section-title">我的收藏</h3><div class="mine-empty">还没有收藏的视频<br>在视频播放页点击♡即可收藏</div></div>';
+    }
+
+    // ---- 常看UP（头像+名称+次数，横向排布）----
+    const upSorted = Object.entries(upSetHelper()).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 8);
     let upHtml;
     if (upSorted.length > 0) {
-        upHtml = '<div class="mine-card">'
-            + '<div class="mine-card-title">常看UP</div>'
-            + '<div class="mine-up-list">'
+        upHtml = '<div class="mine-section">'
+            + '<h3 class="mine-section-title">常看UP</h3>'
+            + '<div class="mine-up-hscroll">'
             + upSorted.map(function(u) {
                 const uname = String(u[0]).replace(/'/g, '');
-                return '<div class="mine-up-item" onclick="filterByUp(\'' + uname + '\')">' + escapeHtml(u[0]) + ' <span class="mine-up-count">看过' + u[1] + '次</span></div>';
+                return '<div class="mine-up-chip" onclick="filterByUp(\'' + uname + '\')">'
+                    + upAvatarHtml(u[0])
+                    + '<span class="mine-up-chip-name">' + escapeHtml(u[0]) + '</span>'
+                    + '<span class="mine-up-chip-count">看过' + u[1] + '次</span>'
+                    + '</div>';
             }).join('')
             + '</div></div>';
     } else {
         upHtml = '';
     }
 
-    // ---- 我的收藏 ----
-    const favList = Object.values(favorites).sort(function(a, b) { return (b.favoritedAt || 0) - (a.favoritedAt || 0); }).slice(0, 5);
-    let favHtml;
-    if (favList.length > 0) {
-        favHtml = '<div class="mine-card">'
-            + '<div class="mine-card-title">我的收藏</div>'
-            + '<div class="mine-fav-list">'
-            + favList.map(function(v) {
-                const bvid = String(v.bvid || '').replace(/'/g, '');
-                return '<div class="mine-fav-item" onclick="openPlayer(favVideoByBvid(\'' + bvid + '\'))">'
-                    + '<span class="mine-fav-title">' + escapeHtml(v.title || '') + '</span><span class="mine-fav-up">' + escapeHtml(v.up_name || '') + '</span>'
-                    + '</div>';
-            }).join('')
-            + '</div></div>';
-    } else {
-        favHtml = '';
-    }
-
     // ---- 设置入口（二级菜单）----
-    const settingsHtml = '<div class="mine-card">'
+    const settingsHtml = '<div class="mine-section">'
         + '<div class="mine-menu-item" onclick="openSettings()">'
         + '<span class="mine-menu-label">设置</span>'
         + '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mine-menu-arrow"><polyline points="9 18 15 12 9 6"/></svg>'
         + '</div>'
         + '</div>';
 
-    mineContentEl.innerHTML = heroHtml + statsHtml + recentHtml + upHtml + favHtml + settingsHtml;
+    mineContentEl.innerHTML = recentHtml + favHtml + upHtml + settingsHtml;
+}
+
+// "我的"页顶部公告按钮（复用云控公告）
+function setupMineAnnounceBtn() {
+    const btn = document.getElementById('mineAnnounceBtn');
+    if (!btn) return;
+    const cfg = getEffectiveConfig();
+    const ann = cfg.announcement || {};
+    btn.style.display = (ann.enabled && ann.title) ? '' : 'none';
+    btn.onclick = function() {
+        const a = getEffectiveConfig().announcement || {};
+        if (a.title) showAnnounceModal(a.title, a.content || '');
+    };
 }
 
 // 导航事件
 if (navMine) navMine.addEventListener('click', function() { showMinePage(true); });
-if (mineBackBtn) mineBackBtn.addEventListener('click', function() { showMinePage(false); });
 
 // 云控：我的板块开关（在 applyCloudConfig 中同步显隐 navMine）
 function applyMineVisibility() {
@@ -1503,7 +1511,7 @@ function selectVideos(pool, count) {
 // =====================
 
 function renderCategories() {
-    const cats = ["全部", "我的收藏"];
+    const cats = ["全部"];
     const seen = new Set(["全部"]);
     allVideos.forEach(v => {
         const videoCats = getVideoCategories(v);
@@ -1537,9 +1545,7 @@ function renderCategories() {
 
 function getPool() {
     let pool = allVideos;
-    if (currentCategory === "我的收藏") {
-        pool = pool.filter(v => !!favorites[v.bvid]);
-    } else if (currentCategory !== "全部") {
+    if (currentCategory !== "全部") {
         pool = pool.filter(v => getVideoCategories(v).includes(currentCategory));
     }
     if (searchKeyword) {
@@ -1768,11 +1774,7 @@ function loadMoreVideos() {
                     videoListEl.appendChild(hint);
                 }
             } else {
-                if (currentCategory === "我的收藏") {
-                    videoListEl.innerHTML = '<div class="empty">还没有收藏的视频<br>点击视频播放页的♡即可收藏</div>';
-                } else {
-                    videoListEl.innerHTML = '<div class="empty">暂无视频，请稍后再来看看</div>';
-                }
+                videoListEl.innerHTML = '<div class="empty">暂无视频，请稍后再来看看</div>';
             }
             isLoading = false;
             loadMoreEl.style.display = "none";
