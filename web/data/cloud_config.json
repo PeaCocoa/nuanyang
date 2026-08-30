@@ -1,14 +1,14 @@
 {
   "config_version": 1,
-  "updated_at": "2026-08-29 12:01",
+  "updated_at": "2026-08-30 15:56",
   "features": {
     "shorts": {
-      "enabled": false,
+      "enabled": true,
       "gray": false,
       "gray_probability": 0
     },
     "liquid": {
-      "enabled": false,
+      "enabled": true,
       "gray": false,
       "gray_probability": 0
     },
@@ -18,7 +18,7 @@
       "gray_probability": 0
     },
     "mine": {
-      "enabled": true,
+      "enabled": false,
       "gray": false,
       "gray_probability": 0
     }
@@ -26,7 +26,7 @@
   "announcement": {
     "enabled": true,
     "title": "欢迎来到暖阳",
-    "content": "8月底大更新即将推送，更新规划如下：\n全新短视频模式即将上线\n液态玻璃主题全面升级，更通透，更灵动\n每日摘要全面更新，定期推送更智能\n修复超多Bug"
+    "content": "8月底大更新\n新增：\n短视频板块\n“我的”板块\n新增公告！\nAI个性化视频推荐（完全运行在本地，数据不会上传到任何地方）\n优化：\n液态玻璃升级后全新上线，3种风格无极调整\n每日推荐焕新升级\n修复：\n各种Bug"
   },
   "debug": {
     "password_hash": "53d7adac0e09fd4ae13ce3b50cc0b031ed0fd9636810825348f8b34748e8ee00"
