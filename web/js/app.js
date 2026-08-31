@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-30 16:45"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-08-30 17:00"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -1264,44 +1264,13 @@ if (navMine) navMine.addEventListener('click', function() { showMinePage(true); 
 function applyMineVisibility() {
     const mineVisible = isFeatureVisible('mine');
     if (navMine) navMine.style.display = mineVisible ? '' : 'none';
-    // 我的板块被云控关闭或灰度未抽中（不可见）时：设置入口在"我的"板块内，用户无法再修改设置，故还原为默认
+    // 设置入口兜底：正常时位于"我的"板块二级菜单；"我的"被云控关闭或灰度未抽中（不可见）时，
+    // 还原到首页顶部 header 的 settingsBtn 显示，保证设置始终可进
+    if (settingsBtn) settingsBtn.style.display = mineVisible ? 'none' : '';
     if (!mineVisible) {
-        resetSettingsToDefault();
+        // 若当前停留在"我的"板块视图则切回首页（板块已被云控关闭）
+        if (currentView === 'mine') showMinePage(false);
     }
-}
-
-// 还原个性化设置为默认值（我的板块不可见时调用）
-function resetSettingsToDefault() {
-    settings.fontSize = 'font-lg';
-    settings.theme = 'auto';
-    settings.recommend = false;
-    settings.digest = false;
-    settings.liquidIntensity = 50;
-    settings.batch = BATCH_DEFAULT;
-    // 清除本地存储中的个性化设置（保留观看记录/收藏数据）
-    try { localStorage.removeItem(STORAGE_KEYS.font); } catch (e) {}
-    try { localStorage.removeItem(STORAGE_KEYS.dark); } catch (e) {}
-    try { localStorage.removeItem(STORAGE_KEYS.theme); } catch (e) {}
-    try { localStorage.removeItem(STORAGE_KEYS.recommend); } catch (e) {}
-    try { localStorage.removeItem(STORAGE_KEYS.digest); } catch (e) {}
-    try { localStorage.removeItem(STORAGE_KEYS.liquidIntensity); } catch (e) {}
-    try { localStorage.removeItem(STORAGE_KEYS.batch); } catch (e) {}
-    // 重新应用默认界面
-    applyFontSize();
-    applyTheme();
-    applyBatch();
-    applyLiquidIntensity();
-    // 同步设置面板 UI
-    const fontRange = document.getElementById('fontRange');
-    if (fontRange) fontRange.value = FONT_SIZES.indexOf(settings.fontSize);
-    if (recommendToggle) recommendToggle.checked = settings.recommend;
-    if (digestToggle) digestToggle.checked = settings.digest;
-    if (liquidIntensitySlider) liquidIntensitySlider.value = settings.liquidIntensity;
-    if (digestBtn) digestBtn.style.display = settings.digest ? '' : 'none';
-    // 若当前处于每日摘要视图则返回首页
-    if (currentView === 'digest') showDigestPage(false);
-    // 若当前停留在"我的"板块视图则切回首页（板块已被云控关闭）
-    if (currentView === 'mine') showMinePage(false);
 }
 
 function renderDigestPage() {
