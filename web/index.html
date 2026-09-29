@@ -16,9 +16,9 @@
     <link rel="icon" href="favicon.png" type="image/png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <title>暖阳 - 精选好视频</title>
-    <link rel="stylesheet" href="css/style.css?v=53">
+    <link rel="stylesheet" href="css/style.css?v=54">
 
-    <link rel="stylesheet" href="css/shorts.css?v=53">
+    <link rel="stylesheet" href="css/shorts.css?v=54">
     <link rel="dns-prefetch" href="//i0.hdslb.com">
     <link rel="dns-prefetch" href="//i1.hdslb.com">
     <link rel="dns-prefetch" href="//i2.hdslb.com">
@@ -178,6 +178,17 @@
                         <input type="range" class="range-slider" id="fontRange" min="0" max="4" step="1" value="2">
                         <span class="slider-label">超大</span>
                     </div>
+                </div>
+            </div>
+
+            <!-- 更多设置入口（仅移动端显示，桌面端隐藏） -->
+            <div class="settings-section settings-more-entry" id="settingsMoreEntry" style="display:none;">
+                <div class="settings-row" style="cursor:pointer;">
+                    <div class="settings-row-label">
+                        <span class="settings-row-name">更多设置</span>
+                        <span class="settings-row-desc">内容偏好、关于与法律协议</span>
+                    </div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--mute);margin-left:6px;flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>
                 </div>
             </div>
 
@@ -438,6 +449,47 @@
         </div>
     </div>
 
+    <!-- 移动端全屏搜索页 -->
+    <div class="search-view" id="searchView" style="display:none;">
+        <div class="search-view-header">
+            <button class="search-view-back" id="searchViewBack" aria-label="返回">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <div class="search-view-box">
+                <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                </svg>
+                <input type="text" id="searchViewInput" class="search-view-input" placeholder="搜索视频或UP主" autocomplete="off">
+                <button class="search-view-clear" id="searchViewClear" aria-label="清除搜索" style="display:none;">✕</button>
+            </div>
+        </div>
+        <div class="search-view-results" id="searchViewResults"></div>
+        <!-- 语音输入悬浮按钮（键盘上方） -->
+        <button class="voice-input-btn" id="voiceInputBtn" aria-label="语音输入" type="button">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+            <span class="voice-input-label">语音输入</span>
+        </button>
+    </div>
+
+    <!-- 移动端：更多设置二级全屏页（内容/关于 由 JS 移入） -->
+    <div class="settings-more-page" id="settingsMorePage" style="display:none;">
+        <div class="settings-more-header">
+            <button class="settings-more-back" id="settingsMoreBack" aria-label="返回">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <h2 class="settings-more-title">更多设置</h2>
+        </div>
+        <div class="settings-more-body" id="settingsMoreBody"></div>
+    </div>
+
     <!-- 底部导航栏 -->
     <nav class="bottom-nav" id="bottomNav">
         <button class="bottom-nav-item active" id="navHome">
@@ -460,11 +512,11 @@
         </button>
     </nav>
 
-    <script src="js/app.js?v=63"></script>
+    <script src="js/app.js?v=64"></script>
     <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js?v=60').catch(function(){});
+            navigator.serviceWorker.register('/sw.js?v=61').catch(function(){});
         });
     }
     </script>

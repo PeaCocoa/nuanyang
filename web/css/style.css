@@ -3377,3 +3377,177 @@ body.cloud-pending #announceBtn {
     display: none !important;
 }
 
+
+/* ============================================================
+   移动端适配：全屏搜索页 + 语音输入占位按钮 + 设置二级全屏页
+   仅 <=767px 生效，桌面端相关元素由 JS/CSS 保持隐藏
+   ============================================================ */
+
+/* 全屏搜索页 */
+.search-view {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 100vh;
+    height: 100dvh;
+    background: var(--canvas);
+    z-index: 3000;
+    display: none;
+    flex-direction: column;
+}
+.search-view-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--hairline);
+    flex-shrink: 0;
+}
+.search-view-back {
+    background: none;
+    border: none;
+    padding: 6px;
+    margin: -6px;
+    color: var(--ink);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+.search-view-box {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    background: var(--cloud);
+    border-radius: var(--radius-pill);
+    padding: 0 var(--space-4);
+    height: 44px;
+}
+.search-view-box .search-icon { color: var(--mute); flex-shrink: 0; }
+.search-view-input {
+    flex: 1;
+    border: none;
+    background: none;
+    outline: none;
+    font-size: var(--font-body);
+    color: var(--ink);
+    min-width: 0;
+}
+.search-view-input::placeholder { color: var(--mute); }
+.search-view-clear {
+    background: none;
+    border: none;
+    color: var(--mute);
+    font-size: var(--font-body);
+    cursor: pointer;
+    padding: 0 4px;
+    flex-shrink: 0;
+}
+.search-view-results {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: var(--space-2) 0 calc(64px + env(safe-area-inset-bottom));
+}
+.search-view-empty {
+    text-align: center;
+    color: var(--mute);
+    font-size: var(--font-small);
+    padding: var(--space-10) var(--space-4);
+}
+
+/* 语音输入悬浮按钮（位于输入法键盘上方，JS 控制 bottom） */
+.voice-input-btn {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 12px;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--canvas);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-pill);
+    color: var(--charcoal);
+    font-size: var(--font-small);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    cursor: pointer;
+    z-index: 3010;
+}
+.voice-input-btn .voice-input-label { line-height: 1; }
+.voice-input-btn:active { background: var(--cloud); }
+
+/* 设置二级入口（仅移动端显示，JS 控制显隐） */
+.settings-more-entry {
+    padding: 0;
+}
+
+/* 更多设置全屏页 */
+.settings-more-page {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 100vh;
+    height: 100dvh;
+    background: var(--canvas);
+    z-index: 2100;
+    display: none;
+    flex-direction: column;
+}
+.settings-more-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--hairline);
+    flex-shrink: 0;
+}
+.settings-more-back {
+    background: none;
+    border: none;
+    padding: 6px;
+    margin: -6px;
+    color: var(--ink);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+.settings-more-title {
+    font-size: var(--font-large);
+    font-weight: 600;
+    color: var(--ink);
+}
+.settings-more-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: var(--space-4) var(--space-5) calc(24px + env(safe-area-inset-bottom));
+}
+.settings-more-body .settings-section {
+    padding: 0;
+    margin: 0;
+    border-top: none;
+}
+.settings-more-body .settings-section + .settings-section {
+    border-top: 1px solid var(--hairline);
+    margin-top: var(--space-5);
+    padding-top: var(--space-5);
+}
+
+/* 断点：仅手机端启用全屏搜索页与语音按钮 */
+@media (max-width: 767px) {
+    .voice-input-btn { display: flex; }
+}
+
+/* 深色模式微调 */
+body[data-color-scheme="dark"] .search-view,
+body.dark .search-view,
+body[data-color-scheme="dark"] .settings-more-page,
+body.dark .settings-more-page {
+    background: var(--canvas);
+}
+body[data-color-scheme="dark"] .search-view-box,
+body.dark .search-view-box {
+    background: var(--cloud);
+}

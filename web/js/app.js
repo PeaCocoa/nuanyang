@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-08-30 17:00"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-09-29 12:00"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -2336,6 +2336,161 @@ searchClear.addEventListener("click", () => {
     refreshList();
     searchInput.focus();
 });
+
+// =====================
+// 移动端适配：全屏搜索页 + 语音按钮 + 设置二级页
+// =====================
+(function initMobileAdapt() {
+    const searchView = document.getElementById("searchView");
+    const searchViewBack = document.getElementById("searchViewBack");
+    const searchViewInput = document.getElementById("searchViewInput");
+    const searchViewClear = document.getElementById("searchViewClear");
+    const searchViewResults = document.getElementById("searchViewResults");
+    const voiceInputBtn = document.getElementById("voiceInputBtn");
+    const settingsMorePage = document.getElementById("settingsMorePage");
+    const settingsMoreBack = document.getElementById("settingsMoreBack");
+    const settingsMoreBody = document.getElementById("settingsMoreBody");
+    const settingsMoreEntry = document.getElementById("settingsMoreEntry");
+    if (!searchView || !settingsMorePage) return;
+
+    const mq = window.matchMedia("(max-width: 767px)");
+    let isMobile = mq.matches;
+
+    // 语音按钮定位到输入法键盘上方
+    function positionVoiceBtn() {
+        if (!isMobile || searchView.style.display === "none") {
+            voiceInputBtn.style.bottom = "";
+            return;
+        }
+        if (window.visualViewport) {
+            const kb = window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop;
+            voiceInputBtn.style.bottom = Math.max(10, kb + 10) + "px";
+        }
+    }
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", positionVoiceBtn);
+        window.visualViewport.addEventListener("scroll", positionVoiceBtn);
+    }
+
+    // 搜索结果卡片渲染
+    function renderSearchCard(video) {
+        const card = document.createElement("div");
+        card.className = "video-card";
+        const coverHtml = video.cover
+            ? `<img class="video-cover" src="${video.cover}" alt="${escapeHtml(video.title)}" referrerpolicy="no-referrer" onerror="this.outerHTML='<div class=\\'video-cover-placeholder\\'>暖阳</div>'">`
+            : `<div class="video-cover-placeholder">暖阳</div>`;
+        card.innerHTML = `
+            <div class="video-cover-wrap">${coverHtml}
+                ${video.duration_text ? `<span class="video-duration">${video.duration_text}</span>` : ""}
+            </div>
+            <div class="video-info">
+                <div class="video-title">${escapeHtml(video.title)}</div>
+                <div class="video-meta"><span class="video-up">${escapeHtml(video.up_name)}</span></div>
+            </div>`;
+        card.addEventListener("click", () => openPlayer(video));
+        searchViewResults.appendChild(card);
+    }
+
+    function renderSearchResults(kw) {
+        searchViewResults.innerHTML = "";
+        kw = (kw || "").trim();
+        if (!kw) {
+            searchViewResults.innerHTML = '<div class="search-view-empty">输入关键词搜索视频或 UP 主</div>';
+            return;
+        }
+        const lower = kw.toLowerCase();
+        const matched = allVideos.filter(v =>
+            (v.title && v.title.toLowerCase().includes(lower)) ||
+            (v.up_name && v.up_name.toLowerCase().includes(lower))
+        ).slice(0, 60);
+        if (matched.length === 0) {
+            searchViewResults.innerHTML = '<div class="search-view-empty">没有找到相关内容</div>';
+            return;
+        }
+        matched.forEach(renderSearchCard);
+    }
+
+    function openSearchView() {
+        searchView.style.display = "flex";
+        searchViewInput.value = searchInput.value;
+        renderSearchResults(searchViewInput.value);
+        searchViewClear.style.display = searchViewInput.value ? "block" : "none";
+        setTimeout(() => searchViewInput.focus(), 60);
+        positionVoiceBtn();
+    }
+    function closeSearchView() {
+        searchView.style.display = "none";
+        searchViewInput.blur();
+        voiceInputBtn.style.bottom = "";
+    }
+
+    // 顶部搜索框：移动端点击/聚焦改为打开全屏搜索页
+    searchInput.addEventListener("focus", () => {
+        if (!isMobile) return;
+        searchInput.blur();
+        openSearchView();
+    });
+    searchViewBack.addEventListener("click", closeSearchView);
+    let svDebounce;
+    searchViewInput.addEventListener("input", () => {
+        searchViewClear.style.display = searchViewInput.value ? "block" : "none";
+        clearTimeout(svDebounce);
+        svDebounce = setTimeout(() => renderSearchResults(searchViewInput.value), 200);
+        positionVoiceBtn();
+    });
+    searchViewClear.addEventListener("click", () => {
+        searchViewInput.value = "";
+        searchViewClear.style.display = "none";
+        renderSearchResults("");
+        searchViewInput.focus();
+    });
+    // 语音输入占位按钮
+    voiceInputBtn.addEventListener("click", () => {
+        const original = voiceInputBtn.querySelector(".voice-input-label");
+        if (original) original.textContent = "敬请期待";
+        setTimeout(() => { if (original) original.textContent = "语音输入"; }, 1500);
+    });
+
+    // 设置二级页：移动端把内容/关于移入更多设置页
+    const settingsBody = settingsPanel.querySelector(".settings-body");
+    const allSections = Array.prototype.slice.call(settingsBody.querySelectorAll(":scope > .settings-section"));
+    const keepFirst = allSections[0]; // 外观
+    const movable = allSections.filter(s => s !== keepFirst && s !== settingsMoreEntry);
+    let mobileApplied = false;
+
+    function toMoreLayout() {
+        movable.forEach(s => settingsMoreBody.appendChild(s));
+        settingsMoreEntry.style.display = "";
+    }
+    function toDesktopLayout() {
+        movable.forEach(s => settingsBody.appendChild(s));
+        settingsMoreEntry.style.display = "none";
+    }
+    function applySettingsLayout() {
+        if (isMobile && !mobileApplied) { toMoreLayout(); mobileApplied = true; }
+        else if (!isMobile && mobileApplied) { toDesktopLayout(); mobileApplied = false; }
+    }
+    applySettingsLayout();
+
+    settingsMoreEntry.addEventListener("click", () => {
+        settingsMorePage.style.display = "flex";
+    });
+    settingsMoreBack.addEventListener("click", () => {
+        settingsMorePage.style.display = "none";
+    });
+    // 设置面板关闭时一并收起更多设置页
+    new MutationObserver(() => {
+        if (!settingsPanel.classList.contains("active")) settingsMorePage.style.display = "none";
+    }).observe(settingsPanel, { attributes: true, attributeFilter: ["class"] });
+
+    // 断点切换
+    mq.addEventListener("change", (e) => {
+        isMobile = e.matches;
+        if (!isMobile) { closeSearchView(); }
+        applySettingsLayout();
+        positionVoiceBtn();
+    });
+})();
 
 
 // =====================
