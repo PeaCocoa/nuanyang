@@ -3535,9 +3535,19 @@ body.cloud-pending #announceBtn {
     padding-top: var(--space-5);
 }
 
-/* 断点：仅手机端启用全屏搜索页与语音按钮 */
+/* 断点：手机端全屏搜索页 / 语音按钮 / 设置整屏化 */
 @media (max-width: 767px) {
     .voice-input-btn { display: flex; }
+
+    /* 设置：右侧窄抽屉 → 全屏页（保留右滑入场动效） */
+    .settings-panel {
+        width: 100%;
+        max-width: 100vw;
+    }
+    /* 整屏无遮罩层，避免点击穿透 */
+    .settings-overlay, .settings-overlay.active {
+        display: none;
+    }
 }
 
 /* 深色模式微调 */
