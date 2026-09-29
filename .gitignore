@@ -25,3 +25,9 @@ auth.json
 # Playwright 浏览器缓存
 playwright/.cache/
 *.bak
+
+# PPT 源文件（展示页只用导出的 ppt_slides/*.png，源文件禁止提交，避免仓库膨胀）
+*.pptx
+*.ppt
+*.key
+*.odp
