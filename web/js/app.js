@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-09-29 12:00"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-09-29 23:00"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -2492,6 +2492,120 @@ searchClear.addEventListener("click", () => {
     });
 })();
 
+
+// =====================
+// 大屏快速配置（身份选择 / 子女帮配 / 语音占位）
+// 移动端沿用全屏搜索页与设置二级页，不触发本弹层
+// =====================
+(function initQuickConfig() {
+    const ROLE_KEY = 'nuanyang_role_done';
+    const obOverlay = document.getElementById('quickConfigOverlay');
+    const obChild = document.getElementById('obChildPanel');
+    const quickConfigRow = document.getElementById('quickConfigRow');
+    const searchVoiceBtn = document.getElementById('searchVoiceBtn');
+    if (!obOverlay || !obChild) return;
+
+    const mqDesktop = window.matchMedia('(min-width: 768px)');
+
+    function applyRole(role) {
+        if (role === 'elder') {
+            settings.fontSize = 'font-2xl';
+            settings.theme = 'classic';
+        } else {
+            // child / user：普通字体，主题不动
+            settings.fontSize = 'font-lg';
+        }
+        saveSettings();
+        applyFontSize();
+        applyTheme();
+        localStorage.setItem(ROLE_KEY, '1');
+    }
+
+    function showOverlay(el) { el.style.display = 'flex'; }
+    function hideOverlay(el) { el.style.display = 'none'; }
+
+    function openQuickConfig() { showOverlay(obOverlay); }
+    function openChildPanel() { hideOverlay(obOverlay); showOverlay(obChild); }
+
+    // 身份卡片
+    document.getElementById('obCardChild').addEventListener('click', openChildPanel);
+    document.getElementById('obCardElder').addEventListener('click', () => { applyRole('elder'); hideOverlay(obOverlay); });
+    document.getElementById('obCardUser').addEventListener('click', () => { applyRole('user'); hideOverlay(obOverlay); });
+
+    // 子女帮配面板：选项组
+    function bindChoices(id) {
+        const box = document.getElementById(id);
+        if (!box) return;
+        box.addEventListener('click', (e) => {
+            const btn = e.target.closest('.ob-choice');
+            if (!btn) return;
+            box.querySelectorAll('.ob-choice').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            box.dataset.value = btn.dataset.val;
+        });
+    }
+    bindChoices('obFontChoices');
+    bindChoices('obThemeChoices');
+
+    const obShareBox = document.getElementById('obShareBox');
+    const obShareInput = document.getElementById('obShareInput');
+    const obShareCopy = document.getElementById('obShareCopy');
+    document.getElementById('obChildBack').addEventListener('click', () => { hideOverlay(obChild); openQuickConfig(); });
+
+    function buildShareLink() {
+        const font = document.getElementById('obFontChoices').dataset.value || 'font-2xl';
+        const theme = document.getElementById('obThemeChoices').dataset.value || 'classic';
+        const base = location.href.split('?')[0].split('#')[0];
+        return base + '?cfg=' + font + '_' + theme;
+    }
+    document.getElementById('obChildDone').addEventListener('click', () => {
+        obShareInput.value = buildShareLink();
+        obShareBox.style.display = 'flex';
+    });
+    if (obShareCopy) obShareCopy.addEventListener('click', () => {
+        obShareInput.select();
+        try {
+            navigator.clipboard ? navigator.clipboard.writeText(obShareInput.value) : document.execCommand('copy');
+            obShareCopy.textContent = '已复制';
+            setTimeout(() => { obShareCopy.textContent = '复制'; }, 1500);
+        } catch (e) { document.execCommand('copy'); }
+    });
+
+    // 点击遮罩空白处：仅关闭帮配子面板回选择页，身份主面板需主动选择
+    obChild.addEventListener('click', (e) => { if (e.target === obChild) { hideOverlay(obChild); openQuickConfig(); } });
+
+    // 内容板块“暖阳快速配置”入口（打开面板时触发）
+    if (quickConfigRow) quickConfigRow.addEventListener('click', () => { if (mqDesktop.matches) openQuickConfig(); });
+
+    // 接收子女分享链接：解析 ?cfg= 自动套用
+    (function applyCfgFromUrl() {
+        const m = location.search.match(/[?&]cfg=([a-zA-Z0-9_]+)/);
+        if (!m) return;
+        const parts = m[1].split('_');
+        const font = FONT_SIZES.includes(parts[0]) ? parts[0] : settings.fontSize;
+        const theme = ['auto', 'light', 'dark', 'liquid', 'classic'].includes(parts[1]) ? parts[1] : settings.theme;
+        settings.fontSize = font;
+        settings.theme = theme;
+        saveSettings();
+        applyFontSize();
+        applyTheme();
+        localStorage.setItem(ROLE_KEY, '1');
+        // 抹除 cfg 参数，避免刷新重复套用
+        try { history.replaceState(null, '', location.pathname); } catch (e) {}
+    })();
+
+    // 首次打开（大屏且未配置过）自动弹身份选择
+    if (mqDesktop.matches && !localStorage.getItem(ROLE_KEY) && !(/[?&]cfg=/.test(location.search))) {
+        setTimeout(openQuickConfig, 600);
+    }
+
+    // 大屏语音输入占位按钮
+    if (searchVoiceBtn) searchVoiceBtn.addEventListener('click', () => {
+        const t = searchVoiceBtn.getAttribute('title');
+        searchVoiceBtn.setAttribute('title', '敬请期待');
+        setTimeout(() => searchVoiceBtn.setAttribute('title', t), 1500);
+    });
+})();
 
 // =====================
 // 云控系统（功能开关 / 灰度 / 公告 / 调试模式）

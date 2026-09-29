@@ -3561,3 +3561,186 @@ body[data-color-scheme="dark"] .search-view-box,
 body.dark .search-view-box {
     background: var(--cloud);
 }
+
+/* ============================================================
+   大屏：搜索框内联语音输入按钮（占位，仅 ≥768px 显示）
+   ============================================================ */
+.search-voice-btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--ash);
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.search-voice-btn:hover {
+    background: var(--hairline);
+    color: var(--rausch);
+}
+@media (max-width: 767px) {
+    /* 移动端改用全屏搜索页的悬浮语音按钮，隐藏顶部内联按钮 */
+    .search-voice-btn { display: none; }
+}
+
+/* ============================================================
+   快速配置：身份选择弹层 + 子女帮配引导（大屏为主）
+   ============================================================ */
+.ob-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5);
+}
+.ob-panel {
+    width: 100%;
+    max-width: 520px;
+    background: var(--canvas);
+    border-radius: var(--radius-lg);
+    padding: var(--space-8) var(--space-8) var(--space-6);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+.ob-title {
+    font-size: var(--font-title);
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: var(--space-2);
+}
+.ob-subtitle {
+    font-size: var(--font-small);
+    color: var(--ash);
+    line-height: 1.6;
+    margin-bottom: var(--space-6);
+}
+.ob-cards {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+.ob-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    text-align: left;
+    padding: var(--space-4) var(--space-5);
+    background: var(--cloud);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.1s ease;
+    font-family: inherit;
+}
+.ob-card:hover { border-color: var(--rausch); }
+.ob-card:active { transform: scale(0.99); }
+.ob-card-name {
+    font-size: var(--font-body);
+    font-weight: 700;
+    color: var(--ink);
+}
+.ob-card-desc {
+    font-size: var(--font-small);
+    color: var(--ash);
+}
+.ob-legal {
+    margin-top: var(--space-5);
+    font-size: var(--font-micro);
+    color: var(--mute);
+    line-height: 1.6;
+}
+.ob-legal a { color: var(--rausch); text-decoration: none; }
+
+/* 帮配面板表单 */
+.ob-field { margin-bottom: var(--space-6); }
+.ob-field-label {
+    display: block;
+    font-size: var(--font-small);
+    font-weight: 600;
+    color: var(--charcoal);
+    margin-bottom: var(--space-3);
+}
+.ob-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+.ob-choice {
+    padding: 10px 20px;
+    background: var(--cloud);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-pill);
+    font-size: var(--font-small);
+    color: var(--charcoal);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+    font-family: inherit;
+}
+.ob-choice:hover { border-color: var(--rausch); }
+.ob-choice.selected {
+    background: var(--rausch);
+    border-color: var(--rausch);
+    color: #fff;
+}
+.ob-share {
+    display: flex;
+    gap: var(--space-2);
+    margin-bottom: var(--space-5);
+}
+.ob-share-input {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 14px;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-md);
+    background: var(--cloud);
+    font-size: var(--font-micro);
+    color: var(--ash);
+    outline: none;
+}
+.ob-share-copy {
+    flex-shrink: 0;
+    padding: 10px 18px;
+    border: 1px solid var(--rausch);
+    border-radius: var(--radius-md);
+    background: var(--canvas);
+    color: var(--rausch);
+    font-size: var(--font-small);
+    cursor: pointer;
+    font-family: inherit;
+}
+.ob-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-3);
+}
+.ob-btn {
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    font-size: var(--font-body);
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    transition: opacity 0.15s ease;
+}
+.ob-btn:active { opacity: 0.8; }
+.ob-btn-ghost {
+    background: transparent;
+    color: var(--ash);
+}
+.ob-btn-primary {
+    background: var(--rausch);
+    color: #fff;
+    font-weight: 600;
+}
