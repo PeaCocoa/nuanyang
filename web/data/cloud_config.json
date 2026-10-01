@@ -1,9 +1,9 @@
 {
   "config_version": 1,
-  "updated_at": "2026-08-30 15:56",
+  "updated_at": "2026-10-01 21:08",
   "features": {
     "shorts": {
-      "enabled": true,
+      "enabled": false,
       "gray": false,
       "gray_probability": 0
     },
@@ -13,20 +13,20 @@
       "gray_probability": 0
     },
     "daily_digest": {
-      "enabled": false,
+      "enabled": true,
       "gray": false,
       "gray_probability": 0
     },
     "mine": {
-      "enabled": false,
+      "enabled": true,
       "gray": false,
       "gray_probability": 0
     }
   },
   "announcement": {
-    "enabled": true,
-    "title": "欢迎来到暖阳",
-    "content": "8月底大更新\n新增：\n短视频板块\n“我的”板块\n新增公告！\nAI个性化视频推荐（完全运行在本地，数据不会上传到任何地方）\n优化：\n液态玻璃升级后全新上线，3种风格无极调整\n每日推荐焕新升级\n修复：\n各种Bug"
+    "enabled": false,
+    "title": "",
+    "content": ""
   },
   "debug": {
     "password_hash": "53d7adac0e09fd4ae13ce3b50cc0b031ed0fd9636810825348f8b34748e8ee00"
