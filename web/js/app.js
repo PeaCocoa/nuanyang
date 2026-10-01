@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-09-29 23:00"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-10-01 10:00"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -2356,6 +2356,35 @@ searchClear.addEventListener("click", () => {
     const mq = window.matchMedia("(max-width: 767px)");
     let isMobile = mq.matches;
 
+    // 移动端全屏页「从右推进 / 退场」转场 helper
+    // 尊重减弱动效：无动画时靠 setTimeout 兜底隐藏，避免卡住不关
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    function pageOpen(el) {
+        el.classList.remove("nv-out");
+        el.style.display = "flex";
+        if (!reduceMotion) {
+            el.classList.remove("nv-in");
+            void el.offsetWidth; // 强制重排，确保动画重新播放
+            el.classList.add("nv-in");
+        }
+    }
+    function pageClose(el, after) {
+        if (el.style.display === "none") { if (after) after(); return; }
+        if (reduceMotion) {
+            el.style.display = "none";
+            el.classList.remove("nv-in", "nv-out");
+            if (after) after();
+            return;
+        }
+        el.classList.remove("nv-in");
+        el.classList.add("nv-out");
+        setTimeout(function () {
+            el.style.display = "none";
+            el.classList.remove("nv-out");
+            if (after) after();
+        }, 240);
+    }
+
     // 语音按钮定位到输入法键盘上方
     function positionVoiceBtn() {
         if (!isMobile || searchView.style.display === "none") {
@@ -2411,17 +2440,17 @@ searchClear.addEventListener("click", () => {
     }
 
     function openSearchView() {
-        searchView.style.display = "flex";
+        pageOpen(searchView);
         searchViewInput.value = searchInput.value;
         renderSearchResults(searchViewInput.value);
         searchViewClear.style.display = searchViewInput.value ? "block" : "none";
-        setTimeout(() => searchViewInput.focus(), 60);
+        setTimeout(() => searchViewInput.focus(), 120);
         positionVoiceBtn();
     }
     function closeSearchView() {
-        searchView.style.display = "none";
         searchViewInput.blur();
         voiceInputBtn.style.bottom = "";
+        pageClose(searchView);
     }
 
     // 顶部搜索框：移动端点击/聚焦改为打开全屏搜索页
@@ -2473,14 +2502,17 @@ searchClear.addEventListener("click", () => {
     applySettingsLayout();
 
     settingsMoreEntry.addEventListener("click", () => {
-        settingsMorePage.style.display = "flex";
+        pageOpen(settingsMorePage);
     });
     settingsMoreBack.addEventListener("click", () => {
-        settingsMorePage.style.display = "none";
+        pageClose(settingsMorePage);
     });
-    // 设置面板关闭时一并收起更多设置页
+    // 设置面板关闭时一并收起更多设置页（避免残留 nv 动画类）
     new MutationObserver(() => {
-        if (!settingsPanel.classList.contains("active")) settingsMorePage.style.display = "none";
+        if (!settingsPanel.classList.contains("active")) {
+            settingsMorePage.style.display = "none";
+            settingsMorePage.classList.remove("nv-in", "nv-out");
+        }
     }).observe(settingsPanel, { attributes: true, attributeFilter: ["class"] });
 
     // 断点切换

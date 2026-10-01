@@ -3479,8 +3479,20 @@ body.cloud-pending #announceBtn {
 .voice-input-btn:active { background: var(--cloud); }
 
 /* 设置二级入口（仅移动端显示，JS 控制显隐） */
+/* 修复：恢复与标准 section 一致的内边距，消除比其他设置项凸出/过宽的不对齐 */
 .settings-more-entry {
+    padding: var(--space-3) var(--space-5);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.settings-more-entry .settings-row {
     padding: 0;
+    border-bottom: none;
+    transition: transform 0.18s ease, opacity 0.18s ease;
+}
+.settings-more-entry:active .settings-row {
+    opacity: 0.55;
+    transform: translateX(3px);
 }
 
 /* 更多设置全屏页 */
@@ -3743,4 +3755,40 @@ body.dark .search-view-box {
     background: var(--rausch);
     color: #fff;
     font-weight: 600;
+}
+
+/* ============================================================
+   移动端全屏页转场动画：更多设置 / 全屏搜索页从右推进
+   仅由 JS 在打开/关闭瞬间挂上 nv-in / nv-out 触发，桌面端不生效
+   ============================================================ */
+@keyframes nvSlideIn {
+    from { transform: translateX(100%); opacity: 0.35; }
+    to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes nvSlideOut {
+    from { transform: translateX(0);    opacity: 1; }
+    to   { transform: translateX(100%); opacity: 0.35; }
+}
+.search-view.nv-in,
+.settings-more-page.nv-in {
+    animation: nvSlideIn 0.26s cubic-bezier(0.22, 0.61, 0.36, 1);
+    will-change: transform;
+}
+.search-view.nv-out,
+.settings-more-page.nv-out {
+    animation: nvSlideOut 0.22s ease forwards;
+    will-change: transform;
+}
+
+/* 更多设置入口 chevron 常态 → 按压时轻微前进反馈已在上方定义 */
+
+/* 尊重系统"减弱动态效果" */
+@media (prefers-reduced-motion: reduce) {
+    .search-view.nv-in, .settings-more-page.nv-in,
+    .search-view.nv-out, .settings-more-page.nv-out {
+        animation: none;
+    }
+    .settings-more-entry:active .settings-row {
+        transform: none;
+    }
 }
