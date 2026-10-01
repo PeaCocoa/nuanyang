@@ -1232,6 +1232,9 @@ body.dark .digest-section-header {
 .skin-picker-close:active { transform: scale(0.9); }
 
 .skin-options {
+    /* 修复小屏溢出：flex column 子项占满剩余高度并允许收缩，内部才能滚动 */
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding: 0 var(--space-5) var(--space-6);

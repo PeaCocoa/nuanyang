@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-10-01 10:00"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-10-01 23:00"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -2607,7 +2607,8 @@ searchClear.addEventListener("click", () => {
     obChild.addEventListener('click', (e) => { if (e.target === obChild) { hideOverlay(obChild); openQuickConfig(); } });
 
     // 内容板块“暖阳快速配置”入口（打开面板时触发）
-    if (quickConfigRow) quickConfigRow.addEventListener('click', () => { if (mqDesktop.matches) openQuickConfig(); });
+    // 移动端与大屏均可从设置入口进入快速配置（不再限制仅桌面端）
+    if (quickConfigRow) quickConfigRow.addEventListener('click', () => { openQuickConfig(); });
 
     // 接收子女分享链接：解析 ?cfg= 自动套用
     (function applyCfgFromUrl() {
