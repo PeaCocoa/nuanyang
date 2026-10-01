@@ -188,6 +188,17 @@
                 </div>
             </div>
 
+            <!-- 暖阳快速配置（一级入口，重选使用方式，桌面+移动通用） -->
+            <div class="settings-section" id="quickConfigSection">
+                <div class="settings-row" id="quickConfigRow" style="cursor:pointer;">
+                    <div class="settings-row-label">
+                        <span class="settings-row-name">暖阳快速配置</span>
+                        <span class="settings-row-desc">为子女、长辈或普通用户重新选择使用方式</span>
+                    </div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--mute);margin-left:6px;flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+            </div>
+
             <!-- 更多设置入口（仅移动端显示，桌面端隐藏） -->
             <div class="settings-section settings-more-entry" id="settingsMoreEntry" style="display:none;">
                 <div class="settings-row" style="cursor:pointer;">
@@ -251,13 +262,6 @@
                     <button class="settings-action-btn" id="clearHistoryBtn">清除</button>
                 </div>
 
-                <div class="settings-row" id="quickConfigRow" style="cursor:pointer;">
-                    <div class="settings-row-label">
-                        <span class="settings-row-name">暖阳快速配置</span>
-                        <span class="settings-row-desc">为子女、长辈或普通用户重新选择使用方式</span>
-                    </div>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--mute);margin-left:6px;flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>
-                </div>
             </div>
 
             <!-- 关于 -->
@@ -582,11 +586,11 @@
         </button>
     </nav>
 
-    <script src="js/app.js?v=67"></script>
+    <script src="js/app.js?v=68"></script>
     <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js?v=65').catch(function(){});
+            navigator.serviceWorker.register('/sw.js?v=66').catch(function(){});
         });
     }
     </script>

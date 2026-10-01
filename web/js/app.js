@@ -2484,7 +2484,9 @@ searchClear.addEventListener("click", () => {
     const settingsBody = settingsPanel.querySelector(".settings-body");
     const allSections = Array.prototype.slice.call(settingsBody.querySelectorAll(":scope > .settings-section"));
     const keepFirst = allSections[0]; // 外观
-    const movable = allSections.filter(s => s !== keepFirst && s !== settingsMoreEntry);
+    const quickConfigSection = document.getElementById('quickConfigSection');
+    // 外观、暖阳快速配置、更多设置入口 三者常驻一级设置页；内容/关于等才移入二级页
+    const movable = allSections.filter(s => s !== keepFirst && s !== settingsMoreEntry && s !== quickConfigSection);
     let mobileApplied = false;
 
     function toMoreLayout() {
