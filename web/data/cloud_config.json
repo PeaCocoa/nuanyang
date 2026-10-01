@@ -1,9 +1,9 @@
 {
   "config_version": 1,
-  "updated_at": "2026-10-01 21:08",
+  "updated_at": "2026-10-01 22:13",
   "features": {
     "shorts": {
-      "enabled": false,
+      "enabled": true,
       "gray": false,
       "gray_probability": 0
     },
@@ -18,15 +18,15 @@
       "gray_probability": 0
     },
     "mine": {
-      "enabled": true,
+      "enabled": false,
       "gray": false,
       "gray_probability": 0
     }
   },
   "announcement": {
-    "enabled": false,
-    "title": "",
-    "content": ""
+    "enabled": true,
+    "title": "欢迎来到暖阳",
+    "content": "-暖阳安卓客户端-\n下载方式：\n设置-法律协议-开源仓库-Release\n\n-更新日志-\n为移动端重新设计了输入页面\n增加语音输入的UI效果，敬请期待\n新增暖阳快速配置\n新增“帮长辈配置”\n新增nuanyang开源仓库链接\n短视频功能上线\n（短视频对设备的兼容性较差，建议用大屏设备观看）"
   },
   "debug": {
     "password_hash": "53d7adac0e09fd4ae13ce3b50cc0b031ed0fd9636810825348f8b34748e8ee00"
