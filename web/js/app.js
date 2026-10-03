@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-10-03 12:00"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-10-03 20:00"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -2343,6 +2343,13 @@ searchClear.addEventListener("click", () => {
 const NYVoice = (function () {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     const supported = !!SR;
+    // 桥接惰性解析（兼容 addJavascriptInterface 注入晚于脚本执行的时序）
+    function getBridge() {
+        try {
+            if (window.AndroidVoiceBridge && typeof window.AndroidVoiceBridge.startVoice === "function") return window.AndroidVoiceBridge;
+        } catch (e) {}
+        return null;
+    }
     let recog = null;
     let listening = false;
 
@@ -2356,9 +2363,42 @@ const NYVoice = (function () {
     }
 
     // opts: { btn, target, ontext }  target 为要回填的搜索框
+    // 原生桥接回调：MainActivity 在识别结束后调用 window.__onNativeVoiceResult({text|error})
+    let nativePending = null; // 保存当前一次 toggle 的 opts
+    if (!window.__onNativeVoiceResult) {
+        window.__onNativeVoiceResult = function (res) {
+            const o = nativePending; nativePending = null;
+            if (!o) return;
+            reset(o.btn);
+            if (!res) return;
+            if (res.text) {
+                if (o.target) {
+                    o.target.value = res.text;
+                    o.target.dispatchEvent(new Event("input", { bubbles: true }));
+                }
+                if (o.ontext) o.ontext(res.text);
+            } else if (res.error) {
+                if (res.error === "cancelled") return; // 用户取消不打扰
+                if (typeof showToast === "function") showToast("语音识别不可用，请用文字搜索");
+            }
+        };
+    }
+
     function toggle(opts) {
+        // 优先走原生桥接（WebView 壳 / 国产 ROM 自带识别引擎，不依赖 Web Speech API）
+        const br = getBridge();
+        if (br) {
+            if (nativePending) { reset(opts.btn); return; } // 已有进行中的识别，忽略重复点击
+            nativePending = opts;
+            if (opts.btn) { opts.btn.classList.add("listening"); const lb = opts.btn.querySelector(".voice-input-label"); if (lb) lb.textContent = "聆听中…"; }
+            if (typeof showToast === "function") showToast("请在弹出的界面中说出想看的内容");
+            try { br.startVoice(); }
+            catch (e) { nativePending = null; reset(opts.btn); if (typeof showToast === "function") showToast("启动语音识别失败"); }
+            return;
+        }
+        // 回退：Web Speech API（桌面/安卓原生 Chrome/Edge）
         if (!supported) {
-            if (typeof showToast === "function") showToast("当前设备不支持语音输入，请用文字搜索");
+            if (typeof showToast === "function") showToast("当前浏览器不支持语音输入，请改用系统浏览器/Chrome 或文字搜索");
             return;
         }
         // 已在聆听 → 再次点击提前结束
@@ -2407,7 +2447,7 @@ const NYVoice = (function () {
         catch (e) { reset(btn); }
     }
 
-    return { toggle: toggle, supported: function () { return supported; } };
+    return { toggle: toggle, supported: function () { return supported || !!getBridge(); } };
 })();
 
 // =====================
