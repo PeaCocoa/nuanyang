@@ -3795,3 +3795,38 @@ body.dark .search-view-box {
         transform: none;
     }
 }
+
+/* ============================================================
+   语音输入按钮：聆听态视觉反馈（脉冲动效 + 图标变色）
+   适用于移动悬浮按钮(.voice-input-btn) 与 大屏内联按钮(.search-voice-btn)
+   ============================================================ */
+@keyframes nyVoicePulse {
+    0%   { box-shadow: 0 0 0 0 rgba(255, 46, 99, 0.35); }
+    70%  { box-shadow: 0 0 0 8px rgba(255, 46, 99, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 46, 99, 0); }
+}
+.voice-input-btn.listening {
+    color: var(--rausch);
+    border-color: var(--rausch);
+    animation: nyVoicePulse 1.4s ease-out infinite;
+}
+.voice-input-btn.listening svg { color: var(--rausch); }
+
+.search-voice-btn.listening {
+    background: var(--rausch);
+    color: #fff;
+    animation: nyVoicePulse 1.4s ease-out infinite;
+}
+.search-voice-btn.listening svg { color: #fff; }
+
+/* 不支持语音输入的设备：按钮置灰禁用 */
+.voice-input-btn.unsupported,
+.search-voice-btn.unsupported {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .voice-input-btn.listening,
+    .search-voice-btn.listening { animation: none; }
+}

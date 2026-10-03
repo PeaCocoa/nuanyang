@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-10-01 23:00"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-10-03 12:00"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -2338,6 +2338,79 @@ searchClear.addEventListener("click", () => {
 });
 
 // =====================
+// 语音输入（Web Speech API · ASR）：零依赖，不支持环境优雅降级
+// =====================
+const NYVoice = (function () {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const supported = !!SR;
+    let recog = null;
+    let listening = false;
+
+    function reset(btn) {
+        listening = false;
+        if (!btn) return;
+        btn.classList.remove("listening");
+        const label = btn.querySelector(".voice-input-label");
+        if (label) label.textContent = "语音输入";
+        btn.setAttribute("title", "语音输入");
+    }
+
+    // opts: { btn, target, ontext }  target 为要回填的搜索框
+    function toggle(opts) {
+        if (!supported) {
+            if (typeof showToast === "function") showToast("当前设备不支持语音输入，请用文字搜索");
+            return;
+        }
+        // 已在聆听 → 再次点击提前结束
+        if (listening && recog) { recog.stop(); return; }
+        if (listening) return;
+
+        try { recog = new SR(); } catch (e) { showToast("语音识别启动失败"); return; }
+        recog.lang = "zh-CN";
+        recog.continuous = false;
+        recog.interimResults = true;
+        recog.maxAlternatives = 1;
+
+        const btn = opts.btn, target = opts.target;
+        listening = true;
+        if (btn) {
+            btn.classList.add("listening");
+            const label = btn.querySelector(".voice-input-label");
+            if (label) label.textContent = "聆听中…";
+        }
+        if (typeof showToast === "function") showToast("请说出你想看的内容");
+
+        recog.onresult = (ev) => {
+            let text = "";
+            for (let i = ev.resultIndex; i < ev.results.length; i++) {
+                text += ev.results[i][0].transcript;
+            }
+            text = text.trim();
+            if (!text) return;
+            if (target) {
+                target.value = text;
+                target.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+            if (opts.ontext) opts.ontext(text);
+        };
+        recog.onerror = (ev) => {
+            const e = ev.error;
+            let msg = "语音识别暂时不可用";
+            if (e === "not-allowed" || e === "service-not-allowed") msg = "请在浏览器允许使用麦克风";
+            else if (e === "no-speech") msg = "没听清，请再说一次";
+            else if (e === "audio-capture") msg = "未检测到麦克风设备";
+            if (typeof showToast === "function") showToast(msg);
+        };
+        recog.onend = () => reset(btn);
+
+        try { recog.start(); }
+        catch (e) { reset(btn); }
+    }
+
+    return { toggle: toggle, supported: function () { return supported; } };
+})();
+
+// =====================
 // 移动端适配：全屏搜索页 + 语音按钮 + 设置二级页
 // =====================
 (function initMobileAdapt() {
@@ -2473,12 +2546,15 @@ searchClear.addEventListener("click", () => {
         renderSearchResults("");
         searchViewInput.focus();
     });
-    // 语音输入占位按钮
+    // 语音输入按钮：识别结果回填全屏搜索页输入框（复用其 input 逻辑自动搜索）
     voiceInputBtn.addEventListener("click", () => {
-        const original = voiceInputBtn.querySelector(".voice-input-label");
-        if (original) original.textContent = "敬请期待";
-        setTimeout(() => { if (original) original.textContent = "语音输入"; }, 1500);
+        NYVoice.toggle({ btn: voiceInputBtn, target: searchViewInput });
     });
+    if (!NYVoice.supported()) {
+        voiceInputBtn.classList.add("unsupported");
+        const vl = voiceInputBtn.querySelector(".voice-input-label");
+        if (vl) vl.textContent = "暂不支持";
+    }
 
     // 设置二级页：移动端把内容/关于移入更多设置页
     const settingsBody = settingsPanel.querySelector(".settings-body");
@@ -2634,12 +2710,11 @@ searchClear.addEventListener("click", () => {
         setTimeout(openQuickConfig, 600);
     }
 
-    // 大屏语音输入占位按钮
+    // 大屏语音输入按钮：识别结果回填顶部搜索框（复用其 input 逻辑自动搜索）
     if (searchVoiceBtn) searchVoiceBtn.addEventListener('click', () => {
-        const t = searchVoiceBtn.getAttribute('title');
-        searchVoiceBtn.setAttribute('title', '敬请期待');
-        setTimeout(() => searchVoiceBtn.setAttribute('title', t), 1500);
+        NYVoice.toggle({ btn: searchVoiceBtn, target: searchInput });
     });
+    if (searchVoiceBtn && !NYVoice.supported()) searchVoiceBtn.classList.add('unsupported');
 })();
 
 // =====================
