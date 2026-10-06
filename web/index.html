@@ -16,7 +16,7 @@
     <link rel="icon" href="favicon.png" type="image/png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <title>暖阳 - 精选好视频</title>
-    <link rel="stylesheet" href="css/style.css?v=61">
+    <link rel="stylesheet" href="css/style.css?v=62">
 
     <link rel="stylesheet" href="css/shorts.css?v=58">
     <link rel="dns-prefetch" href="//i0.hdslb.com">
@@ -34,7 +34,10 @@
     <!-- 顶栏 -->
     <header class="header">
         <div class="header-left">
-            <h1 class="header-title">暖阳</h1>
+            <div class="header-brand">
+                <img class="header-logo" src="logo.png" alt="暖阳">
+                <h1 class="header-title">暖阳</h1>
+            </div>
             <p class="header-subtitle">精选好视频，温暖每一天</p>
         </div>
         <div class="header-right">
@@ -622,11 +625,11 @@
         </button>
     </nav>
 
-    <script src="js/app.js?v=73"></script>
+    <script src="js/app.js?v=74"></script>
     <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js?v=72').catch(function(){});
+            navigator.serviceWorker.register('/sw.js?v=73').catch(function(){});
         });
     }
     </script>
