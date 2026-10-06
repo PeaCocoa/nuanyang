@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-10-06 10:00"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-10-06 16:00"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -241,12 +241,25 @@ window.addEventListener("storage", (e) => {
 });
 
 const FONT_SIZES = ["font-sm", "font-md", "font-lg", "font-xl", "font-2xl"];
+
+// === 动态测量标题栏真实高度，写入 --header-h，避免下滑后分类栏被标题栏遮挡 ===
+function syncHeaderHeight() {
+    var h = document.querySelector(".header");
+    if (!h) return;
+    requestAnimationFrame(function () {
+        var hh = h.offsetHeight;
+        if (hh > 0) document.documentElement.style.setProperty("--header-h", hh + "px");
+    });
+}
+window.addEventListener("resize", syncHeaderHeight);
+window.addEventListener("orientationchange", function () { setTimeout(syncHeaderHeight, 300); });
 function applyFontSize() {
     document.body.classList.remove("font-sm", "font-md", "font-lg", "font-xl", "font-2xl");
     document.body.classList.add(settings.fontSize);
     const idx = FONT_SIZES.indexOf(settings.fontSize);
     const range = document.getElementById("fontRange");
     if (range && idx >= 0) range.value = idx;
+    syncHeaderHeight();
 }
 
 function resolveColorScheme() {
@@ -288,6 +301,7 @@ function applyTheme() {
         liquidIntensityRow.style.display = (settings.theme === "liquid") ? "" : "none";
     }
     applyLiquidIntensity();
+    syncHeaderHeight();
 }
 
 // 液态玻璃强度：通过JS修改SVG filter原语参数实现无级调节
@@ -2200,6 +2214,7 @@ async function checkForUpdate() {
 loadSettings();
 applyFontSize();
 applyTheme();
+syncHeaderHeight();
 applyBatch();
 recommendToggle.checked = settings.recommend;
 digestToggle.checked = settings.digest;

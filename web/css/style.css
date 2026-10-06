@@ -953,7 +953,7 @@ body[data-theme="liquid"][data-color-scheme="dark"] .range-slider::-webkit-slide
 }
 
 /* === 响应式 === */
-@media (min-width: 768px) {
+@media (min-width: 768px) and (orientation: landscape) {
     .video-list {
         max-width: 100%;
         display: grid;
@@ -964,7 +964,7 @@ body[data-theme="liquid"][data-color-scheme="dark"] .range-slider::-webkit-slide
     .video-card { max-width: 420px; }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1200px) and (orientation: landscape) {
     .video-list {
         grid-template-columns: repeat(3, 1fr);
         max-width: 1400px;
@@ -972,7 +972,7 @@ body[data-theme="liquid"][data-color-scheme="dark"] .range-slider::-webkit-slide
     .video-card { max-width: 380px; }
 }
 
-@media (min-width: 1600px) {
+@media (min-width: 1600px) and (orientation: landscape) {
     .video-list {
         grid-template-columns: repeat(4, 1fr);
         max-width: 1800px;
@@ -1104,7 +1104,7 @@ body.dark .digest-greeting-card {
 }
 
 /* 桌面端：digest-content 继承主页多列网格 */
-@media (min-width: 768px) {
+@media (min-width: 768px) and (orientation: landscape) {
     .digest-content {
         max-width: 100%;
         display: grid;
@@ -1115,7 +1115,7 @@ body.dark .digest-greeting-card {
     .digest-card { max-width: 420px; }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1200px) and (orientation: landscape) {
     .digest-content {
         grid-template-columns: repeat(3, 1fr);
         max-width: 1400px;
@@ -1124,7 +1124,7 @@ body.dark .digest-greeting-card {
     .digest-card { max-width: 380px; }
 }
 
-@media (min-width: 1600px) {
+@media (min-width: 1600px) and (orientation: landscape) {
     .digest-content {
         grid-template-columns: repeat(4, 1fr);
         max-width: 1800px;
@@ -2923,7 +2923,7 @@ body[data-theme="liquid"] .changelog-modal-close {
 }
 
 /* 大屏：底部导航变左侧 */
-@media (min-width: 768px) {
+@media (min-width: 768px) and (orientation: landscape) {
     .bottom-nav {
         top: 0;
         bottom: 0;
@@ -3363,7 +3363,7 @@ body[data-theme="auto"][data-color-scheme="dark"] .debug-pwd-body input {
 }
 
 /* 大屏：内容区右移，避开左侧导航 */
-@media (min-width: 768px) {
+@media (min-width: 768px) and (orientation: landscape) {
     .mine-view {
         margin-left: 80px;
     }
