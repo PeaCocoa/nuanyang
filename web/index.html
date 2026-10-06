@@ -16,7 +16,7 @@
     <link rel="icon" href="favicon.png" type="image/png">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <title>暖阳 - 精选好视频</title>
-    <link rel="stylesheet" href="css/style.css?v=59">
+    <link rel="stylesheet" href="css/style.css?v=60">
 
     <link rel="stylesheet" href="css/shorts.css?v=58">
     <link rel="dns-prefetch" href="//i0.hdslb.com">
@@ -196,6 +196,24 @@
                         <span class="settings-row-desc">为子女、长辈或普通用户重新选择使用方式</span>
                     </div>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--mute);margin-left:6px;flex-shrink:0;"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+            </div>
+
+            <!-- 配置代码输入（仅老人模式显示） -->
+            <div class="settings-section" id="codeInputSection" style="display:none;">
+                <h3 class="settings-section-title">配置代码</h3>
+                <p class="settings-hint">将家人给你的配置代码填入下方，点“应用”即可自动设置好。</p>
+                <div class="code-apply-row">
+                    <input type="text" class="code-input" id="codeInput" placeholder="请输入配置代码" autocomplete="off" spellcheck="false" maxlength="160">
+                    <button class="code-apply-btn" id="codeApplyBtn" type="button">应用</button>
+                </div>
+                <div class="code-status" id="codeStatus" style="display:none;"></div>
+                <div class="settings-row" id="codeAppliedRow" style="display:none;">
+                    <div class="settings-row-label">
+                        <span class="settings-row-name">当前配置代码</span>
+                        <span class="settings-row-desc" id="codeAppliedText"></span>
+                    </div>
+                    <button class="settings-action-btn" id="codeClearBtn">清除</button>
                 </div>
             </div>
 
@@ -533,11 +551,11 @@
         </div>
     </div>
 
-    <!-- 大屏：子女帮配引导面板 -->
+    <!-- 大屏：子女帮配引导面板（配置代码方案，不依赖URL） -->
     <div class="ob-overlay" id="obChildPanel" style="display:none;">
         <div class="ob-panel">
             <h2 class="ob-title">帮长辈设置</h2>
-            <p class="ob-subtitle">选好后生成一个配置链接，发给爸妈，他们打开就会自动套好。</p>
+            <p class="ob-subtitle">选好下面几项，生成一串「配置代码」，念给或发给爸妈；爸妈在暖阳“设置 → 输入配置代码”里填上即可自动套好。</p>
             <div class="ob-field">
                 <span class="ob-field-label">字体大小</span>
                 <div class="ob-choices" id="obFontChoices" data-value="font-2xl">
@@ -553,13 +571,31 @@
                     <button class="ob-choice" type="button" data-val="auto">跟随系统</button>
                 </div>
             </div>
-            <div class="ob-share" id="obShareBox" style="display:none;">
-                <input type="text" class="ob-share-input" id="obShareInput" readonly>
-                <button class="ob-share-copy" id="obShareCopy" type="button">复制</button>
+            <div class="ob-field">
+                <span class="ob-field-label">老人喜好（可多选，打开默认看这些）</span>
+                <div class="ob-choices ob-likes" id="obLikeChoices"></div>
+            </div>
+            <div class="ob-field">
+                <span class="ob-field-label">推荐开关</span>
+                <div class="ob-toggles">
+                    <label class="ob-toggle-row">
+                        <span>个性化推荐</span>
+                        <label class="toggle"><input type="checkbox" id="obRecommend"><span class="toggle-slider"></span></label>
+                    </label>
+                    <label class="ob-toggle-row">
+                        <span>每日摘要</span>
+                        <label class="toggle"><input type="checkbox" id="obDigest"><span class="toggle-slider"></span></label>
+                    </label>
+                </div>
+            </div>
+            <div class="ob-code" id="obShareBox" style="display:none;">
+                <p class="ob-code-tip">配置代码（请念给或发给爸妈）：</p>
+                <div class="ob-code-text" id="obShareInput"></div>
+                <button class="ob-btn ob-btn-ghost ob-code-copy" id="obShareCopy" type="button">复制代码</button>
             </div>
             <div class="ob-actions">
                 <button class="ob-btn ob-btn-ghost" id="obChildBack" type="button">返回</button>
-                <button class="ob-btn ob-btn-primary" id="obChildDone" type="button">完成帮配并生成链接</button>
+                <button class="ob-btn ob-btn-primary" id="obChildDone" type="button">生成配置代码</button>
             </div>
         </div>
     </div>
@@ -586,11 +622,11 @@
         </button>
     </nav>
 
-    <script src="js/app.js?v=70"></script>
+    <script src="js/app.js?v=71"></script>
     <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js?v=68').catch(function(){});
+            navigator.serviceWorker.register('/sw.js?v=69').catch(function(){});
         });
     }
     </script>

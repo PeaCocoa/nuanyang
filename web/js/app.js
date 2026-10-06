@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-10-03 20:00"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-10-06 10:00"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -17,6 +17,7 @@ const STORAGE_KEYS = {
     batch: "nuanyang-batch",
     favorites: "nuanyang-favorites",
     digest: "nuanyang-digest",
+    likes: "nuanyang-likes",
     liquidIntensity: "nuanyang-liquid-intensity",
 };
 
@@ -32,6 +33,7 @@ let settings = {
     theme: "auto",         // auto / light / dark / liquid
     recommend: false,
     digest: false,
+    likes: [],
     liquidIntensity: 50, // 0=毛玻璃 50=液态玻璃 100=清透
     batch: BATCH_DEFAULT,
 };
@@ -146,6 +148,12 @@ function loadSettings() {
     } catch (e) { console.warn("加载摘要设置失败:", e); }
 
     try {
+        const likes = localStorage.getItem(STORAGE_KEYS.likes);
+        if (likes) { settings.likes = JSON.parse(likes); if (Array.isArray(settings.likes) && settings.likes.length) { currentCategory = settings.likes[0]; } }
+        else { settings.likes = []; }
+    } catch (e) { console.warn("加载喜好设置失败:", e); settings.likes = []; }
+
+    try {
         const li = localStorage.getItem(STORAGE_KEYS.liquidIntensity);
         if (li !== null) settings.liquidIntensity = parseInt(li);
     } catch (e) { console.warn("加载液态强度失败:", e); }
@@ -181,6 +189,7 @@ function saveSettings() {
     localStorage.setItem(STORAGE_KEYS.dark, settings.theme === "dark" ? "on" : "off");
     localStorage.setItem(STORAGE_KEYS.recommend, settings.recommend.toString());
     localStorage.setItem(STORAGE_KEYS.digest, settings.digest.toString());
+    localStorage.setItem(STORAGE_KEYS.likes, JSON.stringify(settings.likes || []));
     localStorage.setItem(STORAGE_KEYS.liquidIntensity, settings.liquidIntensity.toString());
     localStorage.setItem(STORAGE_KEYS.batch, settings.batch.toString());
     localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(viewHistory));
@@ -2657,32 +2666,42 @@ const NYVoice = (function () {
 
     const mqDesktop = window.matchMedia('(min-width: 768px)');
 
+    const QUICK_ROLE_KEY = 'nuanyang-quick-role';
+    const QUICK_CODE_KEY = 'nuanyang-quick-code';
+
+    function showOverlay(el) { el.style.display = 'flex'; }
+    function hideOverlay(el) { el.style.display = 'none'; }
+    function openQuickConfig() { showOverlay(obOverlay); }
+    function openChildPanel() { hideOverlay(obOverlay); populateLikes(); showOverlay(obChild); }
+
+    // base64 工具（支持中文）
+    function encB64(str) { try { return btoa(unescape(encodeURIComponent(str))); } catch (e) { return ''; } }
+    function decB64(b64) { try { return decodeURIComponent(escape(atob(String(b64).trim()))); } catch (e) { return ''; } }
+
     function applyRole(role) {
         if (role === 'elder') {
             settings.fontSize = 'font-2xl';
             settings.theme = 'classic';
         } else {
-            // child / user：普通字体，主题不动
+            // child / user：普通字体；从老人模式切走时删除本地保存的配置代码与喜好
             settings.fontSize = 'font-lg';
+            localStorage.removeItem(QUICK_CODE_KEY);
+            settings.likes = [];
         }
         saveSettings();
         applyFontSize();
         applyTheme();
         localStorage.setItem(ROLE_KEY, '1');
+        localStorage.setItem(QUICK_ROLE_KEY, role);
+        renderCodeSection();
     }
-
-    function showOverlay(el) { el.style.display = 'flex'; }
-    function hideOverlay(el) { el.style.display = 'none'; }
-
-    function openQuickConfig() { showOverlay(obOverlay); }
-    function openChildPanel() { hideOverlay(obOverlay); showOverlay(obChild); }
 
     // 身份卡片
     document.getElementById('obCardChild').addEventListener('click', openChildPanel);
     document.getElementById('obCardElder').addEventListener('click', () => { applyRole('elder'); hideOverlay(obOverlay); });
     document.getElementById('obCardUser').addEventListener('click', () => { applyRole('user'); hideOverlay(obOverlay); });
 
-    // 子女帮配面板：选项组
+    // 单选选项组（字体/主题）
     function bindChoices(id) {
         const box = document.getElementById(id);
         if (!box) return;
@@ -2697,58 +2716,145 @@ const NYVoice = (function () {
     bindChoices('obFontChoices');
     bindChoices('obThemeChoices');
 
+    // 老人喜好：多选，来源于视频分类
+    const likeBox = document.getElementById('obLikeChoices');
+    function populateLikes() {
+        if (!likeBox || likeBox.dataset.filled === '1') return;
+        let cats = [];
+        try {
+            const seen = {};
+            allVideos.forEach(v => {
+                const arr = Array.isArray(v.categories) ? v.categories : (v.category ? [v.category] : []);
+                arr.forEach(c => { if (c) seen[c] = (seen[c] || 0) + 1; });
+            });
+            cats = Object.keys(seen).sort((a, b) => seen[b] - seen[a]);
+        } catch (e) {}
+        if (!cats.length) { likeBox.innerHTML = '<span class="ob-likes-empty">暂无可选项</span>'; likeBox.dataset.filled = '1'; return; }
+        cats.forEach(c => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'ob-choice';
+            b.textContent = c;
+            b.dataset.val = c;
+            b.addEventListener('click', () => b.classList.toggle('selected'));
+            likeBox.appendChild(b);
+        });
+        likeBox.dataset.filled = '1';
+    }
+
+    // 生成配置代码（Base64）
     const obShareBox = document.getElementById('obShareBox');
     const obShareInput = document.getElementById('obShareInput');
     const obShareCopy = document.getElementById('obShareCopy');
     document.getElementById('obChildBack').addEventListener('click', () => { hideOverlay(obChild); openQuickConfig(); });
 
-    function buildShareLink() {
+    function buildChildCode() {
         const font = document.getElementById('obFontChoices').dataset.value || 'font-2xl';
         const theme = document.getElementById('obThemeChoices').dataset.value || 'classic';
-        const base = location.href.split('?')[0].split('#')[0];
-        return base + '?cfg=' + font + '_' + theme;
+        const likes = likeBox ? Array.prototype.map.call(likeBox.querySelectorAll('.ob-choice.selected'), b => b.dataset.val) : [];
+        const rec = document.getElementById('obRecommend').checked ? 1 : 0;
+        const dig = document.getElementById('obDigest').checked ? 1 : 0;
+        const obj = { v: 1, f: font, t: theme, l: likes, r: rec, d: dig };
+        return encB64(JSON.stringify(obj));
     }
     document.getElementById('obChildDone').addEventListener('click', () => {
-        obShareInput.value = buildShareLink();
+        const code = buildChildCode();
+        if (!code) { if (typeof showToast === 'function') showToast('生成失败，请重试'); return; }
+        obShareInput.textContent = code;
         obShareBox.style.display = 'flex';
     });
+    function fallbackCopy(txt) {
+        const ta = document.createElement('textarea');
+        ta.value = txt; document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta);
+    }
     if (obShareCopy) obShareCopy.addEventListener('click', () => {
-        obShareInput.select();
-        try {
-            navigator.clipboard ? navigator.clipboard.writeText(obShareInput.value) : document.execCommand('copy');
-            obShareCopy.textContent = '已复制';
-            setTimeout(() => { obShareCopy.textContent = '复制'; }, 1500);
-        } catch (e) { document.execCommand('copy'); }
+        const txt = obShareInput.textContent || '';
+        let ok = false;
+        try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(txt); ok = true; } } catch (e) {}
+        if (!ok) { fallbackCopy(txt); }
+        obShareCopy.textContent = '已复制';
+        setTimeout(() => { obShareCopy.textContent = '复制代码'; }, 1500);
     });
-
-    // 点击遮罩空白处：仅关闭帮配子面板回选择页，身份主面板需主动选择
     obChild.addEventListener('click', (e) => { if (e.target === obChild) { hideOverlay(obChild); openQuickConfig(); } });
 
-    // 内容板块“暖阳快速配置”入口（打开面板时触发）
-    // 移动端与大屏均可从设置入口进入快速配置（不再限制仅桌面端）
+    // 内容板块“暖阳快速配置”入口（移动端与大屏均可进入）
     if (quickConfigRow) quickConfigRow.addEventListener('click', () => { openQuickConfig(); });
 
-    // 接收子女分享链接：解析 ?cfg= 自动套用
-    (function applyCfgFromUrl() {
-        const m = location.search.match(/[?&]cfg=([a-zA-Z0-9_]+)/);
-        if (!m) return;
-        const parts = m[1].split('_');
-        const font = FONT_SIZES.includes(parts[0]) ? parts[0] : settings.fontSize;
-        const theme = ['auto', 'light', 'dark', 'liquid', 'classic'].includes(parts[1]) ? parts[1] : settings.theme;
-        settings.fontSize = font;
-        settings.theme = theme;
+    // ===== 配置代码套用（老人模式在设置内输入） =====
+    const codeInputSection = document.getElementById('codeInputSection');
+    const codeInput = document.getElementById('codeInput');
+    const codeApplyBtn = document.getElementById('codeApplyBtn');
+    const codeStatus = document.getElementById('codeStatus');
+    const codeAppliedRow = document.getElementById('codeAppliedRow');
+    const codeAppliedText = document.getElementById('codeAppliedText');
+    const codeClearBtn = document.getElementById('codeClearBtn');
+
+    function setStatus(msg, ok) {
+        if (!codeStatus) return;
+        codeStatus.textContent = msg;
+        codeStatus.style.color = ok ? 'var(--rausch)' : '#d33';
+        codeStatus.style.display = 'block';
+    }
+    function applyCodeString(code) {
+        const json = decB64(code);
+        let obj;
+        try { obj = JSON.parse(json); } catch (e) { obj = null; }
+        if (!obj || !obj.f) { setStatus('配置代码无效，请核对后重试', false); return false; }
+        if (FONT_SIZES.includes(obj.f)) settings.fontSize = obj.f;
+        if (['auto', 'light', 'dark', 'liquid', 'classic'].includes(obj.t)) settings.theme = obj.t;
+        settings.recommend = !!obj.r;
+        settings.digest = !!obj.d;
+        if (Array.isArray(obj.l) && obj.l.length) {
+            settings.likes = obj.l;
+            currentCategory = obj.l[0];
+        }
         saveSettings();
         applyFontSize();
         applyTheme();
-        localStorage.setItem(ROLE_KEY, '1');
-        // 抹除 cfg 参数，避免刷新重复套用
-        try { history.replaceState(null, '', location.pathname); } catch (e) {}
-    })();
+        localStorage.setItem(QUICK_CODE_KEY, String(code).trim());
+        try { if (typeof refreshList === 'function') refreshList(); } catch (e) {}
+        try { document.querySelectorAll('.category-btn').forEach(b => b.classList.toggle('active', b.dataset.category === currentCategory)); } catch (e) {}
+        setStatus('已应用配置', true);
+        renderCodeSection();
+        if (typeof showToast === 'function') showToast('配置已套好');
+        return true;
+    }
+    if (codeApplyBtn) codeApplyBtn.addEventListener('click', () => {
+        const c = (codeInput && codeInput.value || '').trim();
+        if (!c) { setStatus('请先输入配置代码', false); return; }
+        applyCodeString(c);
+    });
+    if (codeClearBtn) codeClearBtn.addEventListener('click', () => {
+        localStorage.removeItem(QUICK_CODE_KEY);
+        if (codeInput) codeInput.value = '';
+        renderCodeSection();
+        setStatus('已清除本地配置代码', true);
+    });
+
+    function renderCodeSection() {
+        if (!codeInputSection) return;
+        const role = localStorage.getItem(QUICK_ROLE_KEY);
+        const stored = localStorage.getItem(QUICK_CODE_KEY);
+        if (role === 'elder') {
+            codeInputSection.style.display = '';
+            if (stored) {
+                codeAppliedRow.style.display = '';
+                codeAppliedText.textContent = stored.length > 60 ? stored.slice(0, 57) + '…' : stored;
+            } else {
+                codeAppliedRow.style.display = 'none';
+            }
+        } else {
+            codeInputSection.style.display = 'none';
+        }
+    }
 
     // 首次打开（大屏且未配置过）自动弹身份选择
-    if (mqDesktop.matches && !localStorage.getItem(ROLE_KEY) && !(/[?&]cfg=/.test(location.search))) {
+    if (mqDesktop.matches && !localStorage.getItem(ROLE_KEY)) {
         setTimeout(openQuickConfig, 600);
     }
+    renderCodeSection();
 
     // 大屏语音输入按钮：识别结果回填顶部搜索框（复用其 input 逻辑自动搜索）
     if (searchVoiceBtn) searchVoiceBtn.addEventListener('click', () => {

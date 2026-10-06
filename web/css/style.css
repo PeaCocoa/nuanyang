@@ -3760,6 +3760,101 @@ body.dark .search-view-box {
     font-weight: 600;
 }
 
+/* --- 子女帮配：老人喜好多选 / 推荐开关 / 配置代码展示 --- */
+.ob-likes {
+    flex-wrap: wrap;
+}
+.ob-likes-empty {
+    font-size: var(--font-small);
+    color: var(--ash);
+    padding: 4px 0;
+}
+.ob-toggles {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+.ob-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+}
+.ob-toggle-row > span {
+    font-size: var(--font-body);
+    color: var(--charcoal);
+}
+.ob-code {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-5);
+    padding: var(--space-4);
+    background: var(--cloud);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-md);
+}
+.ob-code-tip {
+    margin: 0;
+    font-size: var(--font-micro);
+    color: var(--ash);
+}
+.ob-code-text {
+    padding: var(--space-3);
+    background: var(--canvas);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-micro);
+    line-height: 1.5;
+    color: var(--charcoal);
+    word-break: break-all;
+    user-select: all;
+    -webkit-user-select: all;
+}
+.ob-code-copy {
+    align-self: flex-start;
+    padding: 8px 18px;
+}
+
+/* --- 设置内：输入配置代码（仅老人模式） --- */
+.code-apply-row {
+    display: flex;
+    gap: var(--space-2);
+    align-items: stretch;
+    margin-top: var(--space-3);
+}
+.code-input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 14px;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sm);
+    background: var(--canvas);
+    font-size: var(--font-body);
+    color: var(--charcoal);
+    outline: none;
+    font-family: inherit;
+}
+.code-input:focus { border-color: var(--rausch); }
+.code-apply-btn {
+    flex-shrink: 0;
+    padding: 12px 24px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--rausch);
+    color: #fff;
+    font-size: var(--font-body);
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+}
+.code-apply-btn:active { opacity: 0.85; }
+.code-status {
+    margin-top: var(--space-3);
+    font-size: var(--font-small);
+}
+
+
 /* ============================================================
    移动端全屏页转场动画：更多设置 / 全屏搜索页从右推进
    仅由 JS 在打开/关闭瞬间挂上 nv-in / nv-out 触发，桌面端不生效
