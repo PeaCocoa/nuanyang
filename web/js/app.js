@@ -6,7 +6,7 @@
 
 // === 配置 ===
 const DATA_URL = "data/videos.json";
-const CODE_VERSION = "2026-10-06 16:00"; // 代码更新时间（手动维护）
+const CODE_VERSION = "2026-10-06 21:40"; // 代码更新时间（手动维护）
 const BATCH_DEFAULT = 6;
 const STORAGE_KEYS = {
     font: "nuanyang-font",
@@ -2150,6 +2150,12 @@ async function loadData() {
             refreshList();
             setupScrollObserver();
             // 展示页demo模式：通过URL参数自动展示对应页面
+            // 桌面小组件/外部直达：URL 带 ?bvid= 时打开对应视频
+            const targetBvid = new URLSearchParams(location.search).get('bvid');
+            if (targetBvid) {
+                const tv = allVideos.find(function (x) { return x.bvid === targetBvid; });
+                if (tv) setTimeout(function () { openPlayer(tv); }, 600);
+            }
             const demo = new URLSearchParams(location.search).get('demo');
             if (demo === 'play' && allVideos.length > 0) {
                 setTimeout(() => openPlayer(allVideos[0]), 600);
